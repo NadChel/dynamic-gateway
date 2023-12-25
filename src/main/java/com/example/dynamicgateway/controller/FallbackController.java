@@ -1,4 +1,4 @@
-package by.afinny.apigateway.controller;
+package com.example.dynamicgateway.controller;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

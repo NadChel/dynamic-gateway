@@ -1,6 +1,6 @@
-package by.afinny.apigateway.service.swaggerUiSupport;
+package com.example.dynamicgateway.service.swaggerUiSupport;
 
-import by.afinny.apigateway.model.uiConfig.SwaggerUiConfig;
+import com.example.dynamicgateway.model.uiConfig.SwaggerUiConfig;
 import io.swagger.v3.oas.models.OpenAPI;
 import reactor.core.publisher.Mono;
 

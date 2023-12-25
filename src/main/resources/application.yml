@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ${APPLICATION_NAME:dynamic-gateway}
+  profiles:
+    active: dev

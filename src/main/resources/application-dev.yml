@@ -1,0 +1,56 @@
+spring:
+  server:
+    server-url: "https://localhost:8080"
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure.include: beans, env, health, info, metrics, mappings, prometheus, gateway
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+    gateway:
+      enabled: true
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    non-secure-port-enabled: false
+    secure-port-enabled: true
+
+springdoc:
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    config-url: /swagger-ui-config
+
+gateway:
+  servers:
+    - url: https://localhost:8080
+      description: Api-Gateway-V2
+  v1Prefix: /api/v1
+  publicEndpoints:
+    - /api/v1/registration/**
+    - /api/v1/security/**
+    - /api/v1/login/**
+    - /api/v1/exchange-rates/**
+    - /api/v1/bank-branch/**
+    - /api/v1/error-message
+    - /actuator/**
+    - /webjars/**
+    - /swagger-ui.html
+    - /swagger-ui-config
+    - /*/doc
+

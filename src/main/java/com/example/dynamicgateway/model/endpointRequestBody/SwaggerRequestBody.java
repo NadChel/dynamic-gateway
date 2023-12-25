@@ -1,4 +1,4 @@
-package by.afinny.apigateway.model.endpointRequestBody;
+package com.example.dynamicgateway.model.endpointRequestBody;
 
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;

@@ -1,11 +1,11 @@
-package by.afinny.apigateway.service.endpointCollector;
+package com.example.dynamicgateway.service.endpointCollector;
 
-import by.afinny.apigateway.client.ApplicationDocClient;
-import by.afinny.apigateway.events.DocumentedEndpointFoundEvent;
-import by.afinny.apigateway.model.discoverableApplication.DiscoverableApplication;
-import by.afinny.apigateway.model.documentedApplication.SwaggerApplication;
-import by.afinny.apigateway.model.documentedEndpoint.SwaggerEndpoint;
-import by.afinny.apigateway.service.applicationCollector.ApplicationFinder;
+import com.example.dynamicgateway.client.ApplicationDocClient;
+import com.example.dynamicgateway.events.DocumentedEndpointFoundEvent;
+import com.example.dynamicgateway.model.discoverableApplication.DiscoverableApplication;
+import com.example.dynamicgateway.model.documentedApplication.SwaggerApplication;
+import com.example.dynamicgateway.model.documentedEndpoint.SwaggerEndpoint;
+import com.example.dynamicgateway.service.applicationFinder.ApplicationFinder;
 import com.netflix.discovery.CacheRefreshedEvent;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import lombok.extern.slf4j.Slf4j;

@@ -1,4 +1,4 @@
-package by.afinny.apigateway.model.gatewayMeta;
+package com.example.dynamicgateway.model.gatewayMeta;
 
 import io.swagger.v3.oas.models.servers.Server;
 import lombok.Setter;

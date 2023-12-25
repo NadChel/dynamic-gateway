@@ -1,4 +1,4 @@
-package by.afinny.apigateway.model.endpointParameter;
+package com.example.dynamicgateway.model.endpointParameter;
 
 
 import io.swagger.v3.oas.models.parameters.Parameter;

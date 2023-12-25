@@ -1,9 +1,9 @@
-package by.afinny.apigateway.model.documentedApplication;
+package com.example.dynamicgateway.model.documentedApplication;
 
-import by.afinny.apigateway.model.discoverableApplication.DiscoverableApplication;
-import by.afinny.apigateway.model.documentedEndpoint.SwaggerEndpoint;
-import by.afinny.apigateway.model.endpointDetails.EndpointDetails;
-import by.afinny.apigateway.model.endpointDetails.SwaggerEndpointDetails;
+import com.example.dynamicgateway.model.discoverableApplication.DiscoverableApplication;
+import com.example.dynamicgateway.model.documentedEndpoint.SwaggerEndpoint;
+import com.example.dynamicgateway.model.endpointDetails.EndpointDetails;
+import com.example.dynamicgateway.model.endpointDetails.SwaggerEndpointDetails;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;

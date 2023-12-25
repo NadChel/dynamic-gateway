@@ -1,7 +1,7 @@
-package by.afinny.apigateway.model.documentedEndpoint;
+package com.example.dynamicgateway.model.documentedEndpoint;
 
-import by.afinny.apigateway.model.documentedApplication.SwaggerApplication;
-import by.afinny.apigateway.model.endpointDetails.EndpointDetails;
+import com.example.dynamicgateway.model.documentedApplication.SwaggerApplication;
+import com.example.dynamicgateway.model.endpointDetails.EndpointDetails;
 import lombok.Getter;
 
 import java.text.MessageFormat;

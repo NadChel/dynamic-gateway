@@ -1,6 +1,6 @@
-package by.afinny.apigateway.service.swaggerUiSupport;
+package com.example.dynamicgateway.service.swaggerUiSupport;
 
-import by.afinny.apigateway.model.documentedApplication.SwaggerApplication;
+import com.example.dynamicgateway.model.documentedApplication.SwaggerApplication;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;

@@ -1,8 +1,8 @@
-package by.afinny.apigateway.client;
+package com.example.dynamicgateway.client;
 
-import by.afinny.apigateway.model.discoverableApplication.DiscoverableApplication;
-import by.afinny.apigateway.model.discoverableApplication.EurekaDiscoverableApplication;
-import by.afinny.apigateway.model.documentedApplication.SwaggerApplication;
+import com.example.dynamicgateway.model.discoverableApplication.DiscoverableApplication;
+import com.example.dynamicgateway.model.discoverableApplication.EurekaDiscoverableApplication;
+import com.example.dynamicgateway.model.documentedApplication.SwaggerApplication;
 import lombok.Getter;
 import org.springframework.web.reactive.function.client.WebClient;
 

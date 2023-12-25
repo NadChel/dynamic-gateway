@@ -1,9 +1,8 @@
-package by.afinny.apigateway.model.endpointDetails;
+package com.example.dynamicgateway.model.endpointDetails;
 
-import by.afinny.apigateway.model.endpointParameter.EndpointParameter;
-import by.afinny.apigateway.model.endpointParameter.SwaggerParameter;
-import by.afinny.apigateway.model.endpointRequestBody.EndpointRequestBody;
-import by.afinny.apigateway.model.endpointRequestBody.SwaggerRequestBody;
+import com.example.dynamicgateway.model.endpointParameter.SwaggerParameter;
+import com.example.dynamicgateway.model.endpointRequestBody.EndpointRequestBody;
+import com.example.dynamicgateway.model.endpointRequestBody.SwaggerRequestBody;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
@@ -35,7 +34,7 @@ public class SwaggerEndpointDetails implements EndpointDetails {
     }
 
     @Override
-    public List<? extends EndpointParameter> getParameters() {
+    public List<SwaggerParameter> getParameters() {
         return parameters.stream()
                 .map(SwaggerParameter::new)
                 .toList();

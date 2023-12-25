@@ -1,9 +1,9 @@
-package by.afinny.apigateway.config;
+package com.example.dynamicgateway.config;
 
-import by.afinny.apigateway.model.discoverableApplication.DiscoverableApplication;
-import by.afinny.apigateway.model.documentedEndpoint.DocumentedEndpoint;
-import by.afinny.apigateway.model.gatewayMeta.GatewayMeta;
-import by.afinny.apigateway.service.routeProcessor.EndpointRouteProcessor;
+import com.example.dynamicgateway.model.discoverableApplication.DiscoverableApplication;
+import com.example.dynamicgateway.model.documentedEndpoint.DocumentedEndpoint;
+import com.example.dynamicgateway.model.gatewayMeta.GatewayMeta;
+import com.example.dynamicgateway.service.routeProcessor.EndpointRouteProcessor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.gateway.filter.OrderedGatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.RewritePathGatewayFilterFactory;

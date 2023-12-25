@@ -1,6 +1,7 @@
-package by.afinny.apigateway.service.applicationCollector;
+package com.example.dynamicgateway.service.applicationFinder;
 
-import by.afinny.apigateway.model.discoverableApplication.DiscoverableApplication;
+
+import com.example.dynamicgateway.model.discoverableApplication.DiscoverableApplication;
 
 import java.util.Set;
 

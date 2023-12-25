@@ -1,6 +1,6 @@
-package by.afinny.apigateway.events;
+package com.example.dynamicgateway.events;
 
-import by.afinny.apigateway.model.documentedEndpoint.DocumentedEndpoint;
+import com.example.dynamicgateway.model.documentedEndpoint.DocumentedEndpoint;
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
 

@@ -1,6 +1,6 @@
-package by.afinny.apigateway.service.endpointCollector;
+package com.example.dynamicgateway.service.endpointCollector;
 
-import by.afinny.apigateway.model.documentedEndpoint.DocumentedEndpoint;
+import com.example.dynamicgateway.model.documentedEndpoint.DocumentedEndpoint;
 
 import java.util.Set;
 

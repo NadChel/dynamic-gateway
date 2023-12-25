@@ -1,4 +1,4 @@
-package by.afinny.apigateway.model.discoverableApplication;
+package com.example.dynamicgateway.model.discoverableApplication;
 
 import com.netflix.discovery.shared.Application;
 import lombok.RequiredArgsConstructor;

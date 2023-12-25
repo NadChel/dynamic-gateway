@@ -1,12 +1,12 @@
-package by.afinny.apigateway.service.swaggerUiSupport;
+package com.example.dynamicgateway.service.swaggerUiSupport;
 
-import by.afinny.apigateway.model.documentedEndpoint.SwaggerEndpoint;
-import by.afinny.apigateway.model.gatewayMeta.GatewayMeta;
-import by.afinny.apigateway.model.documentedApplication.DocumentedApplication;
-import by.afinny.apigateway.model.documentedApplication.SwaggerApplication;
-import by.afinny.apigateway.model.documentedEndpoint.DocumentedEndpoint;
-import by.afinny.apigateway.model.uiConfig.SwaggerUiConfig;
-import by.afinny.apigateway.service.endpointCollector.EndpointCollector;
+import com.example.dynamicgateway.model.documentedApplication.DocumentedApplication;
+import com.example.dynamicgateway.model.documentedApplication.SwaggerApplication;
+import com.example.dynamicgateway.model.documentedEndpoint.DocumentedEndpoint;
+import com.example.dynamicgateway.model.documentedEndpoint.SwaggerEndpoint;
+import com.example.dynamicgateway.model.gatewayMeta.GatewayMeta;
+import com.example.dynamicgateway.model.uiConfig.SwaggerUiConfig;
+import com.example.dynamicgateway.service.endpointCollector.EndpointCollector;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;

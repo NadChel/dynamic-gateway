@@ -1,6 +1,6 @@
-package by.afinny.apigateway.config.security.filter;
+package com.example.dynamicgateway.config.security.filter;
 
-import by.afinny.apigateway.constant.JWT;
+import com.example.dynamicgateway.constant.JWT;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -89,7 +89,7 @@ public class JwtAuthorizationFilter implements WebFilter {
     }
 
     private Object getPrincipalName(Claims claims) {
-        return claims.get(JWT.UUID);
+        return claims.get(JWT.SUB);
     }
 
     private List<? extends GrantedAuthority> getGrantedAuthorities(Claims claims) {

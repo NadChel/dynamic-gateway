@@ -1,8 +1,8 @@
-package by.afinny.apigateway.service.routeLocator;
+package com.example.dynamicgateway.service.routeLocator;
 
-import by.afinny.apigateway.events.DocumentedEndpointFoundEvent;
-import by.afinny.apigateway.model.documentedEndpoint.DocumentedEndpoint;
-import by.afinny.apigateway.service.routeProcessor.EndpointRouteProcessor;
+import com.example.dynamicgateway.events.DocumentedEndpointFoundEvent;
+import com.example.dynamicgateway.model.documentedEndpoint.DocumentedEndpoint;
+import com.example.dynamicgateway.service.routeProcessor.EndpointRouteProcessor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.route.Route;

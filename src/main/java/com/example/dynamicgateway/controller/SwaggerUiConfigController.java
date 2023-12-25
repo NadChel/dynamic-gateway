@@ -1,7 +1,7 @@
-package by.afinny.apigateway.controller;
+package com.example.dynamicgateway.controller;
 
-import by.afinny.apigateway.model.uiConfig.SwaggerUiConfig;
-import by.afinny.apigateway.service.swaggerUiSupport.SwaggerUiSupport;
+import com.example.dynamicgateway.model.uiConfig.SwaggerUiConfig;
+import com.example.dynamicgateway.service.swaggerUiSupport.SwaggerUiSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

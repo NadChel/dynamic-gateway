@@ -1,7 +1,7 @@
-package by.afinny.apigateway.model.endpointDetails;
+package com.example.dynamicgateway.model.endpointDetails;
 
-import by.afinny.apigateway.model.endpointParameter.EndpointParameter;
-import by.afinny.apigateway.model.endpointRequestBody.EndpointRequestBody;
+import com.example.dynamicgateway.model.endpointParameter.EndpointParameter;
+import com.example.dynamicgateway.model.endpointRequestBody.EndpointRequestBody;
 import org.springframework.http.HttpMethod;
 
 import java.util.List;

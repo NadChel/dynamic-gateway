@@ -1,4 +1,4 @@
-package by.afinny.apigateway.service.routeProcessor;
+package com.example.dynamicgateway.service.routeProcessor;
 
 import org.springframework.cloud.gateway.route.Route;
 

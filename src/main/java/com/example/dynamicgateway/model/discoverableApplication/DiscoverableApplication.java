@@ -1,4 +1,4 @@
-package by.afinny.apigateway.model.discoverableApplication;
+package com.example.dynamicgateway.model.discoverableApplication;
 
 /**
  * Application whose instances can be located by means of a discovery service

@@ -1,7 +1,7 @@
-package by.afinny.apigateway.model.documentedApplication;
+package com.example.dynamicgateway.model.documentedApplication;
 
-import by.afinny.apigateway.model.discoverableApplication.DiscoverableApplication;
-import by.afinny.apigateway.model.documentedEndpoint.DocumentedEndpoint;
+import com.example.dynamicgateway.model.discoverableApplication.DiscoverableApplication;
+import com.example.dynamicgateway.model.documentedEndpoint.DocumentedEndpoint;
 
 import java.util.List;
 

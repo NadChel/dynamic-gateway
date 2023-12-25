@@ -1,6 +1,6 @@
-package by.afinny.apigateway.client;
+package com.example.dynamicgateway.client;
 
-import by.afinny.apigateway.model.discoverableApplication.DiscoverableApplication;
+import com.example.dynamicgateway.model.discoverableApplication.DiscoverableApplication;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import lombok.Getter;

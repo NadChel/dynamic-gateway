@@ -1,7 +1,7 @@
-package by.afinny.apigateway.model.uiConfig;
+package com.example.dynamicgateway.model.uiConfig;
 
-import by.afinny.apigateway.model.documentedApplication.SwaggerApplication;
-import by.afinny.apigateway.service.swaggerUiSupport.SwaggerUiConfigSerializer;
+import com.example.dynamicgateway.model.documentedApplication.SwaggerApplication;
+import com.example.dynamicgateway.service.swaggerUiSupport.SwaggerUiConfigSerializer;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;

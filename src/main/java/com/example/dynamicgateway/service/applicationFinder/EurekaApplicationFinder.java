@@ -1,6 +1,6 @@
-package by.afinny.apigateway.service.applicationCollector;
+package com.example.dynamicgateway.service.applicationFinder;
 
-import by.afinny.apigateway.model.discoverableApplication.EurekaDiscoverableApplication;
+import com.example.dynamicgateway.model.discoverableApplication.EurekaDiscoverableApplication;
 import com.netflix.discovery.CacheRefreshedEvent;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;

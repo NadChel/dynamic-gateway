@@ -1,7 +1,7 @@
-package by.afinny.apigateway.config.security;
+package com.example.dynamicgateway.config.security;
 
-import by.afinny.apigateway.config.security.filter.JwtAuthorizationFilter;
-import by.afinny.apigateway.model.gatewayMeta.GatewayMeta;
+import com.example.dynamicgateway.config.security.filter.JwtAuthorizationFilter;
+import com.example.dynamicgateway.model.gatewayMeta.GatewayMeta;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;

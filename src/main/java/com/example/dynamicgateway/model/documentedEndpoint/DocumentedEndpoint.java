@@ -1,7 +1,7 @@
-package by.afinny.apigateway.model.documentedEndpoint;
+package com.example.dynamicgateway.model.documentedEndpoint;
 
-import by.afinny.apigateway.model.documentedApplication.DocumentedApplication;
-import by.afinny.apigateway.model.endpointDetails.EndpointDetails;
+import com.example.dynamicgateway.model.documentedApplication.DocumentedApplication;
+import com.example.dynamicgateway.model.endpointDetails.EndpointDetails;
 
 /**
  * Endpoint exposed by a {@link DocumentedApplication} as part of its public API

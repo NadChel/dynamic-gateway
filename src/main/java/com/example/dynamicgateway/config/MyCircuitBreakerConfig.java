@@ -1,4 +1,4 @@
-package by.afinny.apigateway.config;
+package com.example.dynamicgateway.config;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
