@@ -7,8 +7,13 @@ import lombok.RequiredArgsConstructor;
 public class SwaggerRequestBody implements EndpointRequestBody {
     private final RequestBody requestBody;
 
+    public static SwaggerRequestBody empty() {
+        return new SwaggerRequestBody(new RequestBody());
+    }
+
     @Override
     public boolean isRequired() {
-        return requestBody.getRequired();
+        return (requestBody.getRequired() != null) &&
+                requestBody.getRequired();
     }
 }

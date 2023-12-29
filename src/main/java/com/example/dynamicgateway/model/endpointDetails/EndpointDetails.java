@@ -11,6 +11,8 @@ public interface EndpointDetails {
 
     String getNonPrefixedPath();
 
+    String getPrefix();
+
     HttpMethod getMethod();
 
     List<String> getTags();

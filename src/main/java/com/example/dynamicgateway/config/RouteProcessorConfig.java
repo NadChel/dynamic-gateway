@@ -2,7 +2,10 @@ package com.example.dynamicgateway.config;
 
 import com.example.dynamicgateway.model.discoverableApplication.DiscoverableApplication;
 import com.example.dynamicgateway.model.documentedEndpoint.DocumentedEndpoint;
+import com.example.dynamicgateway.model.endpointParameter.EndpointParameter;
 import com.example.dynamicgateway.model.gatewayMeta.GatewayMeta;
+import com.example.dynamicgateway.service.paramResolver.ParamInitializer;
+import com.example.dynamicgateway.service.paramResolver.ParamInitializers;
 import com.example.dynamicgateway.service.routeProcessor.EndpointRouteProcessor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.gateway.filter.OrderedGatewayFilter;
@@ -15,12 +18,9 @@ import org.springframework.cloud.gateway.route.Route;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.web.server.ServerWebExchange;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Configuration
@@ -65,16 +65,33 @@ public class RouteProcessorConfig {
 
     @Bean
     @Order(2)
-    public EndpointRouteProcessor idRouteProcessor() {
-        return (routeInConstruction, endpoint) -> routeInConstruction.id(UUID.randomUUID().toString());
-    }
-
-    @Bean
     public EndpointRouteProcessor uriRouteProcessor() {
         return (routeInConstruction, endpoint) -> {
             DiscoverableApplication discoverableApp = endpoint.getDeclaringApp().getDiscoverableApp();
             return routeInConstruction.uri(discoverableApp.getDiscoveryServiceScheme() + discoverableApp.getName());
         };
+    }
+
+    @Bean
+    @Order(3)
+    public EndpointRouteProcessor appendEndpointPrefixRouteProcessor() {
+        return (routeInConstruction, endpoint) -> {
+            String endpointPrefix = endpoint.getDetails().getPrefix();
+            if (!endpointPrefix.isEmpty()) {
+                routeInConstruction.filter(
+                        new OrderedGatewayFilter(
+                                new PrefixPathGatewayFilterFactory().apply(config -> config
+                                        .setPrefix(endpointPrefix)), 0)
+                );
+            }
+            return routeInConstruction;
+        };
+    }
+
+    @Bean
+    @Order(4)
+    public EndpointRouteProcessor idRouteProcessor() {
+        return (routeInConstruction, endpoint) -> routeInConstruction.id(UUID.randomUUID().toString());
     }
 
     @Bean
@@ -93,54 +110,16 @@ public class RouteProcessorConfig {
     }
 
     @Bean
-    public EndpointRouteProcessor authenticationRouteProcessor() {
+    public EndpointRouteProcessor paramInitializingRouteProcessor(ParamInitializers paramInitializers) {
         return (routeInConstruction, endpoint) -> {
-            if (hasAuthenticatedTag(endpoint)) {
-                appendAuthPrefix(routeInConstruction);
-                addPrincipalNameAsRequestParam(routeInConstruction);
+            for (EndpointParameter param : endpoint.getDetails().getParameters()) {
+                Optional<ParamInitializer> optionalParamInitializer = paramInitializers.findInitializerForParam(param);
+                optionalParamInitializer.ifPresent(
+                        paramInitializer -> paramInitializer.initialize(routeInConstruction)
+                );
             }
             return routeInConstruction;
         };
-    }
-
-    private boolean hasAuthenticatedTag(DocumentedEndpoint<?> endpoint) {
-        return endpoint.getDetails()
-                .getTags()
-                .stream()
-                .anyMatch(tag -> tag.equals("AUTHENTICATED"));
-    }
-
-    private void appendAuthPrefix(Route.AsyncBuilder routeInConstruction) {
-        routeInConstruction.filter(
-                new OrderedGatewayFilter(
-                        new PrefixPathGatewayFilterFactory().apply(config -> config
-                                .setPrefix("/auth")), 0)
-        );
-    }
-
-    private void addPrincipalNameAsRequestParam(Route.AsyncBuilder routeInConstruction) {
-        routeInConstruction.filter(new OrderedGatewayFilter(
-                (exchange, chain) -> exchange.getPrincipal()
-                        .flatMap(principal -> {
-                            URI newUri = UriComponentsBuilder
-                                    .fromUri(exchange.getRequest().getURI())
-                                    .queryParam("clientId", principal.getName())
-                                    .build(true)
-                                    .toUri();
-
-                            ServerHttpRequest newRequest = exchange
-                                    .getRequest()
-                                    .mutate()
-                                    .uri(newUri)
-                                    .build();
-
-                            ServerWebExchange newExchange = exchange
-                                    .mutate()
-                                    .request(newRequest)
-                                    .build();
-
-                            return chain.filter(newExchange);
-                        }), 0));
     }
 
     @Bean
