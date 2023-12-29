@@ -1,12 +1,8 @@
-spring:
-  server:
-    server-url: "https://localhost:8080"
-
 # Actuator
 management:
   endpoints:
     web:
-      exposure.include: beans, env, health, info, metrics, mappings, prometheus, gateway
+      exposure.include: beans, env, health, info, mappings, gateway
   endpoint:
     health:
       show-details: always
@@ -43,14 +39,9 @@ gateway:
   v1Prefix: /api/v1
   publicEndpoints:
     - /api/v1/registration/**
-    - /api/v1/security/**
     - /api/v1/login/**
-    - /api/v1/exchange-rates/**
-    - /api/v1/bank-branch/**
-    - /api/v1/error-message
     - /actuator/**
     - /webjars/**
     - /swagger-ui.html
     - /swagger-ui-config
     - /*/doc
-

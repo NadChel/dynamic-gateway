@@ -6,6 +6,7 @@ import com.example.dynamicgateway.model.gatewayMeta.GatewayMeta;
 import com.example.dynamicgateway.service.routeProcessor.EndpointRouteProcessor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.gateway.filter.OrderedGatewayFilter;
+import org.springframework.cloud.gateway.filter.factory.PrefixPathGatewayFilterFactory;
 import org.springframework.cloud.gateway.filter.factory.RewritePathGatewayFilterFactory;
 import org.springframework.cloud.gateway.filter.factory.SpringCloudCircuitBreakerFilterFactory;
 import org.springframework.cloud.gateway.handler.predicate.MethodRoutePredicateFactory;
@@ -50,6 +51,20 @@ public class RouteProcessorConfig {
 
     @Bean
     @Order(1)
+    public EndpointRouteProcessor removeGatewayPrefixRouteProcessor() {
+        return (routeInConstruction, endpoint) -> {
+            routeInConstruction.filter(
+                    new OrderedGatewayFilter(
+                            new RewritePathGatewayFilterFactory().apply(config -> config
+                                    .setRegexp(gatewayMeta.v1Prefix())
+                                    .setReplacement("")), 0)
+            );
+            return routeInConstruction;
+        };
+    }
+
+    @Bean
+    @Order(2)
     public EndpointRouteProcessor idRouteProcessor() {
         return (routeInConstruction, endpoint) -> routeInConstruction.id(UUID.randomUUID().toString());
     }
@@ -81,7 +96,7 @@ public class RouteProcessorConfig {
     public EndpointRouteProcessor authenticationRouteProcessor() {
         return (routeInConstruction, endpoint) -> {
             if (hasAuthenticatedTag(endpoint)) {
-                replaceGatewayPrefixWithAuth(routeInConstruction);
+                appendAuthPrefix(routeInConstruction);
                 addPrincipalNameAsRequestParam(routeInConstruction);
             }
             return routeInConstruction;
@@ -95,12 +110,11 @@ public class RouteProcessorConfig {
                 .anyMatch(tag -> tag.equals("AUTHENTICATED"));
     }
 
-    private void replaceGatewayPrefixWithAuth(Route.AsyncBuilder routeInConstruction) {
+    private void appendAuthPrefix(Route.AsyncBuilder routeInConstruction) {
         routeInConstruction.filter(
                 new OrderedGatewayFilter(
-                        new RewritePathGatewayFilterFactory().apply(config -> config
-                                .setRegexp(gatewayMeta.v1Prefix())
-                                .setReplacement("/auth")), 0)
+                        new PrefixPathGatewayFilterFactory().apply(config -> config
+                                .setPrefix("/auth")), 0)
         );
     }
 
