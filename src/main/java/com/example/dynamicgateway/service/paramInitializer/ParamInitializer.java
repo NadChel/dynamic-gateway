@@ -1,4 +1,4 @@
-package com.example.dynamicgateway.service.paramResolver;
+package com.example.dynamicgateway.service.paramInitializer;
 
 import org.springframework.cloud.gateway.route.Route;
 

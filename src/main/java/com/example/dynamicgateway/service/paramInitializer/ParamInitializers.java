@@ -1,4 +1,4 @@
-package com.example.dynamicgateway.service.paramResolver;
+package com.example.dynamicgateway.service.paramInitializer;
 
 import com.example.dynamicgateway.model.endpointParameter.EndpointParameter;
 import org.springframework.stereotype.Component;

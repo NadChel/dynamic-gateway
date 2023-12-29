@@ -1,6 +1,6 @@
-package com.example.dynamicgateway.service.paramResolver.impl;
+package com.example.dynamicgateway.service.paramInitializer.impl;
 
-import com.example.dynamicgateway.service.paramResolver.ParamInitializer;
+import com.example.dynamicgateway.service.paramInitializer.ParamInitializer;
 import org.springframework.cloud.gateway.filter.OrderedGatewayFilter;
 import org.springframework.cloud.gateway.route.Route;
 import org.springframework.http.server.reactive.ServerHttpRequest;

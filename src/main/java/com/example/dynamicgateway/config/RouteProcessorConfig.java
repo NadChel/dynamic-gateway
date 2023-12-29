@@ -4,8 +4,8 @@ import com.example.dynamicgateway.model.discoverableApplication.DiscoverableAppl
 import com.example.dynamicgateway.model.documentedEndpoint.DocumentedEndpoint;
 import com.example.dynamicgateway.model.endpointParameter.EndpointParameter;
 import com.example.dynamicgateway.model.gatewayMeta.GatewayMeta;
-import com.example.dynamicgateway.service.paramResolver.ParamInitializer;
-import com.example.dynamicgateway.service.paramResolver.ParamInitializers;
+import com.example.dynamicgateway.service.paramInitializer.ParamInitializer;
+import com.example.dynamicgateway.service.paramInitializer.ParamInitializers;
 import com.example.dynamicgateway.service.routeProcessor.EndpointRouteProcessor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.gateway.filter.OrderedGatewayFilter;

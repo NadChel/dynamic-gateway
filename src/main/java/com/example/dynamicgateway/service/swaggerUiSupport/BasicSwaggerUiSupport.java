@@ -10,7 +10,6 @@ import com.example.dynamicgateway.service.endpointCollector.EndpointCollector;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
-import io.swagger.v3.oas.models.tags.Tag;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -19,7 +18,6 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.text.MessageFormat;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -49,7 +47,6 @@ public class BasicSwaggerUiSupport implements SwaggerUiSupport {
                         .filter(documentedApplication -> documentedApplication.getName().equals(appName))
                         .map(DocumentedApplication::getNativeDoc)
                         .map(SwaggerParseResult::getOpenAPI)
-                        .peek(this::removeAuthTags)
                         .peek(this::setGatewayPrefixes)
                         .peek(this::setGatewayServers)
                         .findFirst()
@@ -57,42 +54,6 @@ public class BasicSwaggerUiSupport implements SwaggerUiSupport {
                                 "No service with name {0} is known to this Gateway", appName
                         )))
         );
-    }
-
-    private void removeAuthTags(OpenAPI openAPI) {
-        removeAuthTagsFromApi(openAPI);
-        removeAuthTagsFromOperations(openAPI);
-    }
-
-    private void removeAuthTagsFromApi(OpenAPI openAPI) {
-        if (openAPI.getTags() != null) {
-            List<Tag> tagsWithoutAuthTags = openAPI.getTags().stream()
-                    .filter(tag -> !isAuthTag(tag))
-                    .toList();
-            openAPI.setTags(tagsWithoutAuthTags);
-        }
-    }
-
-    private void removeAuthTagsFromOperations(OpenAPI openAPI) {
-        openAPI.getPaths().forEach(
-                (path, pathItem) -> pathItem.readOperationsMap()
-                        .forEach((method, operation) -> {
-                            if (operation.getTags() != null) {
-                                List<String> tagsWithoutAuthTags = operation.getTags().stream()
-                                        .filter(tag -> !isAuthTag(tag))
-                                        .toList();
-                                operation.setTags(tagsWithoutAuthTags);
-                            }
-                        })
-        );
-    }
-
-    private boolean isAuthTag(Tag tag) {
-        return tag.getName().equals("AUTHENTICATED");
-    }
-
-    private boolean isAuthTag(String tagName) {
-        return tagName.equals("AUTHENTICATED");
     }
 
     private void setGatewayPrefixes(OpenAPI openAPI) {

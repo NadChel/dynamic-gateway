@@ -16,7 +16,8 @@ import java.util.List;
 public final class GatewayMeta {
     private List<Server> servers;
     private String v1Prefix;
-    private String[] publicEndpoints;
+    private String[] publicPatterns;
+    private String[] ignoredPatterns;
 
     public List<Server> servers() {
         return this.servers;
@@ -26,7 +27,11 @@ public final class GatewayMeta {
         return this.v1Prefix;
     }
 
-    public String[] publicEndpoints() {
-        return this.publicEndpoints;
+    public String[] publicPatterns() {
+        return this.publicPatterns;
+    }
+
+    public String[] ignoredPatterns() {
+        return this.ignoredPatterns;
     }
 }

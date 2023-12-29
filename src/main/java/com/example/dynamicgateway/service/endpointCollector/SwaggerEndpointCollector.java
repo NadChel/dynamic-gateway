@@ -6,6 +6,7 @@ import com.example.dynamicgateway.model.discoverableApplication.DiscoverableAppl
 import com.example.dynamicgateway.model.documentedApplication.SwaggerApplication;
 import com.example.dynamicgateway.model.documentedEndpoint.SwaggerEndpoint;
 import com.example.dynamicgateway.service.applicationFinder.ApplicationFinder;
+import com.example.dynamicgateway.service.endpointSieve.EndpointSieve;
 import com.netflix.discovery.CacheRefreshedEvent;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,7 @@ import reactor.core.publisher.Mono;
 
 import java.text.MessageFormat;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -29,14 +31,17 @@ public class SwaggerEndpointCollector implements EndpointCollector<SwaggerEndpoi
     public final ApplicationFinder applicationFinder;
     private final ApplicationDocClient<SwaggerParseResult> applicationDocClient;
     private final ApplicationEventPublisher eventPublisher;
+    private final List<EndpointSieve> endpointSieves;
 
     public SwaggerEndpointCollector(
             ApplicationFinder applicationFinder,
             ApplicationDocClient<SwaggerParseResult> applicationDocClient,
-            ApplicationEventPublisher eventPublisher) {
+            ApplicationEventPublisher eventPublisher,
+            List<EndpointSieve> endpointSieves) {
         this.applicationFinder = applicationFinder;
         this.applicationDocClient = applicationDocClient;
         this.eventPublisher = eventPublisher;
+        this.endpointSieves = endpointSieves;
     }
 
     @Override
@@ -67,14 +72,20 @@ public class SwaggerEndpointCollector implements EndpointCollector<SwaggerEndpoi
         appDocMono
                 .map(applicationDoc -> new SwaggerApplication(application, applicationDoc))
                 .flatMapIterable(SwaggerApplication::getEndpoints)
+                .filter(this::passesThroughSieves)
                 .subscribe(this::addEndpoint);
+    }
+
+    private boolean passesThroughSieves(SwaggerEndpoint endpoint) {
+        return endpointSieves.stream()
+                .allMatch(endpointSieve -> endpointSieve.isAllowed(endpoint));
     }
 
     private void addEndpoint(SwaggerEndpoint endpoint) {
         boolean isEndpointAdded = documentedEndpoints.add(endpoint);
         if (isEndpointAdded) {
             log.info(MessageFormat.format(
-                    "New endpoint found: {0}",
+                    "New endpoint collected: {0}",
                     endpoint
             ));
             eventPublisher.publishEvent(new DocumentedEndpointFoundEvent(endpoint, this));
