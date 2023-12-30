@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -45,8 +46,15 @@ public class SwaggerEndpointCollector implements EndpointCollector<SwaggerEndpoi
     }
 
     @Override
-    public Set<SwaggerEndpoint> getKnownEndpoints() {
+    public Set<SwaggerEndpoint> getCollectedEndpoints() {
         return documentedEndpoints;
+    }
+
+    @Override
+    public boolean hasEndpoint(HttpMethod method, String path) {
+        return documentedEndpoints.stream()
+                .anyMatch(endpoint -> endpoint.getDetails().getMethod().equals(method) &&
+                        endpoint.getDetails().getPath().equals(path));
     }
 
     @EventListener(ApplicationReadyEvent.class)

@@ -7,6 +7,7 @@ import com.example.dynamicgateway.model.documentedEndpoint.SwaggerEndpoint;
 import com.example.dynamicgateway.model.gatewayMeta.GatewayMeta;
 import com.example.dynamicgateway.model.uiConfig.SwaggerUiConfig;
 import com.example.dynamicgateway.service.endpointCollector.EndpointCollector;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
@@ -14,6 +15,7 @@ import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -29,10 +31,11 @@ import java.util.stream.Collectors;
 public class BasicSwaggerUiSupport implements SwaggerUiSupport {
     private final EndpointCollector<SwaggerEndpoint> endpointCollector;
     private final GatewayMeta gatewayMeta;
+    private final ObjectMapper objectMapper;
 
     @Override
     public Mono<SwaggerUiConfig> getSwaggerUiConfig() {
-        Set<SwaggerApplication> swaggerApps = endpointCollector.getKnownEndpoints().stream()
+        Set<SwaggerApplication> swaggerApps = endpointCollector.getCollectedEndpoints().stream()
                 .map(DocumentedEndpoint::getDeclaringApp)
                 .collect(Collectors.toSet());
         return Mono.just(SwaggerUiConfig.from(swaggerApps));
@@ -42,11 +45,13 @@ public class BasicSwaggerUiSupport implements SwaggerUiSupport {
     @SneakyThrows
     public Mono<OpenAPI> getSwaggerAppDoc(String appName) {
         return Mono.just(
-                endpointCollector.getKnownEndpoints().stream()
+                endpointCollector.getCollectedEndpoints().stream()
                         .map(DocumentedEndpoint::getDeclaringApp)
                         .filter(documentedApplication -> documentedApplication.getName().equals(appName))
                         .map(DocumentedApplication::getNativeDoc)
                         .map(SwaggerParseResult::getOpenAPI)
+                        .map(this::deepCopy)
+                        .peek(this::removeIgnoredEndpoints)
                         .peek(this::setGatewayPrefixes)
                         .peek(this::setGatewayServers)
                         .findFirst()
@@ -54,6 +59,28 @@ public class BasicSwaggerUiSupport implements SwaggerUiSupport {
                                 "No service with name {0} is known to this Gateway", appName
                         )))
         );
+    }
+
+    @SneakyThrows
+    private OpenAPI deepCopy(OpenAPI openAPI) {
+        String serializedOpenApi = objectMapper.writeValueAsString(openAPI);
+        return objectMapper.readValue(serializedOpenApi, OpenAPI.class);
+    }
+
+    private void removeIgnoredEndpoints(OpenAPI openAPI) {
+        Paths newPaths = openAPI.getPaths().entrySet().stream()
+                .peek(pathPathItemEntry -> pathPathItemEntry.getValue()
+                        .readOperationsMap()
+                        .forEach((method, operation) -> {
+                            HttpMethod springMethod = HttpMethod.valueOf(method.toString());
+                            String path = pathPathItemEntry.getKey();
+                            if (!endpointCollector.hasEndpoint(springMethod, path)) {
+                                pathPathItemEntry.getValue().operation(method, null);
+                            }
+                        }))
+                .filter(pathPathItemEntry -> !pathPathItemEntry.getValue().readOperationsMap().isEmpty())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (oldVal, newVal) -> newVal, Paths::new));
+        openAPI.setPaths(newPaths);
     }
 
     private void setGatewayPrefixes(OpenAPI openAPI) {
@@ -64,7 +91,7 @@ public class BasicSwaggerUiSupport implements SwaggerUiSupport {
 
             String prefixedPath = servicePath;
             if (servicePath != null && !servicePath.startsWith(gatewayMeta.v1Prefix())) {
-                String nonprefixedPath = endpointCollector.getKnownEndpoints().stream()
+                String nonprefixedPath = endpointCollector.getCollectedEndpoints().stream()
                         .filter(documentedEndpoint -> documentedEndpoint.getDetails().getPath().equals(servicePath))
                         .map(documentedEndpoint -> documentedEndpoint.getDetails().getNonPrefixedPath())
                         .findFirst()

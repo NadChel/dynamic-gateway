@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 public class SwaggerDocController {
     private final SwaggerUiSupport uiSupport;
 
-    @GetMapping("{application-name}/doc")
+    @GetMapping("/{application-name}/doc")
     public Mono<OpenAPI> getSwaggerAppDoc(@PathVariable("application-name") String applicationName) {
         return uiSupport.getSwaggerAppDoc(applicationName);
     }
