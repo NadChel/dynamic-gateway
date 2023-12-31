@@ -89,18 +89,15 @@ public class BasicSwaggerUiSupport implements SwaggerUiSupport {
             String servicePath = pathItemEntry.getKey();
             PathItem pathItem = pathItemEntry.getValue();
 
-            String prefixedPath = servicePath;
-            if (servicePath != null && !servicePath.startsWith(gatewayMeta.v1Prefix())) {
-                String nonprefixedPath = endpointCollector.getCollectedEndpoints().stream()
-                        .filter(documentedEndpoint -> documentedEndpoint.getDetails().getPath().equals(servicePath))
-                        .map(documentedEndpoint -> documentedEndpoint.getDetails().getNonPrefixedPath())
-                        .findFirst()
-                        .orElseThrow(() -> new NoSuchElementException(MessageFormat.format(
-                                "No endpoint found. Requested path: {0}", servicePath
-                        )));
+            String nonprefixedPath = endpointCollector.getCollectedEndpoints().stream()
+                    .filter(documentedEndpoint -> documentedEndpoint.getDetails().getPath().equals(servicePath))
+                    .map(documentedEndpoint -> documentedEndpoint.getDetails().getNonPrefixedPath())
+                    .findFirst()
+                    .orElseThrow(() -> new NoSuchElementException(MessageFormat.format(
+                            "No endpoint found. Requested path: {0}", servicePath
+                    )));
 
-                prefixedPath = gatewayMeta.v1Prefix() + nonprefixedPath;
-            }
+            String prefixedPath = gatewayMeta.v1Prefix() + nonprefixedPath;
             newPaths.put(prefixedPath, pathItem);
         }
         openAPI.setPaths(newPaths);

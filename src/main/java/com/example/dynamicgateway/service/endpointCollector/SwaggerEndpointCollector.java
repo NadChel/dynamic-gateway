@@ -93,7 +93,7 @@ public class SwaggerEndpointCollector implements EndpointCollector<SwaggerEndpoi
         boolean isEndpointAdded = documentedEndpoints.add(endpoint);
         if (isEndpointAdded) {
             log.info(MessageFormat.format(
-                    "New endpoint collected: {0}",
+                    "New endpoint is collected: {0}",
                     endpoint
             ));
             eventPublisher.publishEvent(new DocumentedEndpointFoundEvent(endpoint, this));

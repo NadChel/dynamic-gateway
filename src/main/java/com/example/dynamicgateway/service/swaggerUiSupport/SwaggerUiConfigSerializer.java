@@ -13,7 +13,7 @@ public class SwaggerUiConfigSerializer extends JsonSerializer<SwaggerApplication
     @SneakyThrows
     public void serialize(SwaggerApplication swaggerApplication, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) {
         jsonGenerator.writeStartObject();
-        jsonGenerator.writeStringField("url", MessageFormat.format("/{0}/doc", swaggerApplication.getName()));
+        jsonGenerator.writeStringField("url", MessageFormat.format("/doc/{0}", swaggerApplication.getName()));
         jsonGenerator.writeStringField("name", swaggerApplication.getName());
         jsonGenerator.writeEndObject();
     }

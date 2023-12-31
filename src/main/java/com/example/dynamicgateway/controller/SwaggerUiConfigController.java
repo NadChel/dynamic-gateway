@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono;
 public class SwaggerUiConfigController {
     private final SwaggerUiSupport uiSupport;
 
-    @GetMapping("/swagger-ui-config")
+    @GetMapping("/swagger-ui/config")
     public Mono<SwaggerUiConfig> getConfig() {
         return uiSupport.getSwaggerUiConfig();
     }

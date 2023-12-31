@@ -29,8 +29,8 @@ eureka:
 springdoc:
   swagger-ui:
     enabled: true
-    path: /swagger-ui.html
-    config-url: /swagger-ui-config
+    path: /swagger-ui
+    config-url: /swagger-ui/config
 
 gateway:
   servers:
@@ -41,9 +41,8 @@ gateway:
     - /api/v1/registration/**
     - /api/v1/login/**
     - /actuator/**
+    - /swagger-ui/**
     - /webjars/**
-    - /swagger-ui.html
-    - /swagger-ui-config
-    - /*/doc
+    - /doc/*
   ignoredPatterns:
     - /error/**
