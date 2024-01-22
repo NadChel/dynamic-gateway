@@ -15,7 +15,7 @@ public class ParamInitializers {
     public ParamInitializers(List<ParamInitializer> paramInitializers) {
         HashMap<String, ParamInitializer> paramToParamInitializerMap = new HashMap<>();
         for (ParamInitializer paramInitializer : paramInitializers) {
-            paramToParamInitializerMap.put(paramInitializer.getInitializedParam(), paramInitializer);
+            paramToParamInitializerMap.put(paramInitializer.getParamName(), paramInitializer);
         }
         this.paramToParamInitializerMap = paramToParamInitializerMap;
     }
