@@ -9,7 +9,7 @@ import java.util.List;
 
 @Component
 @Getter
-public class PrincipalParamInitializer extends SecurityParamInitializer {
+public class PrincipalParamInitializer extends AuthenticationParamInitializer {
     private final String paramName = "principal";
 
     @Override

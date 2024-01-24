@@ -8,7 +8,7 @@ import java.util.Collection;
 
 @Component
 @Getter
-public class RolesParamInitializer extends SecurityParamInitializer {
+public class RolesParamInitializer extends AuthenticationParamInitializer {
     private final String paramName = "roles";
 
     @Override

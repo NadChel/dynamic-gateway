@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * {@link RouteLocator} that supplies {@link Route}s dynamically built from discovered {@link DocumentedEndpoint}s
+ * {@link RouteLocator} that dynamically supplies {@link Route}s built from discovered {@link DocumentedEndpoint}s
  */
 @Component
 @Slf4j
