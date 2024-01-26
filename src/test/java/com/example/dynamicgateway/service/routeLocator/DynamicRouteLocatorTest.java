@@ -1,9 +1,9 @@
 package com.example.dynamicgateway.service.routeLocator;
 
 import com.example.dynamicgateway.events.DocumentedEndpointFoundEvent;
+import com.example.dynamicgateway.service.routeLocator.util.PathOnlyAsyncPredicate;
 import com.example.dynamicgateway.service.routeProcessor.EndpointRouteProcessor;
 import lombok.SneakyThrows;
-import org.assertj.core.api.Assertions;
 import org.assertj.core.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.springframework.cloud.gateway.route.Route;
@@ -13,8 +13,9 @@ import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Predicate;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.mockito.Mockito.mock;
 
 class DynamicRouteLocatorTest {
@@ -31,20 +32,17 @@ class DynamicRouteLocatorTest {
     }
 
     @Test
-    void ifOneEventFired_returnsFluxOfOneRoute() {
-        dynamicRouteLocator = new DynamicRouteLocator(getEndpointRouteProcessorMock());
+    void testOnDocumentedEndpointFoundEvent_withOneEvent() {
+        dynamicRouteLocator = new DynamicRouteLocator(getEndpointRouteProcessorStub());
 
         DocumentedEndpointFoundEvent mockEvent = mock(DocumentedEndpointFoundEvent.class);
 
         dynamicRouteLocator.onDocumentedEndpointFoundEvent(mockEvent);
 
-        StepVerifier.create(dynamicRouteLocator.getRoutes())
-                .expectNextCount(1)
-                .expectComplete()
-                .verify();
+        assertThat(getRouteSet().size()).isEqualTo(1);
     }
 
-    private List<EndpointRouteProcessor> getEndpointRouteProcessorMock() {
+    private List<EndpointRouteProcessor> getEndpointRouteProcessorStub() {
         return List.of(
                 (routeInConstruction, endpoint) -> getRouteBuilderStub()
         );
@@ -54,15 +52,49 @@ class DynamicRouteLocatorTest {
         return Route.async()
                 .id("123")
                 .uri("https://example.com")
-                .predicate(exchange -> exchange.getRequest()
-                        .getPath()
-                        .value()
-                        .equals("/test-path"));
+                .asyncPredicate(PathOnlyAsyncPredicate.from("/test-path"));
+    }
+
+    @Test
+    void testOnDocumentedEndpointFoundEvent_withTwoIdenticalEvents() {
+        dynamicRouteLocator = new DynamicRouteLocator(getEndpointRouteProcessorStub());
+
+        DocumentedEndpointFoundEvent mockEvent = mock(DocumentedEndpointFoundEvent.class);
+        DocumentedEndpointFoundEvent mockEventCopy = mock(DocumentedEndpointFoundEvent.class);
+
+        dynamicRouteLocator.onDocumentedEndpointFoundEvent(mockEvent);
+        dynamicRouteLocator.onDocumentedEndpointFoundEvent(mockEventCopy);
+
+        assertThat(getRouteSet().size()).isEqualTo(1);
+    }
+
+    @SneakyThrows
+    private Set<?> getRouteSet() {
+        Field routesField =  dynamicRouteLocator.getClass()
+                .getDeclaredField("routes");
+        routesField.setAccessible(true);
+        return (Set<?>) routesField.get(dynamicRouteLocator);
+    }
+
+    @Test
+    void ifOneEventFired_returnsFluxOfOneRoute() {
+        dynamicRouteLocator = new DynamicRouteLocator(getEndpointRouteProcessorStub());
+
+        DocumentedEndpointFoundEvent mockEvent = mock(DocumentedEndpointFoundEvent.class);
+
+        dynamicRouteLocator.onDocumentedEndpointFoundEvent(mockEvent);
+
+        assumeThat(getRouteSet().size()).isEqualTo(1);
+
+        StepVerifier.create(dynamicRouteLocator.getRoutes())
+                .expectNextCount(1)
+                .expectComplete()
+                .verify();
     }
 
     @Test
     void testGetRoutes() {
-        dynamicRouteLocator = new DynamicRouteLocator(getEndpointRouteProcessorMock());
+        dynamicRouteLocator = new DynamicRouteLocator(getEndpointRouteProcessorStub());
 
         DocumentedEndpointFoundEvent mockEvent = mock(DocumentedEndpointFoundEvent.class);
 
@@ -75,27 +107,8 @@ class DynamicRouteLocatorTest {
         }).doesNotThrowAnyException();
 
         StepVerifier.create(dynamicRouteLocator.getRoutes())
-                .expectNext(fixPredicate(getRouteBuilderStub()).build())
+                .expectNext(getRouteBuilderStub().build())
                 .expectComplete()
                 .verify();
-    }
-
-    /*
-     * Route's equals() compares predicates, but AsyncPredicate itself doesn't override equals()
-     * hence false negatives when comparing two identical Routes. The method ensures the predicate
-     * reference of the passed Route.AsyncBuilder matches the (only) one of the tested DynamicRouteLocator
-     */
-    @SneakyThrows
-    @SuppressWarnings("unchecked")
-    private Route.AsyncBuilder fixPredicate(Route.AsyncBuilder routeBuilderStub) {
-        Field routesField = dynamicRouteLocator.getClass().getDeclaredField("routes");
-        routesField.setAccessible(true);
-        Route route = ((Set<Route>) routesField.get(dynamicRouteLocator)).iterator().next();
-        return routeBuilderStub.asyncPredicate(route.getPredicate());
-    }
-
-    @Test
-    void testPredicateEquality() {
-        Assertions.assertThat((Predicate<Object>) o -> true).isEqualTo((Predicate<Object>) o -> true);
     }
 }
