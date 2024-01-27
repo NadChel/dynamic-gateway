@@ -1,7 +1,7 @@
 package com.example.dynamicgateway.model.documentedEndpoint;
 
 import com.example.dynamicgateway.model.documentedApplication.SwaggerApplication;
-import com.example.dynamicgateway.model.endpointDetails.EndpointDetails;
+import com.example.dynamicgateway.model.endpointDetails.SwaggerEndpointDetails;
 import lombok.Getter;
 
 import java.text.MessageFormat;
@@ -14,9 +14,9 @@ import java.util.stream.Stream;
 public class SwaggerEndpoint implements DocumentedEndpoint<SwaggerApplication> {
     private final SwaggerApplication documentedApp;
     @Getter
-    private final EndpointDetails details;
+    private final SwaggerEndpointDetails details;
 
-    public SwaggerEndpoint(SwaggerApplication documentedApp, EndpointDetails details) {
+    public SwaggerEndpoint(SwaggerApplication documentedApp, SwaggerEndpointDetails details) {
         Stream.of(documentedApp, details).forEach(Objects::requireNonNull);
         this.documentedApp = documentedApp;
         this.details = details;

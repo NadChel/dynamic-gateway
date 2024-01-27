@@ -2,7 +2,6 @@ package com.example.dynamicgateway.model.documentedApplication;
 
 import com.example.dynamicgateway.model.discoverableApplication.DiscoverableApplication;
 import com.example.dynamicgateway.model.documentedEndpoint.SwaggerEndpoint;
-import com.example.dynamicgateway.model.endpointDetails.EndpointDetails;
 import com.example.dynamicgateway.model.endpointDetails.SwaggerEndpointDetails;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -28,8 +27,12 @@ public class SwaggerApplication implements DocumentedApplication<SwaggerParseRes
     public SwaggerApplication(DiscoverableApplication application, SwaggerParseResult parseResult) {
         this.application = application;
         this.doc = parseResult;
-        this.description = parseResult.getOpenAPI().getInfo().getDescription();
+        this.description = extractDescription(parseResult);
         this.endpoints = extractEndpoints(parseResult);
+    }
+
+    private String extractDescription(SwaggerParseResult parseResult) {
+        return parseResult.getOpenAPI().getInfo().getDescription();
     }
 
     private List<SwaggerEndpoint> extractEndpoints(SwaggerParseResult parseResult) {
@@ -47,7 +50,7 @@ public class SwaggerApplication implements DocumentedApplication<SwaggerParseRes
                 .entrySet()
                 .stream()
                 .map(methodOperationEntry -> {
-                    EndpointDetails endpointDetails = buildEndpointDetails(pathPathItemEntry, methodOperationEntry);
+                    SwaggerEndpointDetails endpointDetails = buildEndpointDetails(pathPathItemEntry, methodOperationEntry);
                     return new SwaggerEndpoint(this, endpointDetails);
                 })
                 .toList()
