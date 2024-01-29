@@ -10,6 +10,8 @@ import io.swagger.v3.parser.OpenAPIV3Parser;
 import lombok.Getter;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.Objects;
+
 /**
  * Class for configuring and creating {@link SwaggerClient} instances
  */
@@ -71,6 +73,7 @@ public class SwaggerClientConfigurer {
      * @return this {@code SwaggerClientConfigurer}
      */
     public SwaggerClientConfigurer setParser(SwaggerDocParser parser) {
+        Objects.requireNonNull(parser, "Parser cannot be null");
         this.parser = parser;
         return this;
     }
