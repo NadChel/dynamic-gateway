@@ -1,4 +1,4 @@
-package com.example.dynamicgateway.client;
+package com.example.dynamicgateway.service.applicationDocClient;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

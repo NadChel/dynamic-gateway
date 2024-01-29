@@ -1,4 +1,4 @@
-package com.example.dynamicgateway.client;
+package com.example.dynamicgateway.service.applicationDocClient;
 
 import com.example.dynamicgateway.model.discoverableApplication.DiscoverableApplication;
 import reactor.core.publisher.Mono;

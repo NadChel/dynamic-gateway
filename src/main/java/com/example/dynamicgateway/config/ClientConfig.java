@@ -1,7 +1,7 @@
 package com.example.dynamicgateway.config;
 
-import com.example.dynamicgateway.client.ApplicationDocClient;
-import com.example.dynamicgateway.client.SwaggerClientConfigurer;
+import com.example.dynamicgateway.service.applicationDocClient.ApplicationDocClient;
+import com.example.dynamicgateway.service.applicationDocClient.SwaggerClientConfigurer;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;

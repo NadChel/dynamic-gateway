@@ -1,6 +1,6 @@
 package com.example.dynamicgateway.service.endpointCollector;
 
-import com.example.dynamicgateway.client.ApplicationDocClient;
+import com.example.dynamicgateway.service.applicationDocClient.ApplicationDocClient;
 import com.example.dynamicgateway.events.DocumentedEndpointFoundEvent;
 import com.example.dynamicgateway.model.discoverableApplication.DiscoverableApplication;
 import com.example.dynamicgateway.model.documentedApplication.SwaggerApplication;

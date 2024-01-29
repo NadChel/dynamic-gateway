@@ -1,12 +1,14 @@
-package com.example.dynamicgateway.client;
+package com.example.dynamicgateway.service.applicationDocClient;
 
 import com.example.dynamicgateway.model.discoverableApplication.DiscoverableApplication;
 import com.example.dynamicgateway.model.discoverableApplication.EurekaDiscoverableApplication;
 import com.example.dynamicgateway.model.documentedApplication.SwaggerApplication;
+import com.example.dynamicgateway.service.swaggerDocParser.SwaggerDocParser;
+import com.example.dynamicgateway.service.swaggerDocParser.V3SwaggerDocParser;
+import com.example.dynamicgateway.util.UriValidator;
+import io.swagger.v3.parser.OpenAPIV3Parser;
 import lombok.Getter;
 import org.springframework.web.reactive.function.client.WebClient;
-
-import java.util.regex.Pattern;
 
 /**
  * Class for configuring and creating {@link SwaggerClient} instances
@@ -16,6 +18,8 @@ public class SwaggerClientConfigurer {
     private String scheme = EurekaDiscoverableApplication.LB_SCHEME;
     @Getter
     private String docPath = SwaggerApplication.V3_DOC_PATH;
+    @Getter
+    private SwaggerDocParser parser = new V3SwaggerDocParser();
     private final WebClient resolvingWebClient;
 
     private SwaggerClientConfigurer(WebClient resolvingWebClient) {
@@ -42,16 +46,9 @@ public class SwaggerClientConfigurer {
      * @throws IllegalArgumentException if the passed scheme string is invalid
      */
     public SwaggerClientConfigurer setScheme(String scheme) {
-        checkScheme(scheme);
+        UriValidator.requireValidScheme(scheme);
         this.scheme = scheme;
         return this;
-    }
-
-    private void checkScheme(String scheme) {
-        boolean matchesSchemePattern = Pattern.matches("[a-z]+://", scheme);
-        if (!matchesSchemePattern) {
-            throw new IllegalArgumentException("Invalid scheme: " + scheme);
-        }
     }
 
     /**
@@ -59,9 +56,22 @@ public class SwaggerClientConfigurer {
      * If the method is not invoked, the path defaults to {@link SwaggerApplication#V3_DOC_PATH}
      *
      * @return this {@code SwaggerClientConfigurer}
+     * @throws IllegalArgumentException if the passed path string is invalid
      */
     public SwaggerClientConfigurer setDocPath(String docPath) {
+        UriValidator.requireValidPath(docPath);
         this.docPath = docPath;
+        return this;
+    }
+
+    /**
+     * Sets this {@link SwaggerDocParser}.
+     * If the method is not invoked, the parser defaults to an instance of {@link OpenAPIV3Parser}
+     *
+     * @return this {@code SwaggerClientConfigurer}
+     */
+    public SwaggerClientConfigurer setParser(SwaggerDocParser parser) {
+        this.parser = parser;
         return this;
     }
 
