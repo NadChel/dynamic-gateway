@@ -11,7 +11,7 @@ public class UriValidator {
     }
 
     public static boolean isValidPath(String path) {
-        return Pattern.matches("/[A-Za-z\\d-]+", path);
+        return Pattern.matches("(/[A-Za-z\\d-]+)+", path);
     }
 
     public static void requireValidScheme(String scheme) {

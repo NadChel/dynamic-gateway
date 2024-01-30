@@ -74,11 +74,6 @@ public class SwaggerApplication implements DocumentedApplication<SwaggerParseRes
     }
 
     @Override
-    public String getName() {
-        return application.getName();
-    }
-
-    @Override
     public List<SwaggerEndpoint> getEndpoints() {
         return List.copyOf(endpoints);
     }

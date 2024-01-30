@@ -36,7 +36,7 @@ gateway:
   servers:
     - url: https://localhost:8080
       description: Api-Gateway-V2
-  v1Prefix: /api/v1
+  versionPrefix: /api/v1
   publicPatterns:
     - /api/v1/registration/**
     - /api/v1/login/**

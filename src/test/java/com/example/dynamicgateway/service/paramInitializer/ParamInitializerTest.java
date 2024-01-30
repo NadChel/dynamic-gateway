@@ -1,6 +1,6 @@
 package com.example.dynamicgateway.service.paramInitializer;
 
-import lombok.SneakyThrows;
+import com.example.dynamicgateway.testUtil.RouteBuilderUtil;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
@@ -13,7 +13,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -41,34 +40,24 @@ class ParamInitializerTest {
     void whenInitializeInvoked_filterAdded() {
         Route.AsyncBuilder routeBuilderFake = Route.async();
 
-        assumeThat(getFilters(routeBuilderFake)).asList().isEmpty();
+        assumeThat(RouteBuilderUtil.getFilters(routeBuilderFake)).asList().isEmpty();
 
         paramInitializerFake.initialize(routeBuilderFake);
 
-        List<GatewayFilter> filters = getFilters(routeBuilderFake);
+        List<GatewayFilter> filters = RouteBuilderUtil.getFilters(routeBuilderFake);
 
         assertThat(filters).asList().hasSize(1);
-    }
-
-    @SneakyThrows
-    @SuppressWarnings("unchecked")
-    private List<GatewayFilter> getFilters(Route.AsyncBuilder routeBuilderFake) {
-        Field gatewayFilters = routeBuilderFake.getClass()
-                .getSuperclass()
-                .getDeclaredField("gatewayFilters");
-        gatewayFilters.setAccessible(true);
-        return (List<GatewayFilter>) gatewayFilters.get(routeBuilderFake);
     }
 
     @Test
     void whenInitializeInvoked_filterCorrect() {
         Route.AsyncBuilder routeBuilderFake = Route.async();
 
-        assumeThat(getFilters(routeBuilderFake)).asList().isEmpty();
+        assumeThat(RouteBuilderUtil.getFilters(routeBuilderFake)).asList().isEmpty();
 
         paramInitializerFake.initialize(routeBuilderFake);
 
-        List<GatewayFilter> filters = getFilters(routeBuilderFake);
+        List<GatewayFilter> filters = RouteBuilderUtil.getFilters(routeBuilderFake);
 
         assumeThat(filters).asList().hasSize(1);
 

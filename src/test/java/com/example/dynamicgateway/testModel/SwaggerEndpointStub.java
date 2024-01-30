@@ -7,8 +7,8 @@ import io.swagger.v3.oas.models.PathItem;
 import lombok.Getter;
 import lombok.Setter;
 
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @Getter
 @Setter
@@ -28,7 +28,7 @@ public class SwaggerEndpointStub extends SwaggerEndpoint {
 
         private Builder() {
             appMock = mock(SwaggerApplication.class);
-            when(appMock.getName()).thenReturn("test-application");
+            lenient().when(appMock.getName()).thenReturn("test-application");
         }
 
         public Builder method(PathItem.HttpMethod method) {

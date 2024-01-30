@@ -8,6 +8,10 @@ import lombok.RequiredArgsConstructor;
 public class SwaggerParameter implements EndpointParameter {
     private final Parameter parameter;
 
+    public SwaggerParameter(String paramName) {
+        this.parameter = new Parameter().name(paramName);
+    }
+
     @Override
     public String getName() {
         return parameter.getName();
