@@ -11,7 +11,6 @@ import com.example.dynamicgateway.service.paramInitializer.ParamInitializer;
 import com.example.dynamicgateway.service.paramInitializer.ParamInitializers;
 import com.example.dynamicgateway.testModel.SwaggerEndpointStub;
 import com.example.dynamicgateway.testUtil.RouteBuilderUtil;
-import io.swagger.v3.oas.models.PathItem;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -62,7 +61,7 @@ class RouteProcessorTest {
         when(gatewayMetaMock.versionPrefix()).thenReturn("/api/v1");
 
         DocumentedEndpoint<?> testEndpoint = SwaggerEndpointStub.builder()
-                .method(PathItem.HttpMethod.GET).path("/auth/test-path").build();
+                .method(HttpMethod.GET).path("/auth/test-path").build();
 
         EndpointRouteProcessor basePredicateRouteProcessor = routeProcessorConfig.basePredicateProcessor();
         basePredicateRouteProcessor.process(testRoute, testEndpoint);
@@ -82,7 +81,7 @@ class RouteProcessorTest {
         when(gatewayMetaMock.versionPrefix()).thenReturn("/api/v1");
 
         DocumentedEndpoint<?> testEndpoint = SwaggerEndpointStub.builder()
-                .method(PathItem.HttpMethod.GET).path("/auth/test-path").build();
+                .method(HttpMethod.GET).path("/auth/test-path").build();
 
         EndpointRouteProcessor basePredicateRouteProcessor = routeProcessorConfig.basePredicateProcessor();
         basePredicateRouteProcessor.process(testRoute, testEndpoint);

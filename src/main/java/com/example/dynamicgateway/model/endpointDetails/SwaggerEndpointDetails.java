@@ -70,6 +70,12 @@ public class SwaggerEndpointDetails implements EndpointDetails {
             return this;
         }
 
+        public Builder setMethod(HttpMethod method) {
+            Objects.requireNonNull(method);
+            this.method = method;
+            return this;
+        }
+
         public Builder setParameters(List<Parameter> parameters) {
             if (parameters != null) {
                 this.parameters = parameters.stream().map(SwaggerParameter::new).toList();

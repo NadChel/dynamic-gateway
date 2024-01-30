@@ -8,7 +8,6 @@ import com.example.dynamicgateway.service.applicationFinder.ApplicationFinder;
 import com.example.dynamicgateway.service.applicationFinder.EurekaApplicationFinder;
 import com.example.dynamicgateway.testModel.SwaggerEndpointStub;
 import com.example.dynamicgateway.testUtil.SwaggerParseResultGenerator;
-import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
@@ -50,12 +49,12 @@ class SwaggerEndpointCollectorTest {
         assumeThat(collector.getCollectedEndpoints()).asInstanceOf(COLLECTION).isEmpty();
 
         SwaggerEndpoint endpointFake = SwaggerEndpointStub.builder()
-                .method(PathItem.HttpMethod.GET)
+                .method(HttpMethod.GET)
                 .path("/test-path")
                 .build();
 
         SwaggerEndpoint endpointFakeCopy = SwaggerEndpointStub.builder()
-                .method(PathItem.HttpMethod.GET)
+                .method(HttpMethod.GET)
                 .path("/test-path")
                 .build();
 
@@ -77,7 +76,7 @@ class SwaggerEndpointCollectorTest {
         collector = getCollectorFake();
 
         SwaggerEndpoint endpointFake = SwaggerEndpointStub.builder()
-                .method(PathItem.HttpMethod.GET)
+                .method(HttpMethod.GET)
                 .path("/test-path")
                 .build();
 
@@ -93,12 +92,12 @@ class SwaggerEndpointCollectorTest {
         collector = getCollectorFake();
 
         SwaggerEndpoint endpointFakeToAdd = SwaggerEndpointStub.builder()
-                .method(PathItem.HttpMethod.GET)
+                .method(HttpMethod.GET)
                 .path("/test-path-one")
                 .build();
 
         SwaggerEndpoint endpointFakeToLeaveOut = SwaggerEndpointStub.builder()
-                .method(PathItem.HttpMethod.POST)
+                .method(HttpMethod.POST)
                 .path("/test-path-two")
                 .build();
 
@@ -117,6 +116,7 @@ class SwaggerEndpointCollectorTest {
         testEndpointRefreshingMethod(SwaggerEndpointCollector::onApplicationReadyEvent);
     }
 
+    @SuppressWarnings("ReactiveStreamsUnusedPublisher")
     private void testEndpointRefreshingMethod(Consumer<SwaggerEndpointCollector> refreshingMethod) {
         DiscoverableApplication discoverableApplicationMock = mock(EurekaDiscoverableApplication.class);
         when(discoverableApplicationMock.getName()).thenReturn("test-application");
@@ -126,21 +126,20 @@ class SwaggerEndpointCollectorTest {
 
         List<SwaggerEndpoint> endpointFakes = List.of(
                 SwaggerEndpointStub.builder()
-                        .method(PathItem.HttpMethod.GET)
+                        .method(HttpMethod.GET)
                         .path("/test-path-one")
                         .build(),
                 SwaggerEndpointStub.builder()
-                        .method(PathItem.HttpMethod.POST)
+                        .method(HttpMethod.POST)
                         .path("/test-path-one")
                         .build(),
                 SwaggerEndpointStub.builder()
-                        .method(PathItem.HttpMethod.PUT)
+                        .method(HttpMethod.PUT)
                         .path("/test-path-two")
                         .build()
         );
 
-        SwaggerParseResultGenerator parseResultGenerator = new SwaggerParseResultGenerator();
-        SwaggerParseResult swaggerParseResultFake = parseResultGenerator.createForEndpoints(endpointFakes);
+        SwaggerParseResult swaggerParseResultFake = SwaggerParseResultGenerator.createForEndpoints(endpointFakes);
 
         SwaggerClient applicationDocClientMock = mock(SwaggerClient.class);
         doReturn(Mono.just(swaggerParseResultFake)).when(applicationDocClientMock).findApplicationDoc(discoverableApplicationMock);

@@ -35,7 +35,7 @@ public class BasicSwaggerUiSupport implements SwaggerUiSupport {
 
     @Override
     public Mono<SwaggerUiConfig> getSwaggerUiConfig() {
-        Set<SwaggerApplication> swaggerApps = endpointCollector.getCollectedEndpoints().stream()
+        Set<SwaggerApplication> swaggerApps = endpointCollector.stream()
                 .map(DocumentedEndpoint::getDeclaringApp)
                 .collect(Collectors.toSet());
         return Mono.just(SwaggerUiConfig.from(swaggerApps));
@@ -45,7 +45,7 @@ public class BasicSwaggerUiSupport implements SwaggerUiSupport {
     @SneakyThrows
     public Mono<OpenAPI> getSwaggerAppDoc(String appName) {
         return Mono.just(
-                endpointCollector.getCollectedEndpoints().stream()
+                endpointCollector.stream()
                         .map(DocumentedEndpoint::getDeclaringApp)
                         .filter(documentedApplication -> documentedApplication.getName().equals(appName))
                         .map(DocumentedApplication::getNativeDoc)
@@ -89,7 +89,7 @@ public class BasicSwaggerUiSupport implements SwaggerUiSupport {
             String servicePath = pathItemEntry.getKey();
             PathItem pathItem = pathItemEntry.getValue();
 
-            String nonprefixedPath = endpointCollector.getCollectedEndpoints().stream()
+            String nonprefixedPath = endpointCollector.stream()
                     .filter(documentedEndpoint -> documentedEndpoint.getDetails().getPath().equals(servicePath))
                     .map(documentedEndpoint -> documentedEndpoint.getDetails().getNonPrefixedPath())
                     .findFirst()

@@ -3,9 +3,9 @@ package com.example.dynamicgateway.testModel;
 import com.example.dynamicgateway.model.documentedApplication.SwaggerApplication;
 import com.example.dynamicgateway.model.documentedEndpoint.SwaggerEndpoint;
 import com.example.dynamicgateway.model.endpointDetails.SwaggerEndpointDetails;
-import io.swagger.v3.oas.models.PathItem;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.http.HttpMethod;
 
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -31,7 +31,12 @@ public class SwaggerEndpointStub extends SwaggerEndpoint {
             lenient().when(appMock.getName()).thenReturn("test-application");
         }
 
-        public Builder method(PathItem.HttpMethod method) {
+        public Builder declaringAppName(String name) {
+            lenient().when(appMock.getName()).thenReturn(name);
+            return this;
+        }
+
+        public Builder method(HttpMethod method) {
             detailsBuilder.setMethod(method);
             return this;
         }

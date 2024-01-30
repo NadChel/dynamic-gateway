@@ -16,27 +16,33 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class SwaggerParseResultGenerator {
-    public SwaggerParseResult createForEndpoints(List<SwaggerEndpoint> endpoints) {
+    public static SwaggerParseResult createForEndpoints(SwaggerEndpoint... endpoints) {
+        return createForEndpoints(new Info(), endpoints);
+    }
+
+    public static SwaggerParseResult createForEndpoints(Info info, SwaggerEndpoint... endpoints) {
+        return createForEndpoints(info, Arrays.asList(endpoints));
+    }
+
+    public static SwaggerParseResult createForEndpoints(List<SwaggerEndpoint> endpoints) {
+        return createForEndpoints(new Info(), endpoints);
+    }
+
+    public static SwaggerParseResult createForEndpoints(Info info, List<SwaggerEndpoint> endpoints) {
         SwaggerParseResult parseResult = new SwaggerParseResult();
-        OpenAPI openApi = createOpenApi(endpoints);
+        OpenAPI openApi = createOpenApi(info, endpoints);
         parseResult.setOpenAPI(openApi);
         return parseResult;
     }
 
-    private OpenAPI createOpenApi(List<SwaggerEndpoint> endpoints) {
+    private static OpenAPI createOpenApi(Info info, List<SwaggerEndpoint> endpoints) {
         OpenAPI openApi = new OpenAPI();
-        openApi.setInfo(createInfo());
+        openApi.setInfo(info);
         openApi.setPaths(createPaths(endpoints));
         return openApi;
     }
 
-    private Info createInfo() {
-        Info info = new Info();
-        info.setDescription("Test description");
-        return info;
-    }
-
-    private Paths createPaths(List<SwaggerEndpoint> endpoints) {
+    private static Paths createPaths(List<SwaggerEndpoint> endpoints) {
         Paths paths = new Paths();
         Map<String, List<SwaggerEndpointDetails>> pathToDetails = createPathToDetailsMap(endpoints);
         for (Map.Entry<String, List<SwaggerEndpointDetails>> pathEntry : pathToDetails.entrySet()) {
@@ -47,7 +53,7 @@ public class SwaggerParseResultGenerator {
         return paths;
     }
 
-    private Map<String, List<SwaggerEndpointDetails>> createPathToDetailsMap(List<SwaggerEndpoint> endpoints) {
+    private static Map<String, List<SwaggerEndpointDetails>> createPathToDetailsMap(List<SwaggerEndpoint> endpoints) {
         return endpoints.stream().collect(Collectors.toMap(
                 endpoint -> endpoint.getDetails().getPath(),
                 endpoint -> {
@@ -62,7 +68,7 @@ public class SwaggerParseResultGenerator {
         ));
     }
 
-    private PathItem createPathItem(List<SwaggerEndpointDetails> detailsForPath) {
+    private static PathItem createPathItem(List<SwaggerEndpointDetails> detailsForPath) {
         PathItem pathItem = new PathItem();
         for (SwaggerEndpointDetails detail : detailsForPath) {
             PathItem.HttpMethod method = Arrays.stream(PathItem.HttpMethod.values())
