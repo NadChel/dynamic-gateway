@@ -12,12 +12,14 @@ import org.springframework.cloud.gateway.filter.OrderedGatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.PrefixPathGatewayFilterFactory;
 import org.springframework.cloud.gateway.filter.factory.RewritePathGatewayFilterFactory;
 import org.springframework.cloud.gateway.filter.factory.SpringCloudCircuitBreakerFilterFactory;
+import org.springframework.cloud.gateway.handler.AsyncPredicate;
 import org.springframework.cloud.gateway.handler.predicate.MethodRoutePredicateFactory;
 import org.springframework.cloud.gateway.handler.predicate.PathRoutePredicateFactory;
 import org.springframework.cloud.gateway.route.Route;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.web.server.ServerWebExchange;
 
 import java.util.List;
 import java.util.Optional;
@@ -43,10 +45,17 @@ public class RouteProcessorConfig {
      * Gateway's prefix is {@code /api/v1}, this method will set a base predicate matching {@code /api/v1/example}
      */
     private void setBasePredicate(Route.AsyncBuilder routeInConstruction, DocumentedEndpoint<?> endpoint) {
-        routeInConstruction.asyncPredicate(
-                new PathRoutePredicateFactory()
-                        .applyAsync(c -> c.setPatterns(List.of(gatewayMeta.v1Prefix() + endpoint.getDetails().getNonPrefixedPath())))
-        );
+        String basePredicatePath = gatewayMeta.versionPrefix() + endpoint.getDetails().getNonPrefixedPath();
+        addPredicate(routeInConstruction,
+                new PathRoutePredicateFactory().applyAsync(
+                        c -> c.setPatterns(List.of(basePredicatePath))
+                ));
+    }
+
+    private void addPredicate(Route.AsyncBuilder routeInConstruction, AsyncPredicate<ServerWebExchange> predicate) {
+        if (routeInConstruction.getPredicate() == null)
+            routeInConstruction.asyncPredicate(predicate);
+        else routeInConstruction.and(predicate);
     }
 
     @Bean
@@ -56,7 +65,7 @@ public class RouteProcessorConfig {
             routeInConstruction.filter(
                     new OrderedGatewayFilter(
                             new RewritePathGatewayFilterFactory().apply(config -> config
-                                    .setRegexp(gatewayMeta.v1Prefix())
+                                    .setRegexp(gatewayMeta.versionPrefix())
                                     .setReplacement("")), 0)
             );
             return routeInConstruction;
@@ -103,9 +112,9 @@ public class RouteProcessorConfig {
     }
 
     private void appendHttpMethodPredicate(Route.AsyncBuilder routeInConstruction, DocumentedEndpoint<?> endpoint) {
-        routeInConstruction.and(
-                new MethodRoutePredicateFactory().applyAsync(c ->
-                        c.setMethods(endpoint.getDetails().getMethod()))
+        addPredicate(routeInConstruction,
+                new MethodRoutePredicateFactory().applyAsync(
+                        c -> c.setMethods(endpoint.getDetails().getMethod()))
         );
     }
 

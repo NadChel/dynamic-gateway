@@ -2,15 +2,16 @@ package com.example.dynamicgateway.model.endpointDetails;
 
 import com.example.dynamicgateway.model.endpointParameter.SwaggerParameter;
 import com.example.dynamicgateway.model.endpointRequestBody.SwaggerRequestBody;
+import com.example.dynamicgateway.util.UriValidator;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import lombok.Getter;
 import org.springframework.http.HttpMethod;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Getter
 public class SwaggerEndpointDetails implements EndpointDetails {
@@ -48,53 +49,51 @@ public class SwaggerEndpointDetails implements EndpointDetails {
 
     @Getter
     public static class Builder {
-        private String path;
-        private HttpMethod method;
-        private List<SwaggerParameter> parameters;
-        private SwaggerRequestBody requestBody;
-        private List<String> tags;
+        private String path = "/";
+        private HttpMethod method = HttpMethod.GET;
+        private List<SwaggerParameter> parameters = new ArrayList<>();
+        private SwaggerRequestBody requestBody = SwaggerRequestBody.empty();
+        private List<String> tags = new ArrayList<>();
 
-        Builder() {
+        private Builder() {
         }
 
         public Builder setPath(String path) {
-            this.path = isNullOrBlank(path) ? "/" : path;
+            UriValidator.requireValidPath(path);
+            this.path = path;
             return this;
         }
 
-        private boolean isNullOrBlank(String path) {
-            return path == null || path.isBlank();
+        public Builder setMethod(PathItem.HttpMethod method) {
+            Objects.requireNonNull(method);
+            this.method = HttpMethod.valueOf(method.name());
+            return this;
         }
 
-        public Builder setMethod(PathItem.HttpMethod method) {
-            this.method = (method == null) ?
-                    HttpMethod.GET :
-                    HttpMethod.valueOf(method.toString());
+        public Builder setMethod(HttpMethod method) {
+            Objects.requireNonNull(method);
+            this.method = method;
             return this;
         }
 
         public Builder setParameters(List<Parameter> parameters) {
-            this.parameters = isNullOrEmpty(parameters) ?
-                    Collections.emptyList() :
-                    parameters.stream().map(SwaggerParameter::new).toList();
+            if (parameters != null) {
+                this.parameters = parameters.stream().map(SwaggerParameter::new).toList();
+            }
             return this;
         }
 
-        private boolean isNullOrEmpty(Collection<?> collection) {
-            return collection == null || collection.isEmpty();
-        }
-
         public Builder setRequestBody(RequestBody requestBody) {
-            this.requestBody = (requestBody == null) ?
-                    SwaggerRequestBody.empty() :
-                    new SwaggerRequestBody(requestBody);
+            if (requestBody != null) {
+                this.requestBody = new SwaggerRequestBody(requestBody);
+            }
             return this;
         }
 
         public Builder setTags(List<String> tags) {
-            this.tags = isNullOrEmpty(tags) ?
-                    Collections.emptyList() :
-                    tags;
+            if (tags != null) {
+                this.tags = tags;
+            }
             return this;
         }
 

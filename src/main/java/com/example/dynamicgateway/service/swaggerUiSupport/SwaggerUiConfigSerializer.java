@@ -16,5 +16,6 @@ public class SwaggerUiConfigSerializer extends JsonSerializer<SwaggerApplication
         jsonGenerator.writeStringField("url", MessageFormat.format("/doc/{0}", swaggerApplication.getName()));
         jsonGenerator.writeStringField("name", swaggerApplication.getName());
         jsonGenerator.writeEndObject();
+        jsonGenerator.close();
     }
 }

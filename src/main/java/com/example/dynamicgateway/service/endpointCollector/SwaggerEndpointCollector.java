@@ -1,10 +1,10 @@
 package com.example.dynamicgateway.service.endpointCollector;
 
-import com.example.dynamicgateway.client.ApplicationDocClient;
 import com.example.dynamicgateway.events.DocumentedEndpointFoundEvent;
 import com.example.dynamicgateway.model.discoverableApplication.DiscoverableApplication;
 import com.example.dynamicgateway.model.documentedApplication.SwaggerApplication;
 import com.example.dynamicgateway.model.documentedEndpoint.SwaggerEndpoint;
+import com.example.dynamicgateway.service.applicationDocClient.ApplicationDocClient;
 import com.example.dynamicgateway.service.applicationFinder.ApplicationFinder;
 import com.example.dynamicgateway.service.endpointSieve.EndpointSieve;
 import com.netflix.discovery.CacheRefreshedEvent;
@@ -13,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -28,8 +27,8 @@ import java.util.Set;
 @Component
 @Slf4j
 public class SwaggerEndpointCollector implements EndpointCollector<SwaggerEndpoint> {
-    public final Set<SwaggerEndpoint> documentedEndpoints = new HashSet<>();
-    public final ApplicationFinder applicationFinder;
+    private final Set<SwaggerEndpoint> documentedEndpoints = new HashSet<>();
+    private final ApplicationFinder applicationFinder;
     private final ApplicationDocClient<SwaggerParseResult> applicationDocClient;
     private final ApplicationEventPublisher eventPublisher;
     private final List<EndpointSieve> endpointSieves;
@@ -48,13 +47,6 @@ public class SwaggerEndpointCollector implements EndpointCollector<SwaggerEndpoi
     @Override
     public Set<SwaggerEndpoint> getCollectedEndpoints() {
         return documentedEndpoints;
-    }
-
-    @Override
-    public boolean hasEndpoint(HttpMethod method, String path) {
-        return documentedEndpoints.stream()
-                .anyMatch(endpoint -> endpoint.getDetails().getMethod().equals(method) &&
-                        endpoint.getDetails().getPath().equals(path));
     }
 
     @EventListener(ApplicationReadyEvent.class)

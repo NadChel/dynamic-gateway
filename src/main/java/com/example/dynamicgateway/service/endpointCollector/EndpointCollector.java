@@ -4,6 +4,7 @@ import com.example.dynamicgateway.model.documentedEndpoint.DocumentedEndpoint;
 import org.springframework.http.HttpMethod;
 
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Local cache of all known {@link DocumentedEndpoint}s
@@ -16,5 +17,13 @@ public interface EndpointCollector<T extends DocumentedEndpoint<?>> {
      */
     Set<T> getCollectedEndpoints();
 
-    boolean hasEndpoint(HttpMethod method, String path);
+    default boolean hasEndpoint(HttpMethod method, String path) {
+        return stream().anyMatch(endpoint ->
+                endpoint.getDetails().getMethod().equals(method) &&
+                        endpoint.getDetails().getPath().equals(path));
+    }
+
+    default Stream<T> stream() {
+        return getCollectedEndpoints().stream();
+    }
 }

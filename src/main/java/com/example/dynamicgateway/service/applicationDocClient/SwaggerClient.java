@@ -1,7 +1,7 @@
-package com.example.dynamicgateway.client;
+package com.example.dynamicgateway.service.applicationDocClient;
 
 import com.example.dynamicgateway.model.discoverableApplication.DiscoverableApplication;
-import io.swagger.v3.parser.OpenAPIV3Parser;
+import com.example.dynamicgateway.service.swaggerDocParser.SwaggerDocParser;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import lombok.Getter;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -15,13 +15,13 @@ public class SwaggerClient implements ApplicationDocClient<SwaggerParseResult> {
     private final String scheme;
     private final String docPath;
     private final WebClient webClient;
-    private final OpenAPIV3Parser parser;
+    private final SwaggerDocParser parser;
 
     SwaggerClient(SwaggerClientConfigurer configurer) {
         this.scheme = configurer.getScheme();
         this.docPath = configurer.getDocPath();
         this.webClient = configurer.getWebClient();
-        parser = new OpenAPIV3Parser();
+        this.parser = configurer.getParser();
     }
 
     @Override
@@ -31,6 +31,6 @@ public class SwaggerClient implements ApplicationDocClient<SwaggerParseResult> {
                 .uri(scheme + application.getName() + docPath)
                 .retrieve()
                 .bodyToMono(String.class)
-                .map(parser::readContents);
+                .map(parser::parse);
     }
 }

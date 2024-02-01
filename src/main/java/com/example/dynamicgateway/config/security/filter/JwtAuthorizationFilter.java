@@ -41,6 +41,7 @@ public class JwtAuthorizationFilter implements WebFilter {
      * @return a Mono<Void> representing the completion of the filter chain
      */
     @Override
+    @SuppressWarnings("NullableProblems")
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String jwt = exchange.getRequest().getHeaders().getFirst(JWT.HEADER);
 
