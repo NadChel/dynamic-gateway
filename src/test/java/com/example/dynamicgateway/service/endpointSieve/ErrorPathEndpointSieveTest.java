@@ -2,6 +2,7 @@ package com.example.dynamicgateway.service.endpointSieve;
 
 import com.example.dynamicgateway.config.EndpointSieveConfig;
 import com.example.dynamicgateway.model.documentedEndpoint.DocumentedEndpoint;
+import com.example.dynamicgateway.model.documentedEndpoint.SwaggerEndpoint;
 import com.example.dynamicgateway.model.gatewayMeta.GatewayMeta;
 import org.junit.jupiter.api.Test;
 import org.springframework.util.AntPathMatcher;
@@ -21,15 +22,15 @@ class ErrorPathEndpointSieveTest {
 
         AntPathMatcher antPathMatcherMock = mock(AntPathMatcher.class);
 
-        EndpointSieve errorPathEndpointSieve = new EndpointSieveConfig().errorPathEndpointSieve(gatewayMetaMock, antPathMatcherMock);
+        EndpointSieve errorPathEndpointSieve =
+                new EndpointSieveConfig().errorPathEndpointSieve(gatewayMetaMock, antPathMatcherMock);
 
         for (int i = 0; i < 20; i++) {
             UUID uuid = UUID.randomUUID();
-            DocumentedEndpoint<?> endpointToKeep = mock(DocumentedEndpoint.class, RETURNS_DEEP_STUBS);
+            SwaggerEndpoint endpointToKeep = mock(SwaggerEndpoint.class, RETURNS_DEEP_STUBS);
             when(endpointToKeep.getDetails().getPath()).thenReturn(String.valueOf(uuid));
             assertThat(errorPathEndpointSieve.isAllowed(endpointToKeep)).isTrue();
         }
-
     }
 
     @Test
@@ -54,7 +55,7 @@ class ErrorPathEndpointSieveTest {
         when(anotherEndpointToExclude.getDetails().getPath()).thenReturn(anotherPathToExclude);
 
         String okPath = "/another-ignored-path/on-second-thought-it-is-not";
-        DocumentedEndpoint<?> endpointToKeep = mock(DocumentedEndpoint.class, RETURNS_DEEP_STUBS);
+        SwaggerEndpoint endpointToKeep = mock(SwaggerEndpoint.class, RETURNS_DEEP_STUBS);
         when(endpointToKeep.getDetails().getPath()).thenReturn(okPath);
 
         EndpointSieve errorPathEndpointSieve = new EndpointSieveConfig().errorPathEndpointSieve(gatewayMetaMock, antPathMatcherMock);

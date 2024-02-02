@@ -11,11 +11,16 @@ import io.swagger.v3.parser.core.models.SwaggerParseResult;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class SwaggerParseResultGenerator {
+    public static SwaggerParseResult empty() {
+        return createForEndpoints(Collections.emptyList());
+    }
+
     public static SwaggerParseResult createForEndpoints(SwaggerEndpoint... endpoints) {
         return createForEndpoints(new Info(), endpoints);
     }

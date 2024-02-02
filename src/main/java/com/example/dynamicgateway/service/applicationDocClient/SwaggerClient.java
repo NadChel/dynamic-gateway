@@ -31,7 +31,7 @@ public class SwaggerClient implements ApplicationDocClient<SwaggerParseResult> {
     }
 
     @Override
-    public Mono<SwaggerParseResult> findApplicationDoc(DiscoverableApplication application) {
+    public Mono<SwaggerParseResult> findApplicationDoc(DiscoverableApplication<?> application) {
         return webClient
                 .get()
                 .uri(scheme + application.getName() + docPath)
@@ -42,7 +42,7 @@ public class SwaggerClient implements ApplicationDocClient<SwaggerParseResult> {
                 .map(parser::parse);
     }
 
-    private Function<WebClientResponseException.NotFound, Mono<? extends String>> handle404NotFound(DiscoverableApplication application) {
+    private Function<WebClientResponseException.NotFound, Mono<? extends String>> handle404NotFound(DiscoverableApplication<?> application) {
         return ex -> {
             log.warn(MessageFormat.format("""
                     Could not find doc for {0}. If it''s not expected, make sure \

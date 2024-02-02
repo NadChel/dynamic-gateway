@@ -1,13 +1,15 @@
 package com.example.dynamicgateway.service.endpointCollector;
 
+import com.example.dynamicgateway.events.DiscoverableApplicationFoundEvent;
+import com.example.dynamicgateway.events.DiscoverableApplicationLostEvent;
 import com.example.dynamicgateway.model.discoverableApplication.DiscoverableApplication;
 import com.example.dynamicgateway.model.discoverableApplication.EurekaDiscoverableApplication;
 import com.example.dynamicgateway.model.documentedEndpoint.SwaggerEndpoint;
+import com.example.dynamicgateway.service.applicationDocClient.ApplicationDocClient;
 import com.example.dynamicgateway.service.applicationDocClient.SwaggerClient;
-import com.example.dynamicgateway.service.applicationFinder.ApplicationFinder;
-import com.example.dynamicgateway.service.applicationFinder.EurekaApplicationFinder;
 import com.example.dynamicgateway.testModel.SwaggerEndpointStub;
 import com.example.dynamicgateway.testUtil.SwaggerParseResultGenerator;
+import com.netflix.discovery.shared.Application;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
@@ -19,13 +21,10 @@ import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
-import static org.assertj.core.api.InstanceOfAssertFactories.COLLECTION;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -35,18 +34,18 @@ class SwaggerEndpointCollectorTest {
     @Test
     void whenCreated_hasNoEndpoints() {
         collector = getCollectorFake();
-        assertThat(collector.getCollectedEndpoints()).asInstanceOf(COLLECTION).isEmpty();
+        assertThat(collector.getCollectedEndpoints()).isEmpty();
     }
 
     private SwaggerEndpointCollector getCollectorFake() {
-        return new SwaggerEndpointCollector(null, null, null, null);
+        return new SwaggerEndpointCollector(null, null, null);
     }
 
     @Test
     void doesNotStoreIdenticalEndpoints() {
         collector = getCollectorFake();
 
-        assumeThat(collector.getCollectedEndpoints()).asInstanceOf(COLLECTION).isEmpty();
+        assumeThat(collector.getCollectedEndpoints()).isEmpty();
 
         SwaggerEndpoint endpointFake = SwaggerEndpointStub.builder()
                 .method(HttpMethod.GET)
@@ -60,7 +59,7 @@ class SwaggerEndpointCollectorTest {
 
         Stream.of(endpointFake, endpointFakeCopy).forEach(this::addEndpoint);
 
-        assertThat(collector.getCollectedEndpoints()).asInstanceOf(COLLECTION).hasSize(1);
+        assertThat(collector.getCollectedEndpoints()).hasSize(1);
     }
 
     @SneakyThrows
@@ -112,49 +111,95 @@ class SwaggerEndpointCollectorTest {
     }
 
     @Test
-    void testOnApplicationReadyEvent() {
-        testEndpointRefreshingMethod(SwaggerEndpointCollector::onApplicationReadyEvent);
-    }
+    void testOnDiscoverableApplicationFoundEvent() {
+        String appName = "test-application";
 
-    @SuppressWarnings("ReactiveStreamsUnusedPublisher")
-    private void testEndpointRefreshingMethod(Consumer<SwaggerEndpointCollector> refreshingMethod) {
-        DiscoverableApplication discoverableApplicationMock = mock(EurekaDiscoverableApplication.class);
-        when(discoverableApplicationMock.getName()).thenReturn("test-application");
+        DiscoverableApplication<?> discoverableApplicationMock = mock(DiscoverableApplication.class);
+        when(discoverableApplicationMock.getName()).thenReturn(appName);
 
-        ApplicationFinder applicationFinderMock = mock(EurekaApplicationFinder.class);
-        doReturn(Set.of(discoverableApplicationMock)).when(applicationFinderMock).findOtherRegisteredApplications();
-
-        List<SwaggerEndpoint> endpointFakes = List.of(
+        List<SwaggerEndpoint> endpoints = List.of(
                 SwaggerEndpointStub.builder()
+                        .declaringAppName(appName)
                         .method(HttpMethod.GET)
                         .path("/test-path-one")
                         .build(),
                 SwaggerEndpointStub.builder()
+                        .declaringAppName(appName)
                         .method(HttpMethod.POST)
                         .path("/test-path-one")
                         .build(),
                 SwaggerEndpointStub.builder()
+                        .declaringAppName(appName)
                         .method(HttpMethod.PUT)
                         .path("/test-path-two")
                         .build()
         );
 
-        SwaggerParseResult swaggerParseResultFake = SwaggerParseResultGenerator.createForEndpoints(endpointFakes);
+        SwaggerParseResult parseResult = SwaggerParseResultGenerator.createForEndpoints(endpoints);
 
-        SwaggerClient applicationDocClientMock = mock(SwaggerClient.class);
-        doReturn(Mono.just(swaggerParseResultFake)).when(applicationDocClientMock).findApplicationDoc(discoverableApplicationMock);
+        ApplicationDocClient<SwaggerParseResult> docClientMock = mock(SwaggerClient.class);
+        when(docClientMock.findApplicationDoc(discoverableApplicationMock)).thenReturn(Mono.just(parseResult));
 
         ApplicationEventPublisher eventPublisherMock = mock(ApplicationEventPublisher.class);
 
-        collector = new SwaggerEndpointCollector(applicationFinderMock, applicationDocClientMock, eventPublisherMock, Collections.emptyList());
+        collector = new SwaggerEndpointCollector(docClientMock, Collections.emptyList(), eventPublisherMock);
 
-        refreshingMethod.accept(collector);
+        assumeThat(collector.getCollectedEndpoints()).isEmpty();
 
-        assertThat(collector.getCollectedEndpoints()).asInstanceOf(COLLECTION).containsExactlyInAnyOrderElementsOf(endpointFakes);
+        DiscoverableApplicationFoundEvent appFoundEvent = new DiscoverableApplicationFoundEvent(discoverableApplicationMock, this);
+        collector.onDiscoverableApplicationFoundEvent(appFoundEvent);
+
+        assertThat(collector.getCollectedEndpoints()).containsExactlyInAnyOrderElementsOf(endpoints);
     }
 
     @Test
-    void onCacheRefreshedEvent() {
-        testEndpointRefreshingMethod(SwaggerEndpointCollector::onCacheRefreshedEvent);
+    void onDiscoverableApplicationLostEvent() {
+        List<SwaggerEndpoint> resilientEndpoints = List.of(
+                SwaggerEndpointStub.builder()
+                        .declaringAppName("resilient-app")
+                        .method(HttpMethod.GET)
+                        .path("/test-path-one")
+                        .build(),
+                SwaggerEndpointStub.builder()
+                        .declaringAppName("resilient-app")
+                        .method(HttpMethod.POST)
+                        .path("/test-path-one")
+                        .build(),
+                SwaggerEndpointStub.builder()
+                        .declaringAppName("resilient-app")
+                        .method(HttpMethod.PUT)
+                        .path("/test-path-two")
+                        .build()
+        );
+
+        List<SwaggerEndpoint> fragileEndpoints = List.of(
+                SwaggerEndpointStub.builder()
+                        .declaringAppName("fragile-app")
+                        .method(HttpMethod.HEAD)
+                        .path("/test-path-one")
+                        .build(),
+                SwaggerEndpointStub.builder()
+                        .declaringAppName("fragile-app")
+                        .method(HttpMethod.OPTIONS)
+                        .path("/test-path-one")
+                        .build()
+        );
+
+        DiscoverableApplication<Application> resilientApp = mock(EurekaDiscoverableApplication.class);
+        when(resilientApp.getName()).thenReturn("resilient-app");
+
+        DiscoverableApplication<Application> fragileApp = mock(EurekaDiscoverableApplication.class);
+        when(fragileApp.getName()).thenReturn("fragile-app");
+
+        collector = new SwaggerEndpointCollector(null, null, null);
+
+        Stream.concat(resilientEndpoints.stream(), fragileEndpoints.stream()).forEach(this::addEndpoint);
+
+        DiscoverableApplicationLostEvent appLostEvent = new DiscoverableApplicationLostEvent(fragileApp, this);
+        collector.onDiscoverableApplicationLostEvent(appLostEvent);
+
+        Set<SwaggerEndpoint> retainedEndpoints = collector.getCollectedEndpoints();
+        assertThat(retainedEndpoints).containsExactlyInAnyOrderElementsOf(resilientEndpoints);
+        assertThat(retainedEndpoints).doesNotContainAnyElementsOf(fragileEndpoints);
     }
 }

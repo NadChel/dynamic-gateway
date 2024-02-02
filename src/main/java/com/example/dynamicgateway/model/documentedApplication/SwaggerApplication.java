@@ -18,13 +18,13 @@ import java.util.stream.Stream;
  */
 public class SwaggerApplication implements DocumentedApplication<SwaggerParseResult> {
     public static final String V3_DOC_PATH = "/v3/api-docs";
-    private final DiscoverableApplication application;
+    private final DiscoverableApplication<?> application;
     @Getter
     private final String description;
     private final List<SwaggerEndpoint> endpoints;
     private final SwaggerParseResult doc;
 
-    public SwaggerApplication(DiscoverableApplication application, SwaggerParseResult parseResult) {
+    public SwaggerApplication(DiscoverableApplication<?> application, SwaggerParseResult parseResult) {
         this.application = application;
         this.doc = parseResult;
         this.description = extractDescription(parseResult);
@@ -69,7 +69,7 @@ public class SwaggerApplication implements DocumentedApplication<SwaggerParseRes
     }
 
     @Override
-    public DiscoverableApplication getDiscoverableApp() {
+    public DiscoverableApplication<?> getDiscoverableApp() {
         return application;
     }
 

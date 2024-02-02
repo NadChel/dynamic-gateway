@@ -147,12 +147,12 @@ class RouteProcessorTest {
         String testScheme = "test://";
         String testAppName = "test-app";
 
-        DiscoverableApplication discoverableAppMock = mock(DiscoverableApplication.class);
+        DiscoverableApplication<?> discoverableAppMock = mock(DiscoverableApplication.class);
         when(discoverableAppMock.getDiscoveryServiceScheme()).thenReturn(testScheme);
         when(discoverableAppMock.getName()).thenReturn(testAppName);
 
         DocumentedEndpoint<?> endpointMock = mock(DocumentedEndpoint.class, RETURNS_DEEP_STUBS);
-        when(endpointMock.getDeclaringApp().getDiscoverableApp()).thenReturn(discoverableAppMock);
+        when(endpointMock.getDeclaringApp().getDiscoverableApp()).thenAnswer(i -> discoverableAppMock);
 
         EndpointRouteProcessor uriRouteProcessor = routeProcessorConfig.uriRouteProcessor();
         uriRouteProcessor.process(testRoute, endpointMock);

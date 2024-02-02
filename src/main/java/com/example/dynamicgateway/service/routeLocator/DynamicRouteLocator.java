@@ -1,5 +1,6 @@
 package com.example.dynamicgateway.service.routeLocator;
 
+import com.example.dynamicgateway.events.DiscoverableApplicationLostEvent;
 import com.example.dynamicgateway.events.DocumentedEndpointFoundEvent;
 import com.example.dynamicgateway.model.documentedEndpoint.DocumentedEndpoint;
 import com.example.dynamicgateway.service.routeProcessor.EndpointRouteProcessor;
@@ -11,8 +12,8 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
-import java.text.MessageFormat;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -28,10 +29,8 @@ public class DynamicRouteLocator implements RouteLocator {
 
     @Override
     public Flux<Route> getRoutes() {
-        log.info(MessageFormat.format(
-                "getRoutes() is invoked. The method is about to return a Flux of {0} route(s)",
-                routes.size()
-        ));
+        log.info("getRoutes() is invoked. The method is about to return a Flux of {} route(s)",
+                routes.size());
         return Flux.fromIterable(routes);
     }
 
@@ -42,14 +41,13 @@ public class DynamicRouteLocator implements RouteLocator {
         boolean isNewRouteAdded = routes.add(route);
 
         if (isNewRouteAdded) {
-            log.info(MessageFormat.format("""
+            log.info("""
                             New route is built:
                             -----------------------------------
-                            {0}
+                            {}
                             -----------------------------------
                             Will be available at the next getRoutes() invocation""",
-                    route
-            ));
+                    route);
         }
     }
 
@@ -59,5 +57,19 @@ public class DynamicRouteLocator implements RouteLocator {
             routeBuilder = endpointRouteProcessor.process(routeBuilder, documentedEndpoint);
         }
         return routeBuilder.build();
+    }
+
+    @EventListener
+    public void onDiscoverableApplicationLostEvent(DiscoverableApplicationLostEvent event) {
+        for (Iterator<Route> iterator = routes.iterator(); iterator.hasNext(); ) {
+            Route route = iterator.next();
+            String routesAppName = route.getUri().getHost();
+            String lostAppName = event.getLostApp().getName();
+            if (routesAppName.equals(lostAppName)) {
+                iterator.remove();
+                log.info("Route {} serviced by {} was evicted",
+                        route.getId(), lostAppName);
+            }
+        }
     }
 }

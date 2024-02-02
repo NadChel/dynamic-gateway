@@ -41,7 +41,7 @@ class SwaggerClientTest {
         when(swaggerClientConfigurerMock.getScheme()).thenReturn(testScheme);
         when(swaggerClientConfigurerMock.getDocPath()).thenReturn(testDocPath);
 
-        DiscoverableApplication discoverableApplicationMock = mock(DiscoverableApplication.class);
+        DiscoverableApplication<?> discoverableApplicationMock = mock(DiscoverableApplication.class);
         when(discoverableApplicationMock.getName()).thenReturn(testAppName);
 
         SwaggerClient swaggerClient = new SwaggerClient(swaggerClientConfigurerMock);

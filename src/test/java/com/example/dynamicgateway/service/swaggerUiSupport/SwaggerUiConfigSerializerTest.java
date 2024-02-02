@@ -30,6 +30,8 @@ class SwaggerUiConfigSerializerTest {
 
         swaggerUiConfigSerializer.serialize(swaggerApplicationMock, jsonGenerator, null);
 
+        jsonGenerator.close();
+
         String resultJson = byteArrayOutputStream.toString();
 
         String expectedString = MessageFormat.format("""

@@ -1,20 +1,21 @@
 package com.example.dynamicgateway.testModel;
 
+import com.example.dynamicgateway.model.discoverableApplication.DiscoverableApplication;
+import com.example.dynamicgateway.model.discoverableApplication.EurekaDiscoverableApplication;
 import com.example.dynamicgateway.model.documentedApplication.SwaggerApplication;
 import com.example.dynamicgateway.model.documentedEndpoint.SwaggerEndpoint;
 import com.example.dynamicgateway.model.endpointDetails.SwaggerEndpointDetails;
+import com.example.dynamicgateway.testUtil.SwaggerParseResultGenerator;
+import com.netflix.discovery.shared.Application;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.HttpMethod;
-
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
 
 @Getter
 @Setter
 public class SwaggerEndpointStub extends SwaggerEndpoint {
     private SwaggerEndpointStub(Builder builder) {
-        super(builder.getAppMock(), builder.getDetailsBuilder().build());
+        super(builder.getSwaggerApplication(), builder.getDetailsBuilder().build());
     }
 
     public static Builder builder() {
@@ -23,16 +24,17 @@ public class SwaggerEndpointStub extends SwaggerEndpoint {
 
     @Getter
     public static class Builder {
-        private final SwaggerApplication appMock;
+        private final SwaggerApplication swaggerApplication;
         private final SwaggerEndpointDetails.Builder detailsBuilder = SwaggerEndpointDetails.builder();
 
         private Builder() {
-            appMock = mock(SwaggerApplication.class);
-            lenient().when(appMock.getName()).thenReturn("test-application");
+            Application eurekaApplication = new Application("test-app");
+            DiscoverableApplication<Application> discoverableApplication = new EurekaDiscoverableApplication(eurekaApplication);
+            swaggerApplication = new SwaggerApplication(discoverableApplication, SwaggerParseResultGenerator.empty());
         }
 
         public Builder declaringAppName(String name) {
-            lenient().when(appMock.getName()).thenReturn(name);
+            ((Application) swaggerApplication.getDiscoverableApp().unwrap()).setName(name);
             return this;
         }
 

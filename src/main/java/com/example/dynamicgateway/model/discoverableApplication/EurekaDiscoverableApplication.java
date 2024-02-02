@@ -9,7 +9,7 @@ import java.util.Objects;
  * {@link DiscoverableApplication} that wraps a Eureka-registered {@link Application}
  */
 @RequiredArgsConstructor
-public class EurekaDiscoverableApplication implements DiscoverableApplication {
+public class EurekaDiscoverableApplication implements DiscoverableApplication<Application> {
     public static final String LB_SCHEME = "lb://";
     private final Application eurekaApplication;
 
@@ -23,6 +23,11 @@ public class EurekaDiscoverableApplication implements DiscoverableApplication {
         return LB_SCHEME;
     }
 
+    @Override
+    public Application unwrap() {
+        return eurekaApplication;
+    }
+
     public static EurekaDiscoverableApplication from(Application application) {
         return new EurekaDiscoverableApplication(application);
     }
@@ -31,11 +36,16 @@ public class EurekaDiscoverableApplication implements DiscoverableApplication {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof EurekaDiscoverableApplication that)) return false;
-        return eurekaApplication.getName().equals(that.eurekaApplication.getName());
+        return getName().equals(that.getName());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(eurekaApplication.getName());
+        return Objects.hash(getName());
+    }
+
+    @Override
+    public String toString() {
+        return getName();
     }
 }

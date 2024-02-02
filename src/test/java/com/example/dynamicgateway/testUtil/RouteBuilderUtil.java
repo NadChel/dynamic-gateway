@@ -14,6 +14,7 @@ public class RouteBuilderUtil {
         return (List<GatewayFilter>) getAbstractBuilderField(routeBuilder, "gatewayFilters");
     }
 
+    @SuppressWarnings("SameParameterValue")
     private static Object getAbstractBuilderField(Route.AsyncBuilder routeBuilder, String fieldName) {
         return getAbstractBuilderField(routeBuilder, fieldName, Object.class);
     }

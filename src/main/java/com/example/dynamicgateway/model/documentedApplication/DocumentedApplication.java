@@ -11,7 +11,7 @@ import java.util.List;
  * @param <T> type of document object of this {@code DocumentedApplication}
  */
 public interface DocumentedApplication<T> {
-    DiscoverableApplication getDiscoverableApp();
+    DiscoverableApplication<?> getDiscoverableApp();
 
     String getDescription();
 

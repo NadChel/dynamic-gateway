@@ -36,7 +36,7 @@ class SwaggerApplicationTest {
                         .build()
         );
 
-        DiscoverableApplication discoverableApp = mock(DiscoverableApplication.class);
+        DiscoverableApplication<?> discoverableApp = mock(DiscoverableApplication.class);
         when(discoverableApp.getName()).thenReturn(appName);
 
         SwaggerParseResult parseResult = SwaggerParseResultGenerator.createForEndpoints(info, endpoints);

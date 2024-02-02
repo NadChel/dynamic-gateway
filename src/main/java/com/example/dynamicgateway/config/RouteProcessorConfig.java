@@ -8,6 +8,7 @@ import com.example.dynamicgateway.service.paramInitializer.ParamInitializer;
 import com.example.dynamicgateway.service.paramInitializer.ParamInitializers;
 import com.example.dynamicgateway.service.routeProcessor.EndpointRouteProcessor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.OrderedGatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.PrefixPathGatewayFilterFactory;
 import org.springframework.cloud.gateway.filter.factory.RewritePathGatewayFilterFactory;
@@ -62,21 +63,32 @@ public class RouteProcessorConfig {
     @Order(1)
     public EndpointRouteProcessor removeGatewayPrefixRouteProcessor() {
         return (routeInConstruction, endpoint) -> {
-            routeInConstruction.filter(
-                    new OrderedGatewayFilter(
-                            new RewritePathGatewayFilterFactory().apply(config -> config
-                                    .setRegexp(gatewayMeta.versionPrefix())
-                                    .setReplacement("")), 0)
-            );
+            routeInConstruction.filter(wrapInOrderedGatewayFilter(
+                    new RewritePathGatewayFilterFactory().apply(config -> config
+                            .setRegexp(gatewayMeta.versionPrefix())
+                            .setReplacement(""))
+            ));
             return routeInConstruction;
         };
+    }
+
+    /**
+     * Wraps the passed {@link GatewayFilter} in an instance of {@link OrderedGatewayFilter}.
+     * At the point of this writing, some filters, such as the one produced by a
+     * {@link PrefixPathGatewayFilterFactory}, don't work unless wrapped in such a way
+     *
+     * @param wrapee filter to wrap
+     * @return {@code OrderedGatewayFilter} with order of zero
+     */
+    private GatewayFilter wrapInOrderedGatewayFilter(GatewayFilter wrapee) {
+        return new OrderedGatewayFilter(wrapee, 0);
     }
 
     @Bean
     @Order(2)
     public EndpointRouteProcessor uriRouteProcessor() {
         return (routeInConstruction, endpoint) -> {
-            DiscoverableApplication discoverableApp = endpoint.getDeclaringApp().getDiscoverableApp();
+            DiscoverableApplication<?> discoverableApp = endpoint.getDeclaringApp().getDiscoverableApp();
             return routeInConstruction.uri(discoverableApp.getDiscoveryServiceScheme() + discoverableApp.getName());
         };
     }
@@ -87,11 +99,10 @@ public class RouteProcessorConfig {
         return (routeInConstruction, endpoint) -> {
             String endpointPrefix = endpoint.getDetails().getPrefix();
             if (!endpointPrefix.isEmpty()) {
-                routeInConstruction.filter(
-                        new OrderedGatewayFilter(
-                                new PrefixPathGatewayFilterFactory().apply(config -> config
-                                        .setPrefix(endpointPrefix)), 0)
-                );
+                routeInConstruction.filter(wrapInOrderedGatewayFilter(
+                        new PrefixPathGatewayFilterFactory().apply(config -> config
+                                .setPrefix(endpointPrefix))
+                ));
             }
             return routeInConstruction;
         };
@@ -134,7 +145,10 @@ public class RouteProcessorConfig {
     @Bean
     public EndpointRouteProcessor circuitBreakerEndpointRouteProcessor(SpringCloudCircuitBreakerFilterFactory filterFactory) {
         return (routeInConstruction, endpoint) -> {
-            routeInConstruction.filter(filterFactory.apply(routeInConstruction.getId(), config -> config.setFallbackUri("/fallback")));
+            routeInConstruction.filter(wrapInOrderedGatewayFilter(
+                    filterFactory.apply(routeInConstruction.getId(),
+                            config -> config.setFallbackUri("/fallback/" + endpoint.getDeclaringApp().getName())
+                    )));
             return routeInConstruction;
         };
     }

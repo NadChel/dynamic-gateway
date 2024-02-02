@@ -1,6 +1,7 @@
 package com.example.dynamicgateway.service.swaggerUiSupport;
 
 import com.example.dynamicgateway.model.discoverableApplication.DiscoverableApplication;
+import com.example.dynamicgateway.model.discoverableApplication.EurekaDiscoverableApplication;
 import com.example.dynamicgateway.model.documentedApplication.DocumentedApplication;
 import com.example.dynamicgateway.model.documentedApplication.SwaggerApplication;
 import com.example.dynamicgateway.model.documentedEndpoint.SwaggerEndpoint;
@@ -12,6 +13,7 @@ import com.example.dynamicgateway.service.endpointCollector.SwaggerEndpointColle
 import com.example.dynamicgateway.testModel.SwaggerEndpointStub;
 import com.example.dynamicgateway.testUtil.SwaggerParseResultGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.netflix.discovery.shared.Application;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.servers.Server;
@@ -77,7 +79,7 @@ class BasicSwaggerUiSupportTest {
     void testGetSwaggerAppDoc() {
         String testAppName = "test-app";
 
-        DiscoverableApplication discoverableApplicationMock = mock(DiscoverableApplication.class);
+        DiscoverableApplication<Application> discoverableApplicationMock = mock(EurekaDiscoverableApplication.class);
         when(discoverableApplicationMock.getName()).thenReturn(testAppName);
 
         SwaggerParseResult testParseResult = SwaggerParseResultGenerator.createForEndpoints(
@@ -88,7 +90,7 @@ class BasicSwaggerUiSupportTest {
 
         SwaggerApplication testSwaggerApplication = new SwaggerApplication(discoverableApplicationMock, testParseResult);
 
-        EndpointCollector<SwaggerEndpoint> testEndpointCollector = new SwaggerEndpointCollector(null, null, null, null);
+        EndpointCollector<SwaggerEndpoint> testEndpointCollector = new SwaggerEndpointCollector(null, null, null);
         ReflectionTestUtils.setField(testEndpointCollector, "documentedEndpoints", Set.copyOf(testSwaggerApplication.getEndpoints()));
 
         GatewayMeta gatewayMetaMock = mock(GatewayMeta.class);

@@ -13,5 +13,5 @@ public interface ApplicationDocClient<T> {
      * Returns a {@code Mono} of documentation object
      * @param application queried application
      */
-    Mono<T> findApplicationDoc(DiscoverableApplication application);
+    Mono<T> findApplicationDoc(DiscoverableApplication<?> application);
 }
