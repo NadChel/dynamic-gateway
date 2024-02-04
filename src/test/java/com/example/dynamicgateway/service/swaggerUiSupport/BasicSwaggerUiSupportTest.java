@@ -12,6 +12,7 @@ import com.example.dynamicgateway.service.endpointCollector.EndpointCollector;
 import com.example.dynamicgateway.service.endpointCollector.SwaggerEndpointCollector;
 import com.example.dynamicgateway.testModel.SwaggerEndpointStub;
 import com.example.dynamicgateway.testUtil.SwaggerParseResultGenerator;
+import com.example.dynamicgateway.util.EndpointUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.shared.Application;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -95,6 +96,7 @@ class BasicSwaggerUiSupportTest {
 
         GatewayMeta gatewayMetaMock = mock(GatewayMeta.class);
         when(gatewayMetaMock.getVersionPrefix()).thenReturn("/test-api/v0");
+        when(gatewayMetaMock.getIgnoredPrefixes()).thenReturn(List.of("/auth"));
         when(gatewayMetaMock.getServers()).thenReturn(List.of(
                 new Server().url("https://localhost:1234").description("Server One"),
                 new Server().url("https://localhost:4321").description("Server Two")
@@ -140,7 +142,8 @@ class BasicSwaggerUiSupportTest {
         return swaggerApplication.getEndpoints()
                 .stream()
                 .map(SwaggerEndpoint::getDetails)
-                .map(SwaggerEndpointDetails::getNonPrefixedPath)
+                .map(SwaggerEndpointDetails::getPath)
+                .map(p -> EndpointUtil.withRemovedPrefix(p, gatewayMeta.getIgnoredPrefixes()))
                 .anyMatch(nonPrefixedPath -> path.equals(gatewayMeta.getVersionPrefix() + nonPrefixedPath));
     }
 
@@ -153,7 +156,8 @@ class BasicSwaggerUiSupportTest {
 
             boolean mismatch = endpointCollector.stream().noneMatch(collectorEndpoint ->
                     collectorEndpoint.getDetails().getMethod().equals(openApiMethod) &&
-                            collectorEndpoint.getDetails().getNonPrefixedPath().equals(openApiUnprefixedPath));
+                            EndpointUtil.withRemovedPrefix(collectorEndpoint.getDetails().getPath(),
+                                    gatewayMeta.getIgnoredPrefixes()).equals(openApiUnprefixedPath));
 
             if (mismatch) return false;
         }

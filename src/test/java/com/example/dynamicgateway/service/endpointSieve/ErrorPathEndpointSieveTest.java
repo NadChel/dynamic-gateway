@@ -7,6 +7,8 @@ import com.example.dynamicgateway.model.gatewayMeta.GatewayMeta;
 import org.junit.jupiter.api.Test;
 import org.springframework.util.AntPathMatcher;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -18,7 +20,7 @@ class ErrorPathEndpointSieveTest {
     @Test
     void allowsAnything_ifNoIgnoredPatternsProvided() {
         GatewayMeta gatewayMetaMock = mock(GatewayMeta.class);
-        when(gatewayMetaMock.getIgnoredPatterns()).thenReturn(new String[0]);
+        when(gatewayMetaMock.getIgnoredPatterns()).thenReturn(Collections.emptyList());
 
         AntPathMatcher antPathMatcherMock = mock(AntPathMatcher.class);
 
@@ -38,9 +40,9 @@ class ErrorPathEndpointSieveTest {
         GatewayMeta gatewayMetaMock = mock(GatewayMeta.class);
         String ignoredPattern = "/ignored-path/**";
         String anotherIgnoredPattern = "/*/another-ignored-path";
-        when(gatewayMetaMock.getIgnoredPatterns()).thenReturn(new String[]{
+        when(gatewayMetaMock.getIgnoredPatterns()).thenReturn(List.of(
                 ignoredPattern, anotherIgnoredPattern
-        });
+        ));
 
         String pathToExclude = "/ignored-path";
         String anotherPathToExclude = "/it-is/another-ignored-path";

@@ -46,3 +46,5 @@ gateway:
     - /doc/*
   ignoredPatterns:
     - /error/**
+  ignoredPrefixes:
+    - /auth

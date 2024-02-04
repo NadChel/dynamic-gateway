@@ -7,6 +7,7 @@ import com.example.dynamicgateway.model.gatewayMeta.GatewayMeta;
 import com.example.dynamicgateway.service.paramInitializer.ParamInitializer;
 import com.example.dynamicgateway.service.paramInitializer.ParamInitializers;
 import com.example.dynamicgateway.service.routeProcessor.EndpointRouteProcessor;
+import com.example.dynamicgateway.util.EndpointUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.OrderedGatewayFilter;
@@ -46,7 +47,10 @@ public class RouteProcessorConfig {
      * Gateway's prefix is {@code /api/v1}, this method will set a base predicate matching {@code /api/v1/example}
      */
     private void setBasePredicate(Route.AsyncBuilder routeInConstruction, DocumentedEndpoint<?> endpoint) {
-        String basePredicatePath = gatewayMeta.getVersionPrefix() + endpoint.getDetails().getNonPrefixedPath();
+        String nonPrefixedPath = EndpointUtil.withRemovedPrefix(
+                endpoint.getDetails().getPath(),
+                gatewayMeta.getIgnoredPrefixes());
+        String basePredicatePath = gatewayMeta.getVersionPrefix() + nonPrefixedPath;
         addPredicate(routeInConstruction,
                 new PathRoutePredicateFactory().applyAsync(
                         c -> c.setPatterns(List.of(basePredicatePath))
@@ -97,7 +101,9 @@ public class RouteProcessorConfig {
     @Order(3)
     public EndpointRouteProcessor appendEndpointPrefixRouteProcessor() {
         return (routeInConstruction, endpoint) -> {
-            String endpointPrefix = endpoint.getDetails().getPrefix();
+            String endpointPrefix = EndpointUtil.extractPrefix(
+                    endpoint.getDetails().getPath(),
+                    gatewayMeta.getIgnoredPrefixes());
             if (!endpointPrefix.isEmpty()) {
                 routeInConstruction.filter(wrapInOrderedGatewayFilter(
                         new PrefixPathGatewayFilterFactory().apply(config -> config

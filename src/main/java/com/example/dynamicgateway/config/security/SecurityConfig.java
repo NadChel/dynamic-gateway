@@ -36,7 +36,7 @@ public class SecurityConfig {
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers(gatewayMeta.getPublicPatterns()).permitAll()
+                        .pathMatchers(gatewayMeta.getPublicPatterns().toArray(new String[0])).permitAll()
                         .anyExchange().authenticated()
                 )
                 .addFilterBefore(jwtAuthorizationFilter(), SecurityWebFiltersOrder.AUTHORIZATION)

@@ -33,20 +33,6 @@ public class SwaggerEndpointDetails implements EndpointDetails {
         return new Builder();
     }
 
-    @Override
-    public String getNonPrefixedPath() {
-        return path.startsWith("/auth") ?
-                path.substring(getPrefix().length()) :
-                path;
-    }
-
-    @Override
-    public String getPrefix() {
-        return path.startsWith("/auth") ?
-                "/auth" :
-                "";
-    }
-
     @Getter
     public static class Builder {
         private String path = "/";

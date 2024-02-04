@@ -7,6 +7,7 @@ import com.example.dynamicgateway.model.documentedEndpoint.SwaggerEndpoint;
 import com.example.dynamicgateway.model.gatewayMeta.GatewayMeta;
 import com.example.dynamicgateway.model.uiConfig.SwaggerUiConfig;
 import com.example.dynamicgateway.service.endpointCollector.EndpointCollector;
+import com.example.dynamicgateway.util.EndpointUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
@@ -89,15 +90,17 @@ public class BasicSwaggerUiSupport implements SwaggerUiSupport {
             String servicePath = pathItemEntry.getKey();
             PathItem pathItem = pathItemEntry.getValue();
 
-            String nonprefixedPath = endpointCollector.stream()
+            String nonPrefixedPath = endpointCollector.stream()
                     .filter(documentedEndpoint -> documentedEndpoint.getDetails().getPath().equals(servicePath))
-                    .map(documentedEndpoint -> documentedEndpoint.getDetails().getNonPrefixedPath())
+                    .map(documentedEndpoint -> EndpointUtil.withRemovedPrefix(
+                            documentedEndpoint.getDetails().getPath(),
+                            gatewayMeta.getIgnoredPrefixes()))
                     .findFirst()
                     .orElseThrow(() -> new NoSuchElementException(MessageFormat.format(
                             "No endpoint found. Requested path: {0}", servicePath
                     )));
 
-            String prefixedPath = gatewayMeta.getVersionPrefix() + nonprefixedPath;
+            String prefixedPath = gatewayMeta.getVersionPrefix() + nonPrefixedPath;
             newPaths.put(prefixedPath, pathItem);
         }
         openAPI.setPaths(newPaths);

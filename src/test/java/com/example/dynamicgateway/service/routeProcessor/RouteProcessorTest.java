@@ -162,10 +162,14 @@ class RouteProcessorTest {
 
     @Test
     void appendEndpointPrefixRouteProcessor() {
-        String testPrefix = "/some-test-prefix";
+        String prefix = "/some-prefix";
+        String path = "/some-path";
+        String prefixedPath = prefix + path;
 
         DocumentedEndpoint<?> endpointMock = mock(DocumentedEndpoint.class, RETURNS_DEEP_STUBS);
-        when(endpointMock.getDetails().getPrefix()).thenReturn(testPrefix);
+        when(endpointMock.getDetails().getPath()).thenReturn(prefixedPath);
+
+        when(gatewayMetaMock.getIgnoredPrefixes()).thenReturn(List.of(prefix));
 
         EndpointRouteProcessor appendEndpointPrefixRouteProcessor = routeProcessorConfig.appendEndpointPrefixRouteProcessor();
         appendEndpointPrefixRouteProcessor.process(testRoute, endpointMock);
@@ -174,15 +178,14 @@ class RouteProcessorTest {
 
         assumeThat(filters.size()).isEqualTo(1);
 
-        String testPath = "/some-path";
         ServerWebExchange exchangeMock = MockServerWebExchange.from(
-                MockServerHttpRequest.method(HttpMethod.DELETE, testPath)
+                MockServerHttpRequest.method(HttpMethod.DELETE, path)
         );
 
         assumeThat(exchangeMock).extracting(ServerWebExchange::getRequest)
                 .extracting(ServerHttpRequest::getPath)
                 .extracting(PathContainer::value)
-                .asString().doesNotStartWith(testPrefix);
+                .asString().doesNotStartWith(prefix);
 
         ArgumentCaptor<ServerWebExchange> exchangeCaptor = ArgumentCaptor.forClass(ServerWebExchange.class);
 
@@ -197,7 +200,7 @@ class RouteProcessorTest {
 
         String requestPath = exchangeCaptor.getValue().getRequest().getPath().value();
 
-        assertThat(requestPath).asString().startsWith(testPrefix);
+        assertThat(requestPath).asString().startsWith(prefix);
     }
 
     @Test

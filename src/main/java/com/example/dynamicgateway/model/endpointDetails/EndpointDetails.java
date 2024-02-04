@@ -9,10 +9,6 @@ import java.util.List;
 public interface EndpointDetails {
     String getPath();
 
-    String getNonPrefixedPath();
-
-    String getPrefix();
-
     HttpMethod getMethod();
 
     List<String> getTags();
