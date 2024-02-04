@@ -97,13 +97,13 @@ public class BasicSwaggerUiSupport implements SwaggerUiSupport {
                             "No endpoint found. Requested path: {0}", servicePath
                     )));
 
-            String prefixedPath = gatewayMeta.versionPrefix() + nonprefixedPath;
+            String prefixedPath = gatewayMeta.getVersionPrefix() + nonprefixedPath;
             newPaths.put(prefixedPath, pathItem);
         }
         openAPI.setPaths(newPaths);
     }
 
     private void setGatewayServers(OpenAPI openAPI) {
-        openAPI.setServers(gatewayMeta.servers());
+        openAPI.setServers(gatewayMeta.getServers());
     }
 }

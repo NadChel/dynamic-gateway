@@ -12,7 +12,7 @@ import java.util.Arrays;
 public class EndpointSieveConfig {
     @Bean
     public EndpointSieve errorPathEndpointSieve(GatewayMeta gatewayMeta, AntPathMatcher antPathMatcher) {
-        return endpoint -> Arrays.stream(gatewayMeta.ignoredPatterns())
+        return endpoint -> Arrays.stream(gatewayMeta.getIgnoredPatterns())
                 .noneMatch(ignoredPattern -> antPathMatcher.match(ignoredPattern, endpoint.getDetails().getPath()));
     }
 

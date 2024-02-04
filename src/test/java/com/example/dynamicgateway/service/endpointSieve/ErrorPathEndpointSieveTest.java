@@ -18,7 +18,7 @@ class ErrorPathEndpointSieveTest {
     @Test
     void allowsAnything_ifNoIgnoredPatternsProvided() {
         GatewayMeta gatewayMetaMock = mock(GatewayMeta.class);
-        when(gatewayMetaMock.ignoredPatterns()).thenReturn(new String[0]);
+        when(gatewayMetaMock.getIgnoredPatterns()).thenReturn(new String[0]);
 
         AntPathMatcher antPathMatcherMock = mock(AntPathMatcher.class);
 
@@ -38,7 +38,7 @@ class ErrorPathEndpointSieveTest {
         GatewayMeta gatewayMetaMock = mock(GatewayMeta.class);
         String ignoredPattern = "/ignored-path/**";
         String anotherIgnoredPattern = "/*/another-ignored-path";
-        when(gatewayMetaMock.ignoredPatterns()).thenReturn(new String[]{
+        when(gatewayMetaMock.getIgnoredPatterns()).thenReturn(new String[]{
                 ignoredPattern, anotherIgnoredPattern
         });
 

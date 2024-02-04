@@ -94,8 +94,8 @@ class BasicSwaggerUiSupportTest {
         ReflectionTestUtils.setField(testEndpointCollector, "documentedEndpoints", Set.copyOf(testSwaggerApplication.getEndpoints()));
 
         GatewayMeta gatewayMetaMock = mock(GatewayMeta.class);
-        when(gatewayMetaMock.versionPrefix()).thenReturn("/test-api/v0");
-        when(gatewayMetaMock.servers()).thenReturn(List.of(
+        when(gatewayMetaMock.getVersionPrefix()).thenReturn("/test-api/v0");
+        when(gatewayMetaMock.getServers()).thenReturn(List.of(
                 new Server().url("https://localhost:1234").description("Server One"),
                 new Server().url("https://localhost:4321").description("Server Two")
         ));
@@ -124,8 +124,8 @@ class BasicSwaggerUiSupportTest {
     }
 
     private boolean isApiMetaCorrect(OpenAPI openAPI, GatewayMeta gatewayMetaMock) {
-        return openAPI.getServers().size() == gatewayMetaMock.servers().size() &&
-                openAPI.getServers().containsAll(gatewayMetaMock.servers());
+        return openAPI.getServers().size() == gatewayMetaMock.getServers().size() &&
+                openAPI.getServers().containsAll(gatewayMetaMock.getServers());
     }
 
     private boolean areEndpointsCorrect(OpenAPI openAPI, SwaggerApplication swaggerApplication,
@@ -141,7 +141,7 @@ class BasicSwaggerUiSupportTest {
                 .stream()
                 .map(SwaggerEndpoint::getDetails)
                 .map(SwaggerEndpointDetails::getNonPrefixedPath)
-                .anyMatch(nonPrefixedPath -> path.equals(gatewayMeta.versionPrefix() + nonPrefixedPath));
+                .anyMatch(nonPrefixedPath -> path.equals(gatewayMeta.getVersionPrefix() + nonPrefixedPath));
     }
 
     private boolean containsOnlyCollectedEndpoints(Map.Entry<String, PathItem> pathPathItemEntry,
@@ -149,7 +149,7 @@ class BasicSwaggerUiSupportTest {
                                                    GatewayMeta gatewayMeta) {
         for (PathItem.HttpMethod method : pathPathItemEntry.getValue().readOperationsMap().keySet()) {
             HttpMethod openApiMethod = HttpMethod.valueOf(method.name());
-            String openApiUnprefixedPath = unprefixPath(pathPathItemEntry.getKey(), gatewayMeta.versionPrefix());
+            String openApiUnprefixedPath = unprefixPath(pathPathItemEntry.getKey(), gatewayMeta.getVersionPrefix());
 
             boolean mismatch = endpointCollector.stream().noneMatch(collectorEndpoint ->
                     collectorEndpoint.getDetails().getMethod().equals(openApiMethod) &&

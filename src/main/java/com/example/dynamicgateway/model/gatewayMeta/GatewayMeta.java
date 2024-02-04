@@ -19,19 +19,19 @@ public final class GatewayMeta {
     private String[] publicPatterns;
     private String[] ignoredPatterns;
 
-    public List<Server> servers() {
+    public List<Server> getServers() {
         return this.servers;
     }
 
-    public String versionPrefix() {
+    public String getVersionPrefix() {
         return this.versionPrefix;
     }
 
-    public String[] publicPatterns() {
+    public String[] getPublicPatterns() {
         return this.publicPatterns;
     }
 
-    public String[] ignoredPatterns() {
+    public String[] getIgnoredPatterns() {
         return this.ignoredPatterns;
     }
 }

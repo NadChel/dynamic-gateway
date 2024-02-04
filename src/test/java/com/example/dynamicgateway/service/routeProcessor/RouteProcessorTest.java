@@ -58,7 +58,7 @@ class RouteProcessorTest {
 
     @Test
     void basePredicateProcessor_withMatchingRequest() {
-        when(gatewayMetaMock.versionPrefix()).thenReturn("/api/v1");
+        when(gatewayMetaMock.getVersionPrefix()).thenReturn("/api/v1");
 
         DocumentedEndpoint<?> testEndpoint = SwaggerEndpointStub.builder()
                 .method(HttpMethod.GET).path("/auth/test-path").build();
@@ -78,7 +78,7 @@ class RouteProcessorTest {
 
     @Test
     void basePredicateProcessor_withNonMatchingRequest() {
-        when(gatewayMetaMock.versionPrefix()).thenReturn("/api/v1");
+        when(gatewayMetaMock.getVersionPrefix()).thenReturn("/api/v1");
 
         DocumentedEndpoint<?> testEndpoint = SwaggerEndpointStub.builder()
                 .method(HttpMethod.GET).path("/auth/test-path").build();
@@ -108,7 +108,7 @@ class RouteProcessorTest {
     @Test
     void removeGatewayPrefixRouteProcessor() {
         String testGatewayPrefix = "/api/v1";
-        when(gatewayMetaMock.versionPrefix()).thenReturn(testGatewayPrefix);
+        when(gatewayMetaMock.getVersionPrefix()).thenReturn(testGatewayPrefix);
 
         EndpointRouteProcessor removeGatewayPrefixRouteProcessor = routeProcessorConfig.removeGatewayPrefixRouteProcessor();
         removeGatewayPrefixRouteProcessor.process(testRoute, null);
