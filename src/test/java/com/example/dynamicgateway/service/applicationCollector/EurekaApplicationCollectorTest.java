@@ -5,6 +5,9 @@ import com.example.dynamicgateway.service.endpointSieve.DiscoverableApplicationS
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Collections;
@@ -20,13 +23,15 @@ import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class EurekaApplicationCollectorTest {
+    @Mock
+    private EurekaClient eurekaClientMock;
+    @Mock
+    private ApplicationEventPublisher eventPublisherMock;
+
     @Test
     void whenCreated_hasNoApps() {
-        EurekaClient eurekaClientMock = mock(EurekaClient.class);
-
-        ApplicationEventPublisher eventPublisherMock = mock(ApplicationEventPublisher.class);
-
         EurekaApplicationCollector collector =
                 new EurekaApplicationCollector(eurekaClientMock, Collections.emptyList(), eventPublisherMock);
 
@@ -48,15 +53,13 @@ class EurekaApplicationCollectorTest {
         Application anotherApp = new Application("test-app-2");
         Application phonyApp = new Application("phony-app");
 
-        EurekaClient eurekaClientMock = mock(EurekaClient.class, RETURNS_DEEP_STUBS);
+        eurekaClientMock = mock(EurekaClient.class, RETURNS_DEEP_STUBS);
         when(eurekaClientMock.getApplications().getRegisteredApplications()).thenReturn(List.of(
                 app, anotherApp, phonyApp
         ));
 
         List<DiscoverableApplicationSieve> sieves =
                 List.of(a -> !a.getName().startsWith("phony"));
-
-        ApplicationEventPublisher eventPublisherMock = mock(ApplicationEventPublisher.class);
 
         EurekaApplicationCollector collector =
                 new EurekaApplicationCollector(eurekaClientMock, sieves, eventPublisherMock);

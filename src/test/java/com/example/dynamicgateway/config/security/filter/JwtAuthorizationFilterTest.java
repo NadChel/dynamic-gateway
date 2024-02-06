@@ -5,6 +5,9 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
@@ -27,28 +30,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThatCode;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class JwtAuthorizationFilterTest {
     private final JwtAuthorizationFilter filter = new JwtAuthorizationFilter();
+    @Mock
+    private WebFilterChain chainMock;
 
     @Test
     void testFilter_withNullJwt_exchangeFilteredFurther() {
-        ServerWebExchange mockExchange = MockServerWebExchange.from(MockServerHttpRequest.get("/"));
+        ServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/"));
 
-        WebFilterChain mockChain = mock(WebFilterChain.class);
-        when(mockChain.filter(mockExchange)).thenReturn(Mono.empty());
+        when(chainMock.filter(exchange)).thenReturn(Mono.empty());
 
-        StepVerifier.create(filter.filter(mockExchange, mockChain))
+        StepVerifier.create(filter.filter(exchange, chainMock))
                 .expectComplete()
                 .verify();
 
-        verify(mockChain).filter(mockExchange);
+        verify(chainMock).filter(exchange);
     }
 
     @Test
@@ -65,16 +69,15 @@ class JwtAuthorizationFilterTest {
                 .header(JWT.HEADER, validJwt)
                 .build();
 
-        ServerWebExchange mockExchange = MockServerWebExchange.from(request);
+        ServerWebExchange exchange = MockServerWebExchange.from(request);
 
-        WebFilterChain mockChain = mock(WebFilterChain.class);
-        when(mockChain.filter(mockExchange)).thenReturn(Mono.empty());
+        when(chainMock.filter(exchange)).thenReturn(Mono.empty());
 
-        StepVerifier.create(filter.filter(mockExchange, mockChain))
+        StepVerifier.create(filter.filter(exchange, chainMock))
                 .expectComplete()
                 .verify();
 
-        verify(mockChain).filter(mockExchange);
+        verify(chainMock).filter(exchange);
     }
 
     @Test
@@ -96,19 +99,18 @@ class JwtAuthorizationFilterTest {
                 .header(JWT.HEADER, validJwt)
                 .build();
 
-        ServerWebExchange mockExchange = MockServerWebExchange.from(request);
+        ServerWebExchange exchange = MockServerWebExchange.from(request);
 
-        WebFilterChain mockChain = mock(WebFilterChain.class);
-        when(mockChain.filter(mockExchange)).thenReturn(Mono.empty());
+        when(chainMock.filter(exchange)).thenReturn(Mono.empty());
 
         assumeThatCode(() -> {
-            StepVerifier.create(filter.filter(mockExchange, mockChain))
+            StepVerifier.create(filter.filter(exchange, chainMock))
                     .expectComplete()
                     .verify();
-            verify(mockChain).filter(mockExchange);
+            verify(chainMock).filter(exchange);
         }).doesNotThrowAnyException();
 
-        StepVerifier.create(filter.filter(mockExchange, mockChain))
+        StepVerifier.create(filter.filter(exchange, chainMock))
                 .expectAccessibleContext()
                 .assertThat(context -> contextHasExpectedAuthentication(context, sub, roles))
                 .then()
@@ -117,22 +119,25 @@ class JwtAuthorizationFilterTest {
     }
 
     private void contextHasExpectedAuthentication(Context context, String subject, Collection<String> roles) {
-        boolean doesAnyContextEntryHaveExpectedAuthentication = context.stream()
+        boolean someContextEntryHasExpectedAuthentication = context.stream()
                 .anyMatch(entry -> hasExpectedAuthentication(entry, subject, roles));
-        assertThat(doesAnyContextEntryHaveExpectedAuthentication).isTrue();
+
+        assertThat(someContextEntryHasExpectedAuthentication)
+                .withFailMessage("None of Context entries contained expected Authentication")
+                .isTrue();
     }
 
     @SuppressWarnings("unchecked")
     private boolean hasExpectedAuthentication(Map.Entry<Object, Object> contextEntry, String subject, Collection<String> roles) {
         return !doesThrow(() ->
                 StepVerifier.create((Mono<SecurityContext>) contextEntry.getValue())
-                        .expectNextMatches(securityContext -> {
+                        .assertNext(securityContext -> {
                             Authentication auth = securityContext.getAuthentication();
-                            return auth.getPrincipal().equals(subject) &&
-                                    auth.getAuthorities().stream()
-                                            .map(GrantedAuthority::getAuthority)
-                                            .toList()
-                                            .containsAll(roles);
+
+                            assertThat(auth.getPrincipal()).isEqualTo(subject);
+                            assertThat(auth.getAuthorities())
+                                    .extracting(GrantedAuthority::getAuthority)
+                                    .containsExactlyInAnyOrderElementsOf(roles);
                         })
                         .expectComplete()
                         .verify());
@@ -142,7 +147,7 @@ class JwtAuthorizationFilterTest {
         try {
             codeBlock.run();
             return false;
-        } catch (Exception e) {
+        } catch (Throwable t) {
             return true;
         }
     }
@@ -160,22 +165,20 @@ class JwtAuthorizationFilterTest {
     }
 
     private void testForInvalidJwt(String jwt) {
-        MockServerHttpRequest mockRequest = MockServerHttpRequest
+        MockServerHttpRequest request = MockServerHttpRequest
                 .get("/")
                 .header(JWT.HEADER, jwt)
                 .build();
 
-        ServerWebExchange mockExchange = MockServerWebExchange.from(mockRequest);
+        ServerWebExchange exchange = MockServerWebExchange.from(request);
 
-        WebFilterChain mockChain = mock(WebFilterChain.class);
-
-        StepVerifier.create(filter.filter(mockExchange, mockChain))
+        StepVerifier.create(filter.filter(exchange, chainMock))
                 .expectComplete()
                 .verify();
 
-        verify(mockChain, never()).filter(mockExchange);
+        verify(chainMock, never()).filter(exchange);
 
-        ServerHttpResponse response = mockExchange.getResponse();
+        ServerHttpResponse response = exchange.getResponse();
 
         assertThat(response).extracting(ServerHttpResponse::getStatusCode).isEqualTo(HttpStatus.UNAUTHORIZED);
 

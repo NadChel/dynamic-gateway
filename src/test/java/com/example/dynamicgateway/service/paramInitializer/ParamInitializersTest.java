@@ -6,8 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.InstanceOfAssertFactories.OPTIONAL;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -29,7 +28,7 @@ class ParamInitializersTest {
 
         ParamInitializers paramInitializers = new ParamInitializers(testParamInitializers);
         Optional<ParamInitializer> initializerForParam = paramInitializers.findInitializerForParam(paramOneMock);
-        assertThat(initializerForParam).asInstanceOf(OPTIONAL).isPresent();
+        assertThat(initializerForParam).isPresent();
         assertThat(initializerForParam.orElseThrow()).isEqualTo(paramOneInitializerMock);
     }
 
@@ -50,6 +49,6 @@ class ParamInitializersTest {
 
         ParamInitializers paramInitializers = new ParamInitializers(testParamInitializers);
         Optional<ParamInitializer> initializerForParam = paramInitializers.findInitializerForParam(paramOneMock);
-        assertThat(initializerForParam).asInstanceOf(OPTIONAL).isNotPresent();
+        assertThat(initializerForParam).isNotPresent();
     }
 }

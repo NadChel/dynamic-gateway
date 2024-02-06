@@ -17,14 +17,14 @@ class SwaggerUiConfigSerializerTest {
     @SneakyThrows
     @Test
     void serialize() {
-        String testAppName = "test-app";
+        String appName = "test-app";
 
         SwaggerApplication swaggerApplicationMock = mock(SwaggerApplication.class);
-        when(swaggerApplicationMock.getName()).thenReturn(testAppName);
+        when(swaggerApplicationMock.getName()).thenReturn(appName);
 
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-        JsonGenerator jsonGenerator = JsonFactory.builder().build().createGenerator(byteArrayOutputStream);
+        JsonGenerator jsonGenerator = JsonFactory.builder().build().createGenerator(outputStream);
 
         SwaggerUiConfigSerializer swaggerUiConfigSerializer = new SwaggerUiConfigSerializer();
 
@@ -32,15 +32,16 @@ class SwaggerUiConfigSerializerTest {
 
         jsonGenerator.close();
 
-        String resultJson = byteArrayOutputStream.toString();
+        String resultJson = outputStream.toString();
 
         String expectedString = MessageFormat.format("""
                 '{'
                     "url": "/doc/{0}",
                     "name": "{0}"
                 '}'
-                """, testAppName);
+                """, appName);
 
-        assertThat(StringUtils.deleteWhitespace(resultJson)).isEqualTo(StringUtils.deleteWhitespace(expectedString));
+        assertThat(StringUtils.deleteWhitespace(resultJson))
+                .isEqualTo(StringUtils.deleteWhitespace(expectedString));
     }
 }

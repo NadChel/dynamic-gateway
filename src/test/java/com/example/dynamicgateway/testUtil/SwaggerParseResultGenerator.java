@@ -1,12 +1,15 @@
 package com.example.dynamicgateway.testUtil;
 
 import com.example.dynamicgateway.model.documentedEndpoint.SwaggerEndpoint;
+import com.example.dynamicgateway.model.endpointDetails.EndpointDetails;
 import com.example.dynamicgateway.model.endpointDetails.SwaggerEndpointDetails;
+import com.example.dynamicgateway.model.endpointParameter.EndpointParameter;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 
 import java.util.ArrayList;
@@ -80,9 +83,24 @@ public class SwaggerParseResultGenerator {
                     .filter(m -> m.name().equals(detail.getMethod().name()))
                     .findFirst()
                     .orElseThrow();
-            Operation operation = new Operation();
+            Operation operation = createOperation(detail);
             pathItem.operation(method, operation);
         }
         return pathItem;
+    }
+
+    private static Operation createOperation(EndpointDetails endpointDetails) {
+        Operation operation = new Operation();
+        operation.setTags(endpointDetails.getTags());
+        operation.setParameters(createParameters(endpointDetails));
+        return operation;
+    }
+
+    private static List<Parameter> createParameters(EndpointDetails endpointDetails) {
+        return endpointDetails.getParameters()
+                .stream()
+                .map(EndpointParameter::getName)
+                .map(paramName -> new Parameter().name(paramName))
+                .toList();
     }
 }

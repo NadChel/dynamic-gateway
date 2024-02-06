@@ -10,5 +10,8 @@ public interface DiscoverableApplication<T> {
 
     String getDiscoveryServiceScheme();
 
+    /**
+     * Returns a provider-specific application object wrapped by this {@code DiscoverableApplication}
+     */
     T unwrap();
 }
