@@ -31,12 +31,12 @@ class PrincipalParamInitializerTest {
 
     @Test
     void testGetParamValues() {
-        UsernamePasswordAuthenticationToken authenticationFake = new UsernamePasswordAuthenticationToken(principalName, null);
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(principalName, null);
         ServerWebExchange exchangeMock = mock(ServerWebExchange.class);
-        when(exchangeMock.getPrincipal()).thenReturn(Mono.just(authenticationFake));
+        when(exchangeMock.getPrincipal()).thenReturn(Mono.just(authentication));
 
         assumeThatCode(() -> {
-            Collection<?> paramValues = initializer.extractValuesFromAuthentication(authenticationFake);
+            Collection<?> paramValues = initializer.extractValuesFromAuthentication(authentication);
             assertThat(paramValues.size()).isEqualTo(1);
             assertThat(paramValues.iterator().next()).isEqualTo(principalName);
         }).doesNotThrowAnyException();

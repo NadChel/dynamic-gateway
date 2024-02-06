@@ -15,11 +15,11 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 class UriValidatorTest {
     @Getter
     private static final List<String> validPaths = List.of(
-            "/path", "/path/goes-on", "/p@a$t^h"
+            "/path", "/path/goes-on", "/p@a$t^h", ""
     );
     @Getter
     private static final List<String> invalidPaths = List.of(
-            "path", "path/", "/path/", "/path?"
+            "path", "path/", "/path/", "/path?", "/"
     );
     @Getter
     private static final List<String> validSchemes = List.of(

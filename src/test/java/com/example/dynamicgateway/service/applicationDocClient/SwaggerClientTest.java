@@ -14,13 +14,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class SwaggerClientTest {
-
     @SneakyThrows
     @Test
     void testFindApplicationDoc() {
-        String testScheme = "test://";
-        String testAppName = "test-application";
-        String testDocPath = "/doc";
+        String scheme = "test://";
+        String appName = "test-application";
+        String docPath = "/doc";
 
         String serializedParseResult = "{ let's imagine: it's a serialized parse result }";
         SwaggerParseResult parseResult = mock(SwaggerParseResult.class);
@@ -30,7 +29,7 @@ class SwaggerClientTest {
         WebClient webClientMock = mock(WebClient.class, RETURNS_DEEP_STUBS);
         when(webClientMock
                 .get()
-                .uri(testScheme + testAppName + testDocPath)
+                .uri(scheme + appName + docPath)
                 .retrieve()
                 .bodyToMono(String.class)
         ).thenReturn(Mono.just(serializedParseResult));
@@ -38,11 +37,11 @@ class SwaggerClientTest {
         SwaggerClientConfigurer swaggerClientConfigurerMock = mock(SwaggerClientConfigurer.class);
         when(swaggerClientConfigurerMock.getWebClient()).thenReturn(webClientMock);
         when(swaggerClientConfigurerMock.getParser()).thenReturn(parserMock);
-        when(swaggerClientConfigurerMock.getScheme()).thenReturn(testScheme);
-        when(swaggerClientConfigurerMock.getDocPath()).thenReturn(testDocPath);
+        when(swaggerClientConfigurerMock.getScheme()).thenReturn(scheme);
+        when(swaggerClientConfigurerMock.getDocPath()).thenReturn(docPath);
 
         DiscoverableApplication<?> discoverableApplicationMock = mock(DiscoverableApplication.class);
-        when(discoverableApplicationMock.getName()).thenReturn(testAppName);
+        when(discoverableApplicationMock.getName()).thenReturn(appName);
 
         SwaggerClient swaggerClient = new SwaggerClient(swaggerClientConfigurerMock);
         Mono<SwaggerParseResult> applicationDoc = swaggerClient.findApplicationDoc(discoverableApplicationMock);

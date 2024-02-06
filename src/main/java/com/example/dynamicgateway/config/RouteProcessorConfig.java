@@ -47,9 +47,7 @@ public class RouteProcessorConfig {
      * Gateway's prefix is {@code /api/v1}, this method will set a base predicate matching {@code /api/v1/example}
      */
     private void setBasePredicate(Route.AsyncBuilder routeInConstruction, DocumentedEndpoint<?> endpoint) {
-        String nonPrefixedPath = EndpointUtil.withRemovedPrefix(
-                endpoint.getDetails().getPath(),
-                gatewayMeta.getIgnoredPrefixes());
+        String nonPrefixedPath = EndpointUtil.withRemovedPrefix(endpoint, gatewayMeta);
         String basePredicatePath = gatewayMeta.getVersionPrefix() + nonPrefixedPath;
         addPredicate(routeInConstruction,
                 new PathRoutePredicateFactory().applyAsync(
@@ -101,9 +99,7 @@ public class RouteProcessorConfig {
     @Order(3)
     public EndpointRouteProcessor appendEndpointPrefixRouteProcessor() {
         return (routeInConstruction, endpoint) -> {
-            String endpointPrefix = EndpointUtil.extractPrefix(
-                    endpoint.getDetails().getPath(),
-                    gatewayMeta.getIgnoredPrefixes());
+            String endpointPrefix = EndpointUtil.extractPrefix(endpoint, gatewayMeta);
             if (!endpointPrefix.isEmpty()) {
                 routeInConstruction.filter(wrapInOrderedGatewayFilter(
                         new PrefixPathGatewayFilterFactory().apply(config -> config

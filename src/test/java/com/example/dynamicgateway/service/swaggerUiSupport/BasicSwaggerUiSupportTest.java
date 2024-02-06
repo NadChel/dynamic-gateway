@@ -5,7 +5,6 @@ import com.example.dynamicgateway.model.discoverableApplication.EurekaDiscoverab
 import com.example.dynamicgateway.model.documentedApplication.DocumentedApplication;
 import com.example.dynamicgateway.model.documentedApplication.SwaggerApplication;
 import com.example.dynamicgateway.model.documentedEndpoint.SwaggerEndpoint;
-import com.example.dynamicgateway.model.endpointDetails.SwaggerEndpointDetails;
 import com.example.dynamicgateway.model.gatewayMeta.GatewayMeta;
 import com.example.dynamicgateway.model.uiConfig.SwaggerUiConfig;
 import com.example.dynamicgateway.service.endpointCollector.EndpointCollector;
@@ -36,16 +35,16 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 class BasicSwaggerUiSupportTest {
-    private final List<String> testAppNames = List.of("test-app", "another-test-app", "this-is-app-too");
+    private final List<String> appNames = List.of("test-app", "another-test-app", "this-is-app-too");
 
     @SuppressWarnings("unchecked")
     @Test
     void getSwaggerUiConfig() {
-        Set<SwaggerEndpoint> testEndpoints = testAppNames.stream()
+        Set<SwaggerEndpoint> endpoints = appNames.stream()
                 .map(this::appNameToEndpointStub).collect(Collectors.toSet());
 
         EndpointCollector<SwaggerEndpoint> endpointCollectorMock = spy(EndpointCollector.class);
-        when(endpointCollectorMock.getCollectedEndpoints()).thenReturn(testEndpoints);
+        when(endpointCollectorMock.getCollectedEndpoints()).thenReturn(endpoints);
 
         BasicSwaggerUiSupport uiSupport = new BasicSwaggerUiSupport(
                 endpointCollectorMock, null, null);
@@ -65,34 +64,34 @@ class BasicSwaggerUiSupportTest {
     }
 
     private boolean hasExpectedSize(SwaggerUiConfig swaggerUiConfig) {
-        return swaggerUiConfig.getSwaggerApplications().size() == testAppNames.size();
+        return swaggerUiConfig.getSwaggerApplications().size() == appNames.size();
     }
 
     private boolean hasExpectedContent(SwaggerUiConfig swaggerUiConfig) {
         return swaggerUiConfig.getSwaggerApplications()
                 .stream()
                 .map(DocumentedApplication::getName)
-                .allMatch(testAppNames::contains);
+                .allMatch(appNames::contains);
     }
 
     @SneakyThrows
     @Test
     void testGetSwaggerAppDoc() {
-        String testAppName = "test-app";
+        String appName = "test-app";
 
         DiscoverableApplication<Application> discoverableApplicationMock = mock(EurekaDiscoverableApplication.class);
-        when(discoverableApplicationMock.getName()).thenReturn(testAppName);
+        when(discoverableApplicationMock.getName()).thenReturn(appName);
 
-        SwaggerParseResult testParseResult = SwaggerParseResultGenerator.createForEndpoints(
+        SwaggerParseResult parseResult = SwaggerParseResultGenerator.createForEndpoints(
                 SwaggerEndpointStub.builder().method(HttpMethod.POST).path("/auth/test-path").build(),
                 SwaggerEndpointStub.builder().method(HttpMethod.DELETE).path("/test-path").build(),
                 SwaggerEndpointStub.builder().method(HttpMethod.GET).path("/test/path").build()
         );
 
-        SwaggerApplication testSwaggerApplication = new SwaggerApplication(discoverableApplicationMock, testParseResult);
+        SwaggerApplication swaggerApplication = new SwaggerApplication(discoverableApplicationMock, parseResult);
 
         EndpointCollector<SwaggerEndpoint> testEndpointCollector = new SwaggerEndpointCollector(null, null, null);
-        ReflectionTestUtils.setField(testEndpointCollector, "documentedEndpoints", Set.copyOf(testSwaggerApplication.getEndpoints()));
+        ReflectionTestUtils.setField(testEndpointCollector, "documentedEndpoints", Set.copyOf(swaggerApplication.getEndpoints()));
 
         GatewayMeta gatewayMetaMock = mock(GatewayMeta.class);
         when(gatewayMetaMock.getVersionPrefix()).thenReturn("/test-api/v0");
@@ -107,15 +106,15 @@ class BasicSwaggerUiSupportTest {
         BasicSwaggerUiSupport uiSupport = new BasicSwaggerUiSupport(
                 testEndpointCollector, gatewayMetaMock, objectMapper);
 
-        String parseResultSnapshot = objectMapper.writeValueAsString(testParseResult);
+        String parseResultSnapshot = objectMapper.writeValueAsString(parseResult);
 
-        StepVerifier.create(uiSupport.getSwaggerAppDoc(testAppName))
+        StepVerifier.create(uiSupport.getSwaggerAppDoc(appName))
                 .expectNextMatches(openAPI ->
-                        isOpenApiCorrect(openAPI, testSwaggerApplication, testEndpointCollector, gatewayMetaMock))
+                        isOpenApiCorrect(openAPI, swaggerApplication, testEndpointCollector, gatewayMetaMock))
                 .expectComplete()
                 .verify();
 
-        String parseResultAfterDocForSwaggerUiWasGenerated = objectMapper.writeValueAsString(testParseResult);
+        String parseResultAfterDocForSwaggerUiWasGenerated = objectMapper.writeValueAsString(parseResult);
         assertThat(parseResultAfterDocForSwaggerUiWasGenerated).isEqualTo(parseResultSnapshot);
     }
 
@@ -141,9 +140,7 @@ class BasicSwaggerUiSupportTest {
     private boolean gatewayPrefixesSet(String path, SwaggerApplication swaggerApplication, GatewayMeta gatewayMeta) {
         return swaggerApplication.getEndpoints()
                 .stream()
-                .map(SwaggerEndpoint::getDetails)
-                .map(SwaggerEndpointDetails::getPath)
-                .map(p -> EndpointUtil.withRemovedPrefix(p, gatewayMeta.getIgnoredPrefixes()))
+                .map(endpoint -> EndpointUtil.withRemovedPrefix(endpoint, gatewayMeta))
                 .anyMatch(nonPrefixedPath -> path.equals(gatewayMeta.getVersionPrefix() + nonPrefixedPath));
     }
 
@@ -156,8 +153,7 @@ class BasicSwaggerUiSupportTest {
 
             boolean mismatch = endpointCollector.stream().noneMatch(collectorEndpoint ->
                     collectorEndpoint.getDetails().getMethod().equals(openApiMethod) &&
-                            EndpointUtil.withRemovedPrefix(collectorEndpoint.getDetails().getPath(),
-                                    gatewayMeta.getIgnoredPrefixes()).equals(openApiUnprefixedPath));
+                            EndpointUtil.withRemovedPrefix(collectorEndpoint, gatewayMeta).equals(openApiUnprefixedPath));
 
             if (mismatch) return false;
         }

@@ -92,9 +92,7 @@ public class BasicSwaggerUiSupport implements SwaggerUiSupport {
 
             String nonPrefixedPath = endpointCollector.stream()
                     .filter(documentedEndpoint -> documentedEndpoint.getDetails().getPath().equals(servicePath))
-                    .map(documentedEndpoint -> EndpointUtil.withRemovedPrefix(
-                            documentedEndpoint.getDetails().getPath(),
-                            gatewayMeta.getIgnoredPrefixes()))
+                    .map(documentedEndpoint -> EndpointUtil.withRemovedPrefix(documentedEndpoint, gatewayMeta))
                     .findFirst()
                     .orElseThrow(() -> new NoSuchElementException(MessageFormat.format(
                             "No endpoint found. Requested path: {0}", servicePath

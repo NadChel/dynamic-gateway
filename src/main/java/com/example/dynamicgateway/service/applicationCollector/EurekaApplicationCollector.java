@@ -35,8 +35,8 @@ public class EurekaApplicationCollector implements ApplicationCollector {
         this.eventPublisher = publisher;
         this.eurekaClient = eurekaClient;
         this.eurekaClient.registerEventListener(event -> {
-            if (event instanceof CacheRefreshedEvent) {
-                publisher.publishEvent(event);
+            if (event instanceof CacheRefreshedEvent cacheRefreshedEvent) {
+                publisher.publishEvent(cacheRefreshedEvent);
             }
         });
     }

@@ -26,7 +26,6 @@ class DynamicRouteLocatorTest {
         dynamicRouteLocator = new DynamicRouteLocator(Collections.emptyList());
 
         StepVerifier.create(dynamicRouteLocator.getRoutes())
-                .expectNextCount(0)
                 .expectComplete()
                 .verify();
     }
@@ -35,9 +34,9 @@ class DynamicRouteLocatorTest {
     void testOnDocumentedEndpointFoundEvent_withOneEvent() {
         dynamicRouteLocator = new DynamicRouteLocator(getEndpointRouteProcessorStub());
 
-        DocumentedEndpointFoundEvent mockEvent = mock(DocumentedEndpointFoundEvent.class);
+        DocumentedEndpointFoundEvent eventMock = mock(DocumentedEndpointFoundEvent.class);
 
-        dynamicRouteLocator.onDocumentedEndpointFoundEvent(mockEvent);
+        dynamicRouteLocator.onDocumentedEndpointFoundEvent(eventMock);
 
         assertThat(getRouteSet().size()).isEqualTo(1);
     }
@@ -59,30 +58,31 @@ class DynamicRouteLocatorTest {
     void testOnDocumentedEndpointFoundEvent_withTwoIdenticalEvents() {
         dynamicRouteLocator = new DynamicRouteLocator(getEndpointRouteProcessorStub());
 
-        DocumentedEndpointFoundEvent mockEvent = mock(DocumentedEndpointFoundEvent.class);
-        DocumentedEndpointFoundEvent mockEventCopy = mock(DocumentedEndpointFoundEvent.class);
+        DocumentedEndpointFoundEvent eventMock = mock(DocumentedEndpointFoundEvent.class);
+        DocumentedEndpointFoundEvent eventMockCopy = mock(DocumentedEndpointFoundEvent.class);
 
-        dynamicRouteLocator.onDocumentedEndpointFoundEvent(mockEvent);
-        dynamicRouteLocator.onDocumentedEndpointFoundEvent(mockEventCopy);
+        dynamicRouteLocator.onDocumentedEndpointFoundEvent(eventMock);
+        dynamicRouteLocator.onDocumentedEndpointFoundEvent(eventMockCopy);
 
         assertThat(getRouteSet().size()).isEqualTo(1);
     }
 
     @SneakyThrows
-    private Set<?> getRouteSet() {
+    @SuppressWarnings("unchecked")
+    private Set<Route> getRouteSet() {
         Field routesField =  dynamicRouteLocator.getClass()
                 .getDeclaredField("routes");
         routesField.setAccessible(true);
-        return (Set<?>) routesField.get(dynamicRouteLocator);
+        return (Set<Route>) routesField.get(dynamicRouteLocator);
     }
 
     @Test
     void ifOneEventFired_returnsFluxOfOneRoute() {
         dynamicRouteLocator = new DynamicRouteLocator(getEndpointRouteProcessorStub());
 
-        DocumentedEndpointFoundEvent mockEvent = mock(DocumentedEndpointFoundEvent.class);
+        DocumentedEndpointFoundEvent eventMock = mock(DocumentedEndpointFoundEvent.class);
 
-        dynamicRouteLocator.onDocumentedEndpointFoundEvent(mockEvent);
+        dynamicRouteLocator.onDocumentedEndpointFoundEvent(eventMock);
 
         assumeThat(getRouteSet().size()).isEqualTo(1);
 
@@ -93,13 +93,13 @@ class DynamicRouteLocatorTest {
     }
 
     @Test
-    void testGetRoutes() {
+    void testGetRoutes_ifEventFired_returnsFluxOfExpectedRoute() {
         dynamicRouteLocator = new DynamicRouteLocator(getEndpointRouteProcessorStub());
 
-        DocumentedEndpointFoundEvent mockEvent = mock(DocumentedEndpointFoundEvent.class);
+        DocumentedEndpointFoundEvent eventMock = mock(DocumentedEndpointFoundEvent.class);
 
         Assumptions.assumeThatCode(() -> {
-            dynamicRouteLocator.onDocumentedEndpointFoundEvent(mockEvent);
+            dynamicRouteLocator.onDocumentedEndpointFoundEvent(eventMock);
             StepVerifier.create(dynamicRouteLocator.getRoutes())
                     .expectNextCount(1)
                     .expectComplete()

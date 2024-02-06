@@ -15,7 +15,7 @@ import reactor.test.StepVerifier;
 
 import java.util.List;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -24,7 +24,8 @@ import static org.mockito.Mockito.when;
 
 class ParamInitializerTest {
     private final List<Integer> testParamValues = List.of(1, 2, 3);
-    private final ParamInitializer paramInitializerFake = new ParamInitializer() {
+    private final Route.AsyncBuilder routeBuilder = Route.async();
+    private final ParamInitializer paramInitializer = new ParamInitializer() {
         @Override
         public String getParamName() {
             return "param";
@@ -38,26 +39,22 @@ class ParamInitializerTest {
 
     @Test
     void whenInitializeInvoked_filterAdded() {
-        Route.AsyncBuilder routeBuilderFake = Route.async();
+        assumeThat(RouteBuilderUtil.getFilters(routeBuilder)).isEmpty();
 
-        assumeThat(RouteBuilderUtil.getFilters(routeBuilderFake)).asList().isEmpty();
+        paramInitializer.initialize(routeBuilder);
 
-        paramInitializerFake.initialize(routeBuilderFake);
+        List<GatewayFilter> filters = RouteBuilderUtil.getFilters(routeBuilder);
 
-        List<GatewayFilter> filters = RouteBuilderUtil.getFilters(routeBuilderFake);
-
-        assertThat(filters).asList().hasSize(1);
+        assertThat(filters).hasSize(1);
     }
 
     @Test
     void whenInitializeInvoked_filterCorrect() {
-        Route.AsyncBuilder routeBuilderFake = Route.async();
+        assumeThat(RouteBuilderUtil.getFilters(routeBuilder)).asList().isEmpty();
 
-        assumeThat(RouteBuilderUtil.getFilters(routeBuilderFake)).asList().isEmpty();
+        paramInitializer.initialize(routeBuilder);
 
-        paramInitializerFake.initialize(routeBuilderFake);
-
-        List<GatewayFilter> filters = RouteBuilderUtil.getFilters(routeBuilderFake);
+        List<GatewayFilter> filters = RouteBuilderUtil.getFilters(routeBuilder);
 
         assumeThat(filters).asList().hasSize(1);
 
@@ -67,7 +64,7 @@ class ParamInitializerTest {
     private void checkFilter(GatewayFilter filter) {
         MockServerHttpRequest requestMock = MockServerHttpRequest.get("/test-path").build();
 
-        assumeThat(requestMock.getQueryParams().get(paramInitializerFake.getParamName())).isNull();
+        assumeThat(requestMock.getQueryParams().get(paramInitializer.getParamName())).isNull();
 
         ServerWebExchange exchangeMock = MockServerWebExchange.from(requestMock);
 
@@ -82,7 +79,7 @@ class ParamInitializerTest {
 
         verify(chainMock).filter(exchangeCaptor.capture());
 
-        List<String> actualParamValues = exchangeCaptor.getValue().getRequest().getQueryParams().get(paramInitializerFake.getParamName());
+        List<String> actualParamValues = exchangeCaptor.getValue().getRequest().getQueryParams().get(paramInitializer.getParamName());
 
         assertThat(actualParamValues)
                 .asList()

@@ -19,7 +19,7 @@ import static org.mockito.Mockito.mock;
 @ExtendWith(MockitoExtension.class)
 class SwaggerClientConfigurerTest {
     @Mock
-    WebClient mockWebClient;
+    private WebClient mockWebClient;
 
     @Test
     void ifNoSettersAreCalled_propertiesAreSetToSomeDefaultValues() {
@@ -28,42 +28,47 @@ class SwaggerClientConfigurerTest {
                 .peek(field -> field.setAccessible(true))
                 .map(field -> ReflectionUtils.getField(field, swaggerClient))
                 .toList();
-        assertSoftly(softAssertions -> {
+
+        assertSoftly(soft -> {
             for (Object fieldValue : fieldValues) {
-                softAssertions.assertThat(fieldValue).isNotNull();
+                soft.assertThat(fieldValue).isNotNull();
             }
         });
     }
 
     @Test
     void testSetScheme() {
-        String testScheme = "abc://";
+        String scheme = "abc://";
         SwaggerClient swaggerClient = SwaggerClientConfigurer.configure(mockWebClient)
-                .setScheme(testScheme)
+                .setScheme(scheme)
                 .build();
-        assertThat(swaggerClient.getScheme()).isEqualTo(testScheme);
+
+        assertThat(swaggerClient.getScheme()).isEqualTo(scheme);
     }
 
     @Test
     void ifInvalidSchemeIsSet_throwsRuntimeException() {
         String invalidScheme = "invalid_scheme";
         SwaggerClientConfigurer swaggerClientConfigurer = SwaggerClientConfigurer.configure(mockWebClient);
+
         assertThatThrownBy(() -> swaggerClientConfigurer.setScheme(invalidScheme)).isInstanceOf(RuntimeException.class);
     }
 
     @Test
     void testSetDocPath() {
-        String testDocPath = "/docs";
+        String docPath = "/docs";
         SwaggerClient swaggerClient = SwaggerClientConfigurer.configure(mockWebClient)
-                .setDocPath(testDocPath)
+                .setDocPath(docPath)
                 .build();
-        assertThat(swaggerClient.getDocPath()).isEqualTo(testDocPath);
+
+        assertThat(swaggerClient.getDocPath()).isEqualTo(docPath);
     }
 
     @Test
     void ifInvalidPathIsSet_throwsRuntimeException() {
         String invalidPath = "invalid-path/";
         SwaggerClientConfigurer swaggerClientConfigurer = SwaggerClientConfigurer.configure(mockWebClient);
+
         assertThatThrownBy(() -> swaggerClientConfigurer.setScheme(invalidPath)).isInstanceOf(RuntimeException.class);
     }
 

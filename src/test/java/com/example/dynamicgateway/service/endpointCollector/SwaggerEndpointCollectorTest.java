@@ -33,31 +33,31 @@ class SwaggerEndpointCollectorTest {
 
     @Test
     void whenCreated_hasNoEndpoints() {
-        collector = getCollectorFake();
+        collector = getCollectorWithNullFields();
         assertThat(collector.getCollectedEndpoints()).isEmpty();
     }
 
-    private SwaggerEndpointCollector getCollectorFake() {
+    private SwaggerEndpointCollector getCollectorWithNullFields() {
         return new SwaggerEndpointCollector(null, null, null);
     }
 
     @Test
     void doesNotStoreIdenticalEndpoints() {
-        collector = getCollectorFake();
+        collector = getCollectorWithNullFields();
 
         assumeThat(collector.getCollectedEndpoints()).isEmpty();
 
-        SwaggerEndpoint endpointFake = SwaggerEndpointStub.builder()
+        SwaggerEndpoint endpoint = SwaggerEndpointStub.builder()
                 .method(HttpMethod.GET)
                 .path("/test-path")
                 .build();
 
-        SwaggerEndpoint endpointFakeCopy = SwaggerEndpointStub.builder()
+        SwaggerEndpoint endpointCopy = SwaggerEndpointStub.builder()
                 .method(HttpMethod.GET)
                 .path("/test-path")
                 .build();
 
-        Stream.of(endpointFake, endpointFakeCopy).forEach(this::addEndpoint);
+        Stream.of(endpoint, endpointCopy).forEach(this::addEndpoint);
 
         assertThat(collector.getCollectedEndpoints()).hasSize(1);
     }
@@ -72,42 +72,42 @@ class SwaggerEndpointCollectorTest {
 
     @Test
     void testHasEndpoint_withExistingEndpoint() {
-        collector = getCollectorFake();
+        collector = getCollectorWithNullFields();
 
-        SwaggerEndpoint endpointFake = SwaggerEndpointStub.builder()
+        SwaggerEndpoint endpoint = SwaggerEndpointStub.builder()
                 .method(HttpMethod.GET)
                 .path("/test-path")
                 .build();
 
-        HttpMethod testMethod = endpointFake.getDetails().getMethod();
-        String testPath = endpointFake.getDetails().getPath();
-        assertThat(collector.hasEndpoint(testMethod, testPath)).isFalse();
-        addEndpoint(endpointFake);
-        assertThat(collector.hasEndpoint(testMethod, testPath)).isTrue();
+        HttpMethod method = endpoint.getDetails().getMethod();
+        String path = endpoint.getDetails().getPath();
+        assertThat(collector.hasEndpoint(method, path)).isFalse();
+        addEndpoint(endpoint);
+        assertThat(collector.hasEndpoint(method, path)).isTrue();
     }
 
     @Test
     void testHasEndpoint_withNonExistingEndpoint() {
-        collector = getCollectorFake();
+        collector = getCollectorWithNullFields();
 
-        SwaggerEndpoint endpointFakeToAdd = SwaggerEndpointStub.builder()
+        SwaggerEndpoint endpointToAdd = SwaggerEndpointStub.builder()
                 .method(HttpMethod.GET)
                 .path("/test-path-one")
                 .build();
 
-        SwaggerEndpoint endpointFakeToLeaveOut = SwaggerEndpointStub.builder()
+        SwaggerEndpoint endpointToLeaveOut = SwaggerEndpointStub.builder()
                 .method(HttpMethod.POST)
                 .path("/test-path-two")
                 .build();
 
-        addEndpoint(endpointFakeToAdd);
-        HttpMethod endpointFakeToAddMethod = endpointFakeToAdd.getDetails().getMethod();
-        String endpointFakeToAddPath = endpointFakeToAdd.getDetails().getPath();
-        assumeThat(collector.hasEndpoint(endpointFakeToAddMethod, endpointFakeToAddPath)).isTrue();
+        addEndpoint(endpointToAdd);
+        HttpMethod endpointToAddMethod = endpointToAdd.getDetails().getMethod();
+        String endpointToAddPath = endpointToAdd.getDetails().getPath();
+        assumeThat(collector.hasEndpoint(endpointToAddMethod, endpointToAddPath)).isTrue();
 
-        HttpMethod endpointFakeToLeaveOutMethod = endpointFakeToLeaveOut.getDetails().getMethod();
-        String endpointFakeToLeaveOutPath = endpointFakeToLeaveOut.getDetails().getPath();
-        assertThat(collector.hasEndpoint(endpointFakeToLeaveOutMethod, endpointFakeToLeaveOutPath)).isFalse();
+        HttpMethod endpointToLeaveOutMethod = endpointToLeaveOut.getDetails().getMethod();
+        String endpointToLeaveOutPath = endpointToLeaveOut.getDetails().getPath();
+        assertThat(collector.hasEndpoint(endpointToLeaveOutMethod, endpointToLeaveOutPath)).isFalse();
     }
 
     @Test
@@ -154,42 +154,44 @@ class SwaggerEndpointCollectorTest {
 
     @Test
     void onDiscoverableApplicationLostEvent() {
+        String resilientAppName = "resilient-app";
         List<SwaggerEndpoint> resilientEndpoints = List.of(
                 SwaggerEndpointStub.builder()
-                        .declaringAppName("resilient-app")
+                        .declaringAppName(resilientAppName)
                         .method(HttpMethod.GET)
                         .path("/test-path-one")
                         .build(),
                 SwaggerEndpointStub.builder()
-                        .declaringAppName("resilient-app")
+                        .declaringAppName(resilientAppName)
                         .method(HttpMethod.POST)
                         .path("/test-path-one")
                         .build(),
                 SwaggerEndpointStub.builder()
-                        .declaringAppName("resilient-app")
+                        .declaringAppName(resilientAppName)
                         .method(HttpMethod.PUT)
                         .path("/test-path-two")
                         .build()
         );
 
+        String fragileAppName = "fragile-app";
         List<SwaggerEndpoint> fragileEndpoints = List.of(
                 SwaggerEndpointStub.builder()
-                        .declaringAppName("fragile-app")
+                        .declaringAppName(fragileAppName)
                         .method(HttpMethod.HEAD)
                         .path("/test-path-one")
                         .build(),
                 SwaggerEndpointStub.builder()
-                        .declaringAppName("fragile-app")
+                        .declaringAppName(fragileAppName)
                         .method(HttpMethod.OPTIONS)
                         .path("/test-path-one")
                         .build()
         );
 
         DiscoverableApplication<Application> resilientApp = mock(EurekaDiscoverableApplication.class);
-        when(resilientApp.getName()).thenReturn("resilient-app");
+        when(resilientApp.getName()).thenReturn(resilientAppName);
 
         DiscoverableApplication<Application> fragileApp = mock(EurekaDiscoverableApplication.class);
-        when(fragileApp.getName()).thenReturn("fragile-app");
+        when(fragileApp.getName()).thenReturn(fragileAppName);
 
         collector = new SwaggerEndpointCollector(null, null, null);
 

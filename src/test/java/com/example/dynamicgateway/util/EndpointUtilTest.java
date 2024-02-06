@@ -1,18 +1,32 @@
 package com.example.dynamicgateway.util;
 
+import com.example.dynamicgateway.model.documentedEndpoint.DocumentedEndpoint;
+import com.example.dynamicgateway.model.gatewayMeta.GatewayMeta;
+import com.example.dynamicgateway.testModel.SwaggerEndpointStub;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class EndpointUtilTest {
+    @Mock
+    GatewayMeta gatewayMetaMock;
 
     @Test
     void testWthRemovedPrefix_remainsSame_ifNoIgnoredPrefixesPassed() {
         String path = "/auth/test-path";
-        String returnedPath = EndpointUtil.withRemovedPrefix(path, Collections.emptyList());
+        DocumentedEndpoint<?> endpoint = SwaggerEndpointStub.builder().path(path).build();
+
+        when(gatewayMetaMock.getIgnoredPrefixes()).thenReturn(Collections.emptyList());
+
+        String returnedPath = EndpointUtil.withRemovedPrefix(endpoint, gatewayMetaMock);
         assertThat(returnedPath).isEqualTo(path);
     }
 
@@ -20,7 +34,12 @@ class EndpointUtilTest {
     void testWthRemovedPrefix_returnsPathWithoutPrefix_ifStartsWithIgnoredPrefix() {
         String prefix = "/auth";
         String path = prefix + "/test-path";
-        String returnedPath = EndpointUtil.withRemovedPrefix(path, List.of(prefix));
+        DocumentedEndpoint<?> endpoint = SwaggerEndpointStub.builder().path(path).build();
+
+        when(gatewayMetaMock.getIgnoredPrefixes()).thenReturn(List.of(prefix));
+
+        String returnedPath = EndpointUtil.withRemovedPrefix(endpoint, gatewayMetaMock);
+
         String expectedPath = path.substring(prefix.length());
         assertThat(returnedPath).isEqualTo(expectedPath);
     }
@@ -30,18 +49,27 @@ class EndpointUtilTest {
         String prefix = "/auth";
         String longerPrefix = "/authorized";
         String path = longerPrefix + "/test-path";
-        String returnedPath = EndpointUtil.withRemovedPrefix(path, List.of(prefix, longerPrefix));
+
+        DocumentedEndpoint<?> endpoint = SwaggerEndpointStub.builder().path(path).build();
+
+        when(gatewayMetaMock.getIgnoredPrefixes()).thenReturn(List.of(prefix, longerPrefix));
+
+        String returnedPath = EndpointUtil.withRemovedPrefix(endpoint, gatewayMetaMock);
+
         String expectedPath = path.substring(longerPrefix.length());
         assertThat(returnedPath).isEqualTo(expectedPath);
-        String anotherReturnedPath = EndpointUtil.withRemovedPrefix(path, List.of(longerPrefix, prefix));
-        assertThat(anotherReturnedPath).isEqualTo(expectedPath);
     }
 
     @Test
-    void testWthRemovedPrefix_ifIgnoredPrefixSubstringOfPathFragment_returnsUnchangedPath() {
+    void testWthRemovedPrefix_ifIgnoredPrefixSubstringOfFirstPathFragment_returnsUnchangedPath() {
         String prefix = "/auth";
         String path = "/authorized/test-path";
-        String returnedPath = EndpointUtil.withRemovedPrefix(path, List.of(prefix));
+
+        DocumentedEndpoint<?> endpoint = SwaggerEndpointStub.builder().path(path).build();
+
+        when(gatewayMetaMock.getIgnoredPrefixes()).thenReturn(List.of(prefix));
+
+        String returnedPath = EndpointUtil.withRemovedPrefix(endpoint, gatewayMetaMock);
         assertThat(returnedPath).isEqualTo(path);
     }
 
@@ -49,7 +77,12 @@ class EndpointUtilTest {
     void testExtractPrefix_returnsEmptyString_ifNoPrefixesPassed() {
         String prefix = "/auth";
         String path = prefix + "/test-path";
-        String returnedPrefix = EndpointUtil.extractPrefix(path, Collections.emptyList());
+
+        DocumentedEndpoint<?> endpoint = SwaggerEndpointStub.builder().path(path).build();
+
+        when(gatewayMetaMock.getIgnoredPrefixes()).thenReturn(Collections.emptyList());
+
+        String returnedPrefix = EndpointUtil.extractPrefix(endpoint, gatewayMetaMock);
         assertThat(returnedPrefix).isEqualTo("");
     }
 
@@ -57,7 +90,12 @@ class EndpointUtilTest {
     void testExtractPrefix_returnsPrefix_ifPrefixContainedInPassedCollection() {
         String prefix = "/auth";
         String path = prefix + "/test-path";
-        String returnedPrefix = EndpointUtil.extractPrefix(path, List.of(prefix));
+
+        DocumentedEndpoint<?> endpoint = SwaggerEndpointStub.builder().path(path).build();
+
+        when(gatewayMetaMock.getIgnoredPrefixes()).thenReturn(List.of(prefix));
+
+        String returnedPrefix = EndpointUtil.extractPrefix(endpoint, gatewayMetaMock);
         assertThat(returnedPrefix).isEqualTo(prefix);
     }
 
@@ -66,17 +104,25 @@ class EndpointUtilTest {
         String prefix = "/auth";
         String longerPrefix = "/authorized";
         String path = longerPrefix + "/test-path";
-        String returnedPrefix = EndpointUtil.extractPrefix(path, List.of(prefix, longerPrefix));
+
+        DocumentedEndpoint<?> endpoint = SwaggerEndpointStub.builder().path(path).build();
+
+        when(gatewayMetaMock.getIgnoredPrefixes()).thenReturn(List.of(prefix, longerPrefix));
+
+        String returnedPrefix = EndpointUtil.extractPrefix(endpoint, gatewayMetaMock);
         assertThat(returnedPrefix).isEqualTo(longerPrefix);
-        String anotherReturnedPrefix = EndpointUtil.extractPrefix(path, List.of(longerPrefix, prefix));
-        assertThat(anotherReturnedPrefix).isEqualTo(longerPrefix);
     }
 
     @Test
     void testExtractPrefix_ifIgnoredPrefixSubstringOfPathFragment_returnsEmptyString() {
         String prefix = "/auth";
         String path = "/authorized/test-path";
-        String returnedPath = EndpointUtil.extractPrefix(path, List.of(prefix));
+
+        DocumentedEndpoint<?> endpoint = SwaggerEndpointStub.builder().path(path).build();
+
+        when(gatewayMetaMock.getIgnoredPrefixes()).thenReturn(List.of(prefix));
+
+        String returnedPath = EndpointUtil.extractPrefix(endpoint, gatewayMetaMock);
         assertThat(returnedPath).isEqualTo("");
     }
 }
