@@ -20,7 +20,6 @@ import org.springframework.cloud.gateway.handler.predicate.PathRoutePredicateFac
 import org.springframework.cloud.gateway.route.Route;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
 import org.springframework.web.server.ServerWebExchange;
 
 import java.util.List;
@@ -33,7 +32,6 @@ public class RouteProcessorConfig {
     private final GatewayMeta gatewayMeta;
 
     @Bean
-    @Order(0)
     public EndpointRouteProcessor basePredicateProcessor() {
         return (routeInConstruction, endpoint) -> {
             setBasePredicate(routeInConstruction, endpoint);
@@ -62,7 +60,6 @@ public class RouteProcessorConfig {
     }
 
     @Bean
-    @Order(1)
     public EndpointRouteProcessor removeGatewayPrefixRouteProcessor() {
         return (routeInConstruction, endpoint) -> {
             routeInConstruction.filter(wrapInOrderedGatewayFilter(
@@ -87,7 +84,6 @@ public class RouteProcessorConfig {
     }
 
     @Bean
-    @Order(2)
     public EndpointRouteProcessor uriRouteProcessor() {
         return (routeInConstruction, endpoint) -> {
             DiscoverableApplication<?> discoverableApp = endpoint.getDeclaringApp().getDiscoverableApp();
@@ -96,7 +92,6 @@ public class RouteProcessorConfig {
     }
 
     @Bean
-    @Order(3)
     public EndpointRouteProcessor appendEndpointPrefixRouteProcessor() {
         return (routeInConstruction, endpoint) -> {
             String endpointPrefix = EndpointUtil.extractPrefix(endpoint, gatewayMeta);
@@ -111,7 +106,6 @@ public class RouteProcessorConfig {
     }
 
     @Bean
-    @Order(4)
     public EndpointRouteProcessor idRouteProcessor() {
         return (routeInConstruction, endpoint) -> routeInConstruction.id(UUID.randomUUID().toString());
     }
