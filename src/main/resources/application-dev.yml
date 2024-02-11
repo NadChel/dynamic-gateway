@@ -1,3 +1,6 @@
+server:
+  port: 8080
+
 # Actuator
 management:
   endpoints:
@@ -34,7 +37,7 @@ springdoc:
 
 gateway:
   servers:
-    - url: https://localhost:8080
+    - url: http://localhost:${server.port}
       description: Dynamic-Gateway
   versionPrefix: /api/v1
   publicPatterns:

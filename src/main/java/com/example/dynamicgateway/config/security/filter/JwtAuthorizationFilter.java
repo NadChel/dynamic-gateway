@@ -43,11 +43,11 @@ public class JwtAuthorizationFilter implements WebFilter {
     @Override
     @SuppressWarnings("NullableProblems")
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        String jwt = exchange.getRequest().getHeaders().getFirst(JWT.HEADER);
+        String authorizationHeader = exchange.getRequest().getHeaders().getFirst(JWT.HEADER);
 
-        if (jwt != null) {
+        if (authorizationHeader != null) {
             try {
-                return authenticateAndFilter(exchange, chain, jwt);
+                return authenticateAndFilter(exchange, chain, authorizationHeader);
             } catch (ExpiredJwtException e) {
                 log.error("Token has expired. " + e.getMessage());
                 return createError(exchange, e);
@@ -65,9 +65,14 @@ public class JwtAuthorizationFilter implements WebFilter {
         return chain.filter(exchange);
     }
 
-    private Mono<Void> authenticateAndFilter(ServerWebExchange exchange, WebFilterChain chain, String jwt) {
+    private Mono<Void> authenticateAndFilter(ServerWebExchange exchange, WebFilterChain chain, String authorizationHeader) {
+        String jwt = extractToken(authorizationHeader);
         UsernamePasswordAuthenticationToken upat = buildUpat(jwt);
         return chain.filter(exchange).contextWrite(ReactiveSecurityContextHolder.withAuthentication(upat));
+    }
+
+    private String extractToken(String authorizationHeader) {
+        return authorizationHeader.substring(authorizationHeader.indexOf(" ")).trim();
     }
 
     private UsernamePasswordAuthenticationToken buildUpat(String jwt) {

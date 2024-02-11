@@ -1,6 +1,7 @@
 package com.example.dynamicgateway.service.swaggerUiSupport;
 
 import com.example.dynamicgateway.model.documentedApplication.SwaggerApplication;
+import com.example.dynamicgateway.service.swaggerUiSupport.serializer.SwaggerUiConfigSerializer;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import lombok.SneakyThrows;

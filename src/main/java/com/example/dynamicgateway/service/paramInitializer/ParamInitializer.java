@@ -29,7 +29,7 @@ public interface ParamInitializer {
                     URI newUri = UriComponentsBuilder
                             .fromUri(exchange.getRequest().getURI())
                             .replaceQueryParam(getParamName(), paramValues)
-                            .build(true)
+                            .build()
                             .toUri();
 
                     ServerHttpRequest newRequest = exchange

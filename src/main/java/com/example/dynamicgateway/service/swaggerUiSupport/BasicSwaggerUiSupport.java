@@ -13,9 +13,9 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -28,11 +28,18 @@ import java.util.stream.Collectors;
 
 @Component
 @Slf4j
-@RequiredArgsConstructor
 public class BasicSwaggerUiSupport implements SwaggerUiSupport {
     private final EndpointCollector<SwaggerEndpoint> endpointCollector;
     private final GatewayMeta gatewayMeta;
     private final ObjectMapper objectMapper;
+
+    public BasicSwaggerUiSupport(EndpointCollector<SwaggerEndpoint> endpointCollector,
+                                 GatewayMeta gatewayMeta,
+                                 @Qualifier("plain") ObjectMapper objectMapper) {
+        this.endpointCollector = endpointCollector;
+        this.gatewayMeta = gatewayMeta;
+        this.objectMapper = objectMapper;
+    }
 
     @Override
     public Mono<SwaggerUiConfig> getSwaggerUiConfig() {

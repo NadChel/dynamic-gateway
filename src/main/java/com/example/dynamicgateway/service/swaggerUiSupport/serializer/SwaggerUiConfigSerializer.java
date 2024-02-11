@@ -1,4 +1,4 @@
-package com.example.dynamicgateway.service.swaggerUiSupport;
+package com.example.dynamicgateway.service.swaggerUiSupport.serializer;
 
 import com.example.dynamicgateway.model.documentedApplication.SwaggerApplication;
 import com.fasterxml.jackson.core.JsonGenerator;
