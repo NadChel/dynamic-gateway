@@ -12,8 +12,8 @@ import org.springframework.http.HttpMethod;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class SwaggerApplicationTest {
     @Test
@@ -37,7 +37,7 @@ class SwaggerApplicationTest {
         );
 
         DiscoverableApplication<?> discoverableApp = mock(DiscoverableApplication.class);
-        when(discoverableApp.getName()).thenReturn(appName);
+        given(discoverableApp.getName()).willReturn(appName);
 
         SwaggerParseResult parseResult = SwaggerParseResultGenerator.createForEndpoints(info, endpoints);
 

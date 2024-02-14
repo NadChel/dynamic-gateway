@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.BDDMockito.given;
 
 class SwaggerEndpointCollectorTest {
     private SwaggerEndpointCollector collector;
@@ -64,10 +64,10 @@ class SwaggerEndpointCollectorTest {
 
     @SneakyThrows
     @SuppressWarnings("unchecked")
-    private void addEndpoint(SwaggerEndpoint endpointFake) {
+    private void addEndpoint(SwaggerEndpoint endpoint) {
         Field documentedEndpointsField = collector.getClass().getDeclaredField("documentedEndpoints");
         documentedEndpointsField.setAccessible(true);
-        ((Set<SwaggerEndpoint>) documentedEndpointsField.get(collector)).add(endpointFake);
+        ((Set<SwaggerEndpoint>) documentedEndpointsField.get(collector)).add(endpoint);
     }
 
     @Test
@@ -115,7 +115,7 @@ class SwaggerEndpointCollectorTest {
         String appName = "test-application";
 
         DiscoverableApplication<?> discoverableApplicationMock = mock(DiscoverableApplication.class);
-        when(discoverableApplicationMock.getName()).thenReturn(appName);
+        given(discoverableApplicationMock.getName()).willReturn(appName);
 
         List<SwaggerEndpoint> endpoints = List.of(
                 SwaggerEndpointStub.builder()
@@ -138,7 +138,7 @@ class SwaggerEndpointCollectorTest {
         SwaggerParseResult parseResult = SwaggerParseResultGenerator.createForEndpoints(endpoints);
 
         ApplicationDocClient<SwaggerParseResult> docClientMock = mock(SwaggerClient.class);
-        when(docClientMock.findApplicationDoc(discoverableApplicationMock)).thenReturn(Mono.just(parseResult));
+        given(docClientMock.findApplicationDoc(discoverableApplicationMock)).willReturn(Mono.just(parseResult));
 
         ApplicationEventPublisher eventPublisherMock = mock(ApplicationEventPublisher.class);
 
@@ -188,12 +188,12 @@ class SwaggerEndpointCollectorTest {
         );
 
         DiscoverableApplication<Application> resilientApp = mock(EurekaDiscoverableApplication.class);
-        when(resilientApp.getName()).thenReturn(resilientAppName);
+        given(resilientApp.getName()).willReturn(resilientAppName);
 
         DiscoverableApplication<Application> fragileApp = mock(EurekaDiscoverableApplication.class);
-        when(fragileApp.getName()).thenReturn(fragileAppName);
+        given(fragileApp.getName()).willReturn(fragileAppName);
 
-        collector = new SwaggerEndpointCollector(null, null, null);
+        collector = getCollectorWithNullFields();
 
         Stream.concat(resilientEndpoints.stream(), fragileEndpoints.stream()).forEach(this::addEndpoint);
 

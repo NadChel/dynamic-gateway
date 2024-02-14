@@ -23,7 +23,7 @@ class BearerAuthenticatorTest {
     static final String BEARER_SPACE = "bearer ";
 
     @Test
-    void testBuildAuthentication_withValidToken() {
+    void testTryExtractAuthentication_withValidToken() {
         String principal = "mickey_m";
         List<String> roles = List.of("user", "admin");
 
@@ -36,17 +36,17 @@ class BearerAuthenticatorTest {
                 .signWith(key)
                 .compact();
         AuthorizationHeader header = new AuthorizationHeader(BEARER_SPACE + validToken);
-        BearerAuthenticator authenticator = new BearerAuthenticator(header);
+        BearerAuthenticator authenticator = new BearerAuthenticator();
 
-        assertThatCode(authenticator::buildAuthentication).doesNotThrowAnyException();
+        assertThatCode(() -> authenticator.tryExtractAuthentication(header)).doesNotThrowAnyException();
 
-        Authentication authentication = authenticator.buildAuthentication();
+        Authentication authentication = authenticator.tryExtractAuthentication(header);
         assertThat(authentication.getPrincipal()).isEqualTo(principal);
         assertThat(authentication.getAuthorities()).map(GrantedAuthority::getAuthority).isEqualTo(roles);
     }
 
     @Test
-    void testBuildAuthentication_withExpiredToken() {
+    void testTryExtractAuthentication_withExpiredToken() {
         SecretKey key = Keys.hmacShaKeyFor(JWT.KEY.getBytes());
 
         String expiredToken = Jwts.builder()
@@ -59,13 +59,13 @@ class BearerAuthenticatorTest {
 
     private void testForInvalidToken(String invalidToken) {
         AuthorizationHeader header = new AuthorizationHeader(BEARER_SPACE + invalidToken);
-        BearerAuthenticator authenticator = new BearerAuthenticator(header);
+        BearerAuthenticator authenticator = new BearerAuthenticator();
 
-        assertThatThrownBy(authenticator::buildAuthentication).isInstanceOf(AuthenticationException.class);
+        assertThatThrownBy(() -> authenticator.tryExtractAuthentication(header)).isInstanceOf(AuthenticationException.class);
     }
 
     @Test
-    void testBuildAuthentication_withPhonySigningKey() {
+    void testTryExtractAuthentication_withPhonySigningKey() {
         SecretKey phonyKey = Keys.hmacShaKeyFor(UUID.randomUUID().toString().getBytes());
 
         String jwtWithPhonyKey = Jwts.builder()
@@ -77,7 +77,7 @@ class BearerAuthenticatorTest {
     }
 
     @Test
-    void testBuildAuthentication_withMalformedToken() {
+    void testTryExtractAuthentication_withMalformedToken() {
         SecretKey key = Keys.hmacShaKeyFor(JWT.KEY.getBytes());
 
         String malformedToken = Jwts.builder()

@@ -1,9 +1,7 @@
 package com.example.dynamicgateway.config.security.filter;
 
-import com.example.dynamicgateway.exception.UnsupportedAuthenticationSchemeException;
 import com.example.dynamicgateway.model.authorizationHeader.AuthorizationHeader;
 import com.example.dynamicgateway.service.authenticator.Authenticator;
-import com.example.dynamicgateway.service.authenticator.Authenticators;
 import jakarta.ws.rs.core.HttpHeaders;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -24,22 +22,21 @@ import reactor.core.publisher.Mono;
  * A {@link WebFilter} that tries to build an {@link Authentication} object from the request's {@code Authorization} header
  * and pass it to the {@link SecurityContext}.
  * <p>
- * This class is oblivious to the header's authentication scheme and relies on an {@link Authenticators} object
- * to provide a matching {@link Authenticator} implementation handling a particular authentication scheme
- * (if such an implementation is available)
+ * This class is oblivious to the header's authentication scheme and relies on an injected {@link Authenticator} object
+ * to actually parse a credentials token contained in the header
  */
 @Slf4j
 @Component
 public class AuthenticationWebFilter implements WebFilter {
-    private final Authenticators authenticators;
+    private final Authenticator authenticator;
 
-    public AuthenticationWebFilter(Authenticators authenticators) {
-        this.authenticators = authenticators;
+    public AuthenticationWebFilter(Authenticator authenticator) {
+        this.authenticator = authenticator;
     }
 
     /**
-     * Filters the incoming request by examining the {@code Authorization} header and then trying to build an {@link Authentication}
-     * instance from it and put it in the {@link SecurityContext}.
+     * Filters the incoming request by examining the {@code Authorization} header and then trying to build
+     * an {@link Authentication} instance from it and put it in the {@link SecurityContext}
      * <p>
      * If the request doesn't have the header or the header has no value, the filter simply forwards the request
      * down the filter chain
@@ -67,10 +64,8 @@ public class AuthenticationWebFilter implements WebFilter {
 
     private Mono<Void> authenticateAndFilter(ServerWebExchange exchange, WebFilterChain chain, String rawHeader) {
         AuthorizationHeader authorizationHeader = new AuthorizationHeader(rawHeader);
-        Authentication authentication = authenticators
-                .findAuthenticatorFor(authorizationHeader)
-                .orElseThrow(() -> new UnsupportedAuthenticationSchemeException(authorizationHeader.getScheme()))
-                .buildAuthentication();
+        Authentication authentication = authenticator
+                .tryExtractAuthentication(authorizationHeader);
         return chain.filter(exchange).contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication));
     }
 

@@ -1,32 +1,29 @@
 package com.example.dynamicgateway.service.authenticator;
 
+import com.example.dynamicgateway.exception.UnsupportedAuthenticationSchemeException;
 import com.example.dynamicgateway.model.authorizationHeader.AuthorizationHeader;
-import lombok.SneakyThrows;
+import org.springframework.context.annotation.Primary;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
 
-public class Authenticators {
-    private final List<? extends Authenticator> authenticators;
+@Component
+@Primary
+public class Authenticators implements Authenticator {
+    private final List<? extends LeafAuthenticator> authenticators;
 
-    public Authenticators(List<? extends Authenticator> authenticators) {
+    public Authenticators(List<? extends LeafAuthenticator> authenticators) {
         this.authenticators = authenticators;
     }
 
-    public Optional<Authenticator> findAuthenticatorFor(AuthorizationHeader authorizationHeader) {
-        String scheme = authorizationHeader.getScheme();
-        Optional<? extends Class<? extends Authenticator>> optionalAuthenticatorClass = authenticators.stream()
-                .filter(authenticator -> authenticator.getHandledScheme().equalsIgnoreCase(scheme))
-                .map(authenticator -> authenticator.getClass())
-                .findFirst();
-        return optionalAuthenticatorClass.map(authClass -> instantiate(authClass, authorizationHeader));
+    @Override
+    public Authentication tryExtractAuthentication(AuthorizationHeader authorizationHeader) {
+        for (LeafAuthenticator authenticator : authenticators)
+            if (authenticator.hasSupportedScheme(authorizationHeader))
+                return authenticator.extractAuthentication(authorizationHeader);
+        throw new UnsupportedAuthenticationSchemeException(authorizationHeader.getScheme());
     }
 
-    @SneakyThrows
-    private Authenticator instantiate(Class<? extends Authenticator> authenticatorClass,
-                                                AuthorizationHeader header) {
-        return authenticatorClass.getConstructor(AuthorizationHeader.class)
-                .newInstance(header);
-    }
 }
 

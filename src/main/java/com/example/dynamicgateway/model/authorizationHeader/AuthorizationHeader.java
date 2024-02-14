@@ -10,6 +10,7 @@ public class AuthorizationHeader {
     private final String scheme;
     private final String credentials;
     public AuthorizationHeader(String authorizationHeaderString) {
+        Objects.requireNonNull(authorizationHeaderString, "Authorization header string cannot be null");
         try {
             String trimmedHeader = authorizationHeaderString.trim();
             int indexOfSpace = trimmedHeader.indexOf(" ");

@@ -11,6 +11,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -18,22 +19,17 @@ import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
 
-public class BearerAuthenticator extends Authenticator {
-    public BearerAuthenticator(String credentials) {
-        super(credentials);
-    }
-    public BearerAuthenticator(AuthorizationHeader header) {
-        super(header);
-    }
+@Component
+public class BearerAuthenticator implements LeafAuthenticator {
 
     @Override
-    public String getHandledScheme() {
+    public String getSupportedScheme() {
         return "bearer";
     }
 
     @Override
-    public Authentication buildAuthentication() {
-        Claims claims = getClaims(credentials);
+    public Authentication extractAuthentication(AuthorizationHeader header) {
+        Claims claims = getClaims(header.getCredentials());
 
         Object clientId = getPrincipalName(claims);
         List<? extends GrantedAuthority> authorities = getGrantedAuthorities(claims);

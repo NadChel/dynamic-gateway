@@ -2,7 +2,6 @@ package com.example.dynamicgateway.config.security.filter;
 
 import com.example.dynamicgateway.model.authorizationHeader.AuthorizationHeader;
 import com.example.dynamicgateway.service.authenticator.Authenticator;
-import com.example.dynamicgateway.service.authenticator.Authenticators;
 import jakarta.ws.rs.core.HttpHeaders;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
@@ -30,14 +29,12 @@ import reactor.util.context.Context;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThatCode;
-import static org.mockito.Mockito.mock;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AuthenticationWebFilterTest {
@@ -45,21 +42,20 @@ class AuthenticationWebFilterTest {
     @InjectMocks
     private AuthenticationWebFilter filter;
     @Mock
-    private Authenticators authenticators;
+    private Authenticator authenticatorMock;
     @Mock
     private WebFilterChain chainMock;
 
     @Test
     void testFilter_withNullToken_exchangeFilteredFurther() {
         ServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/"));
-
-        when(chainMock.filter(exchange)).thenReturn(Mono.empty());
+        given(chainMock.filter(exchange)).willReturn(Mono.empty());
 
         StepVerifier.create(filter.filter(exchange, chainMock))
                 .expectComplete()
                 .verify();
 
-        verify(chainMock).filter(exchange);
+        then(chainMock).should().filter(exchange);
     }
 
     @Test
@@ -68,54 +64,46 @@ class AuthenticationWebFilterTest {
                 .get("/")
                 .header(HttpHeaders.AUTHORIZATION, validToken)
                 .build();
-
         ServerWebExchange exchange = MockServerWebExchange.from(request);
 
-        when(chainMock.filter(exchange)).thenReturn(Mono.empty());
-
+        AuthorizationHeader authorizationHeader = new AuthorizationHeader(validToken);
         TestingAuthenticationToken authenticationToken =
                 new TestingAuthenticationToken("some principal", "some credentials");
-        Authenticator authenticatorMock = mock(Authenticator.class);
-        when(authenticatorMock.buildAuthentication()).thenReturn(authenticationToken);
+        given(authenticatorMock.tryExtractAuthentication(authorizationHeader)).willReturn(authenticationToken);
 
-        AuthorizationHeader authorizationHeader = new AuthorizationHeader(validToken);
-        when(authenticators.findAuthenticatorFor(authorizationHeader)).thenReturn(Optional.of(authenticatorMock));
+        given(chainMock.filter(exchange)).willReturn(Mono.empty());
 
         StepVerifier.create(filter.filter(exchange, chainMock))
                 .expectComplete()
                 .verify();
 
-        verify(chainMock).filter(exchange);
+        then(chainMock).should().filter(exchange);
     }
 
     @Test
     void testFilter_withValidToken_authenticationPassedToContext() {
         String sub = "mickey_m";
         List<String> roles = List.of("user", "admin");
-
-        Authenticator authenticatorMock = mock(Authenticator.class);
         TestingAuthenticationToken authenticationToken = new TestingAuthenticationToken(
                 sub, null, roles.stream().map(SimpleGrantedAuthority::new).toList()
         );
-        when(authenticatorMock.buildAuthentication()).thenReturn(authenticationToken);
 
         AuthorizationHeader authorizationHeader = new AuthorizationHeader(validToken);
-        when(authenticators.findAuthenticatorFor(authorizationHeader)).thenReturn(Optional.of(authenticatorMock));
+        given(authenticatorMock.tryExtractAuthentication(authorizationHeader)).willReturn(authenticationToken);
 
         MockServerHttpRequest request = MockServerHttpRequest
                 .get("/")
                 .header(HttpHeaders.AUTHORIZATION, validToken)
                 .build();
-
         ServerWebExchange exchange = MockServerWebExchange.from(request);
 
-        when(chainMock.filter(exchange)).thenReturn(Mono.empty());
+        given(chainMock.filter(exchange)).willReturn(Mono.empty());
 
         assumeThatCode(() -> {
             StepVerifier.create(filter.filter(exchange, chainMock))
                     .expectComplete()
                     .verify();
-            verify(chainMock).filter(exchange);
+            then(chainMock).should().filter(exchange);
         }).doesNotThrowAnyException();
 
         StepVerifier.create(filter.filter(exchange, chainMock))
@@ -163,28 +151,23 @@ class AuthenticationWebFilterTest {
     @Test
     void testFilter_withInvalidToken() {
         String invalidToken = "it's an invalid token";
-        Authenticator authenticatorMock = mock(Authenticator.class);
-
-        when(authenticatorMock.buildAuthentication()).thenThrow(new BadCredentialsException("Invalid token"));
-
         AuthorizationHeader authorizationHeader = new AuthorizationHeader(invalidToken);
-        when(authenticators.findAuthenticatorFor(authorizationHeader)).thenReturn(Optional.of(authenticatorMock));
+
+        given(authenticatorMock.tryExtractAuthentication(authorizationHeader)).willThrow(new BadCredentialsException("Invalid token"));
 
         MockServerHttpRequest request = MockServerHttpRequest
                 .get("/")
                 .header(HttpHeaders.AUTHORIZATION, invalidToken)
                 .build();
-
         ServerWebExchange exchange = MockServerWebExchange.from(request);
 
         StepVerifier.create(filter.filter(exchange, chainMock))
                 .expectComplete()
                 .verify();
 
-        verify(chainMock, never()).filter(exchange);
+        then(chainMock).should(never()).filter(exchange);
 
         ServerHttpResponse response = exchange.getResponse();
-
         assertThat(response).extracting(ServerHttpResponse::getStatusCode).isEqualTo(HttpStatus.UNAUTHORIZED);
 
         StepVerifier.create(((MockServerHttpResponse) response).getBodyAsString())
