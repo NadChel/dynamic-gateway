@@ -1,11 +1,13 @@
 package com.example.dynamicgateway.config.security.filter;
 
-import com.example.dynamicgateway.constant.JWT;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
+import com.example.dynamicgateway.model.authorizationHeader.AuthorizationHeader;
+import com.example.dynamicgateway.service.authenticator.Authenticator;
+import com.example.dynamicgateway.service.authenticator.Authenticators;
+import jakarta.ws.rs.core.HttpHeaders;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
@@ -13,8 +15,11 @@ import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.http.server.reactive.MockServerHttpResponse;
 import org.springframework.mock.web.server.MockServerWebExchange;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilterChain;
@@ -22,28 +27,30 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import reactor.util.context.Context;
 
-import javax.crypto.SecretKey;
-import java.sql.Date;
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThatCode;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class JwtAuthorizationFilterTest {
-    private final JwtAuthorizationFilter filter = new JwtAuthorizationFilter();
+class AuthenticationWebFilterTest {
+    private final String validToken = "imagine it's a valid token";
+    @InjectMocks
+    private AuthenticationWebFilter filter;
+    @Mock
+    private Authenticators authenticators;
     @Mock
     private WebFilterChain chainMock;
 
     @Test
-    void testFilter_withNullJwt_exchangeFilteredFurther() {
+    void testFilter_withNullToken_exchangeFilteredFurther() {
         ServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/"));
 
         when(chainMock.filter(exchange)).thenReturn(Mono.empty());
@@ -56,22 +63,23 @@ class JwtAuthorizationFilterTest {
     }
 
     @Test
-    void testFilter_withValidJwt_exchangeFilteredFurther() {
-        SecretKey key = Keys.hmacShaKeyFor(JWT.KEY.getBytes());
-
-        String validJwt = Jwts.builder()
-                .setExpiration(Date.valueOf(LocalDate.now().plusYears(1)))
-                .signWith(key)
-                .compact();
-
+    void testFilter_withValidToken_exchangeFilteredFurther() {
         MockServerHttpRequest request = MockServerHttpRequest
                 .get("/")
-                .header(JWT.HEADER, validJwt)
+                .header(HttpHeaders.AUTHORIZATION, validToken)
                 .build();
 
         ServerWebExchange exchange = MockServerWebExchange.from(request);
 
         when(chainMock.filter(exchange)).thenReturn(Mono.empty());
+
+        TestingAuthenticationToken authenticationToken =
+                new TestingAuthenticationToken("some principal", "some credentials");
+        Authenticator authenticatorMock = mock(Authenticator.class);
+        when(authenticatorMock.buildAuthentication()).thenReturn(authenticationToken);
+
+        AuthorizationHeader authorizationHeader = new AuthorizationHeader(validToken);
+        when(authenticators.findAuthenticatorFor(authorizationHeader)).thenReturn(Optional.of(authenticatorMock));
 
         StepVerifier.create(filter.filter(exchange, chainMock))
                 .expectComplete()
@@ -81,22 +89,22 @@ class JwtAuthorizationFilterTest {
     }
 
     @Test
-    void testFilter_withValidJwt_authenticationPassedToContext() {
-        SecretKey key = Keys.hmacShaKeyFor(JWT.KEY.getBytes());
-
+    void testFilter_withValidToken_authenticationPassedToContext() {
         String sub = "mickey_m";
         List<String> roles = List.of("user", "admin");
 
-        String validJwt = Jwts.builder()
-                .claim(JWT.SUB, sub)
-                .claim(JWT.ROLES, roles)
-                .setExpiration(Date.valueOf(LocalDate.now().plusYears(1)))
-                .signWith(key)
-                .compact();
+        Authenticator authenticatorMock = mock(Authenticator.class);
+        TestingAuthenticationToken authenticationToken = new TestingAuthenticationToken(
+                sub, null, roles.stream().map(SimpleGrantedAuthority::new).toList()
+        );
+        when(authenticatorMock.buildAuthentication()).thenReturn(authenticationToken);
+
+        AuthorizationHeader authorizationHeader = new AuthorizationHeader(validToken);
+        when(authenticators.findAuthenticatorFor(authorizationHeader)).thenReturn(Optional.of(authenticatorMock));
 
         MockServerHttpRequest request = MockServerHttpRequest
                 .get("/")
-                .header(JWT.HEADER, validJwt)
+                .header(HttpHeaders.AUTHORIZATION, validToken)
                 .build();
 
         ServerWebExchange exchange = MockServerWebExchange.from(request);
@@ -153,21 +161,18 @@ class JwtAuthorizationFilterTest {
     }
 
     @Test
-    void testFilter_withExpiredJwt() {
-        SecretKey key = Keys.hmacShaKeyFor(JWT.KEY.getBytes());
+    void testFilter_withInvalidToken() {
+        String invalidToken = "it's an invalid token";
+        Authenticator authenticatorMock = mock(Authenticator.class);
 
-        String expiredJwt = Jwts.builder()
-                .setExpiration(Date.valueOf(LocalDate.now().minusDays(1)))
-                .signWith(key)
-                .compact();
+        when(authenticatorMock.buildAuthentication()).thenThrow(new BadCredentialsException("Invalid token"));
 
-        testForInvalidJwt(expiredJwt);
-    }
+        AuthorizationHeader authorizationHeader = new AuthorizationHeader(invalidToken);
+        when(authenticators.findAuthenticatorFor(authorizationHeader)).thenReturn(Optional.of(authenticatorMock));
 
-    private void testForInvalidJwt(String jwt) {
         MockServerHttpRequest request = MockServerHttpRequest
                 .get("/")
-                .header(JWT.HEADER, jwt)
+                .header(HttpHeaders.AUTHORIZATION, invalidToken)
                 .build();
 
         ServerWebExchange exchange = MockServerWebExchange.from(request);
@@ -186,29 +191,5 @@ class JwtAuthorizationFilterTest {
                 .expectNextMatches(StringUtils::isNotBlank)
                 .expectComplete()
                 .verify();
-    }
-
-    @Test
-    void testFilter_withPhonySigningKey() {
-        SecretKey phonyKey = Keys.hmacShaKeyFor(UUID.randomUUID().toString().getBytes());
-
-        String jwtWithPhonyKey = Jwts.builder()
-                .setExpiration(Date.valueOf(LocalDate.now().plusYears(1)))
-                .signWith(phonyKey)
-                .compact();
-
-        testForInvalidJwt(jwtWithPhonyKey);
-    }
-
-    @Test
-    void testFilter_withMalformedJwt() {
-        SecretKey key = Keys.hmacShaKeyFor(JWT.KEY.getBytes());
-
-        String malformedJwt = Jwts.builder()
-                .setExpiration(Date.valueOf(LocalDate.now().plusYears(1)))
-                .signWith(key)
-                .compact() + ".somebs";
-
-        testForInvalidJwt(malformedJwt);
     }
 }

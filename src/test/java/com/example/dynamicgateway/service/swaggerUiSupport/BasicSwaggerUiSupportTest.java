@@ -47,7 +47,7 @@ class BasicSwaggerUiSupportTest {
         when(endpointCollectorMock.getCollectedEndpoints()).thenReturn(endpoints);
 
         BasicSwaggerUiSupport uiSupport = new BasicSwaggerUiSupport(
-                endpointCollectorMock, null, null);
+                endpointCollectorMock, null);
 
         StepVerifier.create(uiSupport.getSwaggerUiConfig())
                 .expectNextMatches(this::isExpectedCollectionOfApps)
@@ -104,7 +104,7 @@ class BasicSwaggerUiSupportTest {
         ObjectMapper objectMapper = new ObjectMapper();
 
         BasicSwaggerUiSupport uiSupport = new BasicSwaggerUiSupport(
-                testEndpointCollector, gatewayMetaMock, objectMapper);
+                testEndpointCollector, gatewayMetaMock);
 
         String parseResultSnapshot = objectMapper.writeValueAsString(parseResult);
 

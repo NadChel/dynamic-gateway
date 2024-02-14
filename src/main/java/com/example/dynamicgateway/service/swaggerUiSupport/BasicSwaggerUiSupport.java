@@ -7,15 +7,14 @@ import com.example.dynamicgateway.model.documentedEndpoint.SwaggerEndpoint;
 import com.example.dynamicgateway.model.gatewayMeta.GatewayMeta;
 import com.example.dynamicgateway.model.uiConfig.SwaggerUiConfig;
 import com.example.dynamicgateway.service.endpointCollector.EndpointCollector;
+import com.example.dynamicgateway.util.Cloner;
 import com.example.dynamicgateway.util.EndpointUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -31,14 +30,11 @@ import java.util.stream.Collectors;
 public class BasicSwaggerUiSupport implements SwaggerUiSupport {
     private final EndpointCollector<SwaggerEndpoint> endpointCollector;
     private final GatewayMeta gatewayMeta;
-    private final ObjectMapper objectMapper;
 
     public BasicSwaggerUiSupport(EndpointCollector<SwaggerEndpoint> endpointCollector,
-                                 GatewayMeta gatewayMeta,
-                                 @Qualifier("plain") ObjectMapper objectMapper) {
+                                 GatewayMeta gatewayMeta) {
         this.endpointCollector = endpointCollector;
         this.gatewayMeta = gatewayMeta;
-        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -69,10 +65,8 @@ public class BasicSwaggerUiSupport implements SwaggerUiSupport {
         );
     }
 
-    @SneakyThrows
     private OpenAPI deepCopy(OpenAPI openAPI) {
-        String serializedOpenApi = objectMapper.writeValueAsString(openAPI);
-        return objectMapper.readValue(serializedOpenApi, OpenAPI.class);
+        return Cloner.deepCopy(openAPI, OpenAPI.class);
     }
 
     private void removeIgnoredEndpoints(OpenAPI openAPI) {

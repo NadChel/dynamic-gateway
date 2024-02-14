@@ -1,6 +1,6 @@
 package com.example.dynamicgateway.config.security;
 
-import com.example.dynamicgateway.config.security.filter.JwtAuthorizationFilter;
+import com.example.dynamicgateway.config.security.filter.AuthenticationWebFilter;
 import com.example.dynamicgateway.model.gatewayMeta.GatewayMeta;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,7 +13,6 @@ import org.springframework.security.web.server.context.NoOpServerSecurityContext
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
-import org.springframework.web.server.WebFilter;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
@@ -23,9 +22,12 @@ import java.util.List;
 @Configuration
 @EnableWebFluxSecurity
 public class SecurityConfig {
+    private final AuthenticationWebFilter authenticationWebFilter;
     private final GatewayMeta gatewayMeta;
 
-    public SecurityConfig(GatewayMeta gatewayMeta) {
+    public SecurityConfig(AuthenticationWebFilter authenticationWebFilter,
+                          GatewayMeta gatewayMeta) {
+        this.authenticationWebFilter = authenticationWebFilter;
         this.gatewayMeta = gatewayMeta;
     }
     @Bean
@@ -33,13 +35,11 @@ public class SecurityConfig {
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
-                .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
-                .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers(gatewayMeta.getPublicPatterns().toArray(new String[0])).permitAll()
                         .anyExchange().authenticated()
                 )
-                .addFilterBefore(jwtAuthorizationFilter(), SecurityWebFiltersOrder.AUTHORIZATION)
+                .addFilterBefore(authenticationWebFilter, SecurityWebFiltersOrder.AUTHORIZATION)
                 .exceptionHandling(exceptionHandlingSpec -> exceptionHandlingSpec
                         .authenticationEntryPoint((exchange, ex) -> Mono.fromRunnable(
                                 () -> exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED)
@@ -59,10 +59,5 @@ public class SecurityConfig {
         config.setAllowedOriginPatterns(List.of("*"));
         source.registerCorsConfiguration("/**", config);
         return source;
-    }
-
-    @Bean
-    public WebFilter jwtAuthorizationFilter() {
-        return new JwtAuthorizationFilter();
     }
 }

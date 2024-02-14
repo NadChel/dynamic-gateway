@@ -7,19 +7,12 @@ import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import io.swagger.v3.oas.models.security.SecurityScheme;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 @Configuration
 public class JacksonConfig {
-    @Bean
-    @Qualifier("plain")
-    public ObjectMapper plainObjectMapper() {
-        return new ObjectMapper();
-    }
-
     @Bean
     @Primary
     public ObjectMapper customizedObjectMapper() {
