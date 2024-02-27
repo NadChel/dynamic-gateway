@@ -41,8 +41,8 @@ gateway:
       description: Dynamic-Gateway
   versionPrefix: /api/v1
   publicPatterns:
-    - /api/v1/registration/**
-    - /api/v1/login/**
+    - /api/v1/signup
+    - /api/v1/login
     - /actuator/**
     - /swagger-ui/**
     - /webjars/**

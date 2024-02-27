@@ -57,6 +57,10 @@ public class SwaggerEndpointCollector implements EndpointCollector<SwaggerEndpoi
         appDocMono
                 .map(applicationDoc -> new SwaggerApplication(application, applicationDoc))
                 .flatMapIterable(SwaggerApplication::getEndpoints)
+                .switchIfEmpty(Mono.defer(() -> {
+                    log.warn("{}'s OpenAPI contains no endpoints", application.getName());
+                    return Mono.empty();
+                }))
                 .filter(this::passesThroughSieves)
                 .subscribe(this::addEndpoint);
     }
