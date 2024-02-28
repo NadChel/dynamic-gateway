@@ -15,10 +15,10 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Local cache of {@link SwaggerEndpoint}s
@@ -26,7 +26,7 @@ import java.util.Set;
 @Component
 @Slf4j
 public class SwaggerEndpointCollector implements EndpointCollector<SwaggerEndpoint> {
-    private final Set<SwaggerEndpoint> documentedEndpoints = new HashSet<>();
+    private final Set<SwaggerEndpoint> documentedEndpoints = ConcurrentHashMap.newKeySet();
     private final ApplicationDocClient<SwaggerParseResult> applicationDocClient;
     private final ApplicationEventPublisher eventPublisher;
     private final List<EndpointSieve> endpointSieves;
