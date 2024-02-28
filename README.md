@@ -47,18 +47,25 @@ cd dynamic-gateway
 docker-compose up
 ```
 
-The `docker-compose` file references a simple Eureka server image which may not be fit for a production environment since it has the "self-preservation" mode disabled (see the image's description on [Docker Hub][eureka])
+The `docker-compose` file comprises images of the following applications:
+* Dynamic Gateway
+* an Eureka server ([Docker Hub][eureka])
+* Token Service, a no-frills authentication server ([Docker Hub][token-service])
+* a Postgres server, Token Service's data store ([Docker Hub][postgres])
+* Hello World Service, a simple REST service ([Docker Hub][helloworld-service])
 
-It also includes an image of a simple `helloworldservice` with a couple of basic endpoints ([Docker Hub][helloworld]). If you wish to exclude it, just explicitly specify the other two services you *do* want to run
+You may choose to run only some of those services by explicitly passing them as arguments. For example, if you want to run only Dynamic Gateway and the Eureka server, you may execute the following command:
 ```
 docker-compose up gateway eureka
 ```
-If you want this gateway to pick up your services endpoints, it should meet two requirements (unless you choose to configure this gateway otherwise):
-1. It should return its Open API at `GET /v3/api-docs`
+If you want Dynamic Gateway to pick up endpoints of your own service, it should meet these two requirements (unless you choose to reconfigure Dynamic Gateway):
+1. It should provide its Open API at `GET /v3/api-docs`
 2. It should be connected to the same Eureka server as this gateway
 
 [eureka]: https://hub.docker.com/repository/docker/nadchel/eureka-server
-[helloworld]: https://hub.docker.com/repository/docker/nadchel/helloworldservice
+[token-service]: https://hub.docker.com/repository/docker/nadchel/token-service
+[postgres]: https://hub.docker.com/_/postgres
+[helloworld-service]: https://hub.docker.com/repository/docker/nadchel/helloworld-service
 
 # Domain models
 To have a better understanding of this application, it's important to know its fundamental concepts
