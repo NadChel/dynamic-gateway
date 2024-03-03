@@ -12,16 +12,15 @@ import java.text.MessageFormat;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.BDDMockito.given;
 
 class SwaggerUiConfigSerializerTest {
     @SneakyThrows
     @Test
     void serialize() {
         String appName = "test-app";
-
         SwaggerApplication swaggerApplicationMock = mock(SwaggerApplication.class);
-        when(swaggerApplicationMock.getName()).thenReturn(appName);
+        given(swaggerApplicationMock.getName()).willReturn(appName);
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
@@ -33,7 +32,7 @@ class SwaggerUiConfigSerializerTest {
 
         jsonGenerator.close();
 
-        String resultJson = outputStream.toString();
+        String actualString = outputStream.toString();
 
         String expectedString = MessageFormat.format("""
                 '{'
@@ -42,7 +41,7 @@ class SwaggerUiConfigSerializerTest {
                 '}'
                 """, appName);
 
-        assertThat(StringUtils.deleteWhitespace(resultJson))
+        assertThat(StringUtils.deleteWhitespace(actualString))
                 .isEqualTo(StringUtils.deleteWhitespace(expectedString));
     }
 }

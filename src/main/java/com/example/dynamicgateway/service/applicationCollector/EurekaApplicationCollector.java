@@ -12,10 +12,10 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * {@link ApplicationCollector} that relies on Netflix Eureka as its discovery service
@@ -25,7 +25,7 @@ import java.util.Set;
 public class EurekaApplicationCollector implements ApplicationCollector {
     private final EurekaClient eurekaClient;
     private final ApplicationEventPublisher eventPublisher;
-    private final Set<EurekaDiscoverableApplication> discoveredApplications = new HashSet<>();
+    private final Set<EurekaDiscoverableApplication> discoveredApplications = ConcurrentHashMap.newKeySet();
     private final List<DiscoverableApplicationSieve> applicationSieves;
 
     public EurekaApplicationCollector(EurekaClient eurekaClient,

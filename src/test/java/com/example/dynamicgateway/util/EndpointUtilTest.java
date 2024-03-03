@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
 class EndpointUtilTest {
@@ -24,7 +24,7 @@ class EndpointUtilTest {
         String path = "/auth/test-path";
         DocumentedEndpoint<?> endpoint = SwaggerEndpointStub.builder().path(path).build();
 
-        when(gatewayMetaMock.getIgnoredPrefixes()).thenReturn(Collections.emptyList());
+        given(gatewayMetaMock.getIgnoredPrefixes()).willReturn(Collections.emptyList());
 
         String returnedPath = EndpointUtil.withRemovedPrefix(endpoint, gatewayMetaMock);
         assertThat(returnedPath).isEqualTo(path);
@@ -36,7 +36,7 @@ class EndpointUtilTest {
         String path = prefix + "/test-path";
         DocumentedEndpoint<?> endpoint = SwaggerEndpointStub.builder().path(path).build();
 
-        when(gatewayMetaMock.getIgnoredPrefixes()).thenReturn(List.of(prefix));
+        given(gatewayMetaMock.getIgnoredPrefixes()).willReturn(List.of(prefix));
 
         String returnedPath = EndpointUtil.withRemovedPrefix(endpoint, gatewayMetaMock);
 
@@ -52,7 +52,7 @@ class EndpointUtilTest {
 
         DocumentedEndpoint<?> endpoint = SwaggerEndpointStub.builder().path(path).build();
 
-        when(gatewayMetaMock.getIgnoredPrefixes()).thenReturn(List.of(prefix, longerPrefix));
+        given(gatewayMetaMock.getIgnoredPrefixes()).willReturn(List.of(prefix, longerPrefix));
 
         String returnedPath = EndpointUtil.withRemovedPrefix(endpoint, gatewayMetaMock);
 
@@ -67,7 +67,7 @@ class EndpointUtilTest {
 
         DocumentedEndpoint<?> endpoint = SwaggerEndpointStub.builder().path(path).build();
 
-        when(gatewayMetaMock.getIgnoredPrefixes()).thenReturn(List.of(prefix));
+        given(gatewayMetaMock.getIgnoredPrefixes()).willReturn(List.of(prefix));
 
         String returnedPath = EndpointUtil.withRemovedPrefix(endpoint, gatewayMetaMock);
         assertThat(returnedPath).isEqualTo(path);
@@ -80,7 +80,7 @@ class EndpointUtilTest {
 
         DocumentedEndpoint<?> endpoint = SwaggerEndpointStub.builder().path(path).build();
 
-        when(gatewayMetaMock.getIgnoredPrefixes()).thenReturn(Collections.emptyList());
+        given(gatewayMetaMock.getIgnoredPrefixes()).willReturn(Collections.emptyList());
 
         String returnedPrefix = EndpointUtil.extractPrefix(endpoint, gatewayMetaMock);
         assertThat(returnedPrefix).isEqualTo("");
@@ -93,7 +93,7 @@ class EndpointUtilTest {
 
         DocumentedEndpoint<?> endpoint = SwaggerEndpointStub.builder().path(path).build();
 
-        when(gatewayMetaMock.getIgnoredPrefixes()).thenReturn(List.of(prefix));
+        given(gatewayMetaMock.getIgnoredPrefixes()).willReturn(List.of(prefix));
 
         String returnedPrefix = EndpointUtil.extractPrefix(endpoint, gatewayMetaMock);
         assertThat(returnedPrefix).isEqualTo(prefix);
@@ -107,7 +107,7 @@ class EndpointUtilTest {
 
         DocumentedEndpoint<?> endpoint = SwaggerEndpointStub.builder().path(path).build();
 
-        when(gatewayMetaMock.getIgnoredPrefixes()).thenReturn(List.of(prefix, longerPrefix));
+        given(gatewayMetaMock.getIgnoredPrefixes()).willReturn(List.of(prefix, longerPrefix));
 
         String returnedPrefix = EndpointUtil.extractPrefix(endpoint, gatewayMetaMock);
         assertThat(returnedPrefix).isEqualTo(longerPrefix);
@@ -120,7 +120,7 @@ class EndpointUtilTest {
 
         DocumentedEndpoint<?> endpoint = SwaggerEndpointStub.builder().path(path).build();
 
-        when(gatewayMetaMock.getIgnoredPrefixes()).thenReturn(List.of(prefix));
+        given(gatewayMetaMock.getIgnoredPrefixes()).willReturn(List.of(prefix));
 
         String returnedPath = EndpointUtil.extractPrefix(endpoint, gatewayMetaMock);
         assertThat(returnedPath).isEqualTo("");

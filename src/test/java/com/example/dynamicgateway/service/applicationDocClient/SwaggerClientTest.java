@@ -11,7 +11,7 @@ import reactor.test.StepVerifier;
 
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.BDDMockito.given;
 
 class SwaggerClientTest {
     @SneakyThrows
@@ -24,24 +24,24 @@ class SwaggerClientTest {
         String serializedParseResult = "{ let's imagine: it's a serialized parse result }";
         SwaggerParseResult parseResult = mock(SwaggerParseResult.class);
         SwaggerDocParser parserMock = mock(SwaggerDocParser.class);
-        when(parserMock.parse(serializedParseResult)).thenReturn(parseResult);
+        given(parserMock.parse(serializedParseResult)).willReturn(parseResult);
 
         WebClient webClientMock = mock(WebClient.class, RETURNS_DEEP_STUBS);
-        when(webClientMock
+        given(webClientMock
                 .get()
                 .uri(scheme + appName + docPath)
                 .retrieve()
                 .bodyToMono(String.class)
-        ).thenReturn(Mono.just(serializedParseResult));
+        ).willReturn(Mono.just(serializedParseResult));
 
         SwaggerClientConfigurer swaggerClientConfigurerMock = mock(SwaggerClientConfigurer.class);
-        when(swaggerClientConfigurerMock.getWebClient()).thenReturn(webClientMock);
-        when(swaggerClientConfigurerMock.getParser()).thenReturn(parserMock);
-        when(swaggerClientConfigurerMock.getScheme()).thenReturn(scheme);
-        when(swaggerClientConfigurerMock.getDocPath()).thenReturn(docPath);
+        given(swaggerClientConfigurerMock.getWebClient()).willReturn(webClientMock);
+        given(swaggerClientConfigurerMock.getParser()).willReturn(parserMock);
+        given(swaggerClientConfigurerMock.getScheme()).willReturn(scheme);
+        given(swaggerClientConfigurerMock.getDocPath()).willReturn(docPath);
 
         DiscoverableApplication<?> discoverableApplicationMock = mock(DiscoverableApplication.class);
-        when(discoverableApplicationMock.getName()).thenReturn(appName);
+        given(discoverableApplicationMock.getName()).willReturn(appName);
 
         SwaggerClient swaggerClient = new SwaggerClient(swaggerClientConfigurerMock);
         Mono<SwaggerParseResult> applicationDoc = swaggerClient.findApplicationDoc(discoverableApplicationMock);

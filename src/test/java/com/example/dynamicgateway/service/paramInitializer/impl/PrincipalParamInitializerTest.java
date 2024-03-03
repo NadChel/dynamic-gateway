@@ -12,7 +12,7 @@ import java.util.Collection;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThatCode;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.BDDMockito.given;
 
 class PrincipalParamInitializerTest {
     private final PrincipalParamInitializer initializer = new PrincipalParamInitializer();
@@ -21,7 +21,7 @@ class PrincipalParamInitializerTest {
     @Test
     void testExtractValuesFromAuthentication() {
         Authentication authenticationMock = mock(Authentication.class);
-        when(authenticationMock.getName()).thenReturn(principalName);
+        given(authenticationMock.getName()).willReturn(principalName);
 
         Collection<?> paramValues = initializer.extractValuesFromAuthentication(authenticationMock);
 
@@ -33,7 +33,7 @@ class PrincipalParamInitializerTest {
     void testGetParamValues() {
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(principalName, null);
         ServerWebExchange exchangeMock = mock(ServerWebExchange.class);
-        when(exchangeMock.getPrincipal()).thenReturn(Mono.just(authentication));
+        given(exchangeMock.getPrincipal()).willReturn(Mono.just(authentication));
 
         assumeThatCode(() -> {
             Collection<?> paramValues = initializer.extractValuesFromAuthentication(authentication);

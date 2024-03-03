@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import static org.mockito.BDDMockito.given;
 
 class BasicSwaggerUiSupportTest {
     private final List<String> appNames = List.of("test-app", "another-test-app", "this-is-app-too");
@@ -44,7 +44,7 @@ class BasicSwaggerUiSupportTest {
                 .map(this::appNameToEndpointStub).collect(Collectors.toSet());
 
         EndpointCollector<SwaggerEndpoint> endpointCollectorMock = spy(EndpointCollector.class);
-        when(endpointCollectorMock.getCollectedEndpoints()).thenReturn(endpoints);
+        given(endpointCollectorMock.getCollectedEndpoints()).willReturn(endpoints);
 
         BasicSwaggerUiSupport uiSupport = new BasicSwaggerUiSupport(
                 endpointCollectorMock, null);
@@ -80,7 +80,7 @@ class BasicSwaggerUiSupportTest {
         String appName = "test-app";
 
         DiscoverableApplication<Application> discoverableApplicationMock = mock(EurekaDiscoverableApplication.class);
-        when(discoverableApplicationMock.getName()).thenReturn(appName);
+        given(discoverableApplicationMock.getName()).willReturn(appName);
 
         SwaggerParseResult parseResult = SwaggerParseResultGenerator.createForEndpoints(
                 SwaggerEndpointStub.builder().method(HttpMethod.POST).path("/auth/test-path").build(),
@@ -94,9 +94,9 @@ class BasicSwaggerUiSupportTest {
         ReflectionTestUtils.setField(testEndpointCollector, "documentedEndpoints", Set.copyOf(swaggerApplication.getEndpoints()));
 
         GatewayMeta gatewayMetaMock = mock(GatewayMeta.class);
-        when(gatewayMetaMock.getVersionPrefix()).thenReturn("/test-api/v0");
-        when(gatewayMetaMock.getIgnoredPrefixes()).thenReturn(List.of("/auth"));
-        when(gatewayMetaMock.getServers()).thenReturn(List.of(
+        given(gatewayMetaMock.getVersionPrefix()).willReturn("/test-api/v0");
+        given(gatewayMetaMock.getIgnoredPrefixes()).willReturn(List.of("/auth"));
+        given(gatewayMetaMock.getServers()).willReturn(List.of(
                 new Server().url("https://localhost:1234").description("Server One"),
                 new Server().url("https://localhost:4321").description("Server Two")
         ));

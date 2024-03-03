@@ -19,8 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.given;
 
 class ParamInitializerTest {
     private final List<Integer> testParamValues = List.of(1, 2, 3);
@@ -44,7 +44,6 @@ class ParamInitializerTest {
         paramInitializer.initialize(routeBuilder);
 
         List<GatewayFilter> filters = RouteBuilderUtil.getFilters(routeBuilder);
-
         assertThat(filters).hasSize(1);
     }
 
@@ -55,7 +54,6 @@ class ParamInitializerTest {
         paramInitializer.initialize(routeBuilder);
 
         List<GatewayFilter> filters = RouteBuilderUtil.getFilters(routeBuilder);
-
         assumeThat(filters).asList().hasSize(1);
 
         checkFilter(filters.get(0));
@@ -71,18 +69,23 @@ class ParamInitializerTest {
         ArgumentCaptor<ServerWebExchange> exchangeCaptor = ArgumentCaptor.forClass(ServerWebExchange.class);
 
         GatewayFilterChain chainMock = mock(GatewayFilterChain.class);
-        when(chainMock.filter(any())).thenReturn(Mono.empty());
+        given(chainMock.filter(any())).willReturn(Mono.empty());
 
         StepVerifier.create(filter.filter(exchangeMock, chainMock))
                 .expectComplete()
                 .verify();
 
-        verify(chainMock).filter(exchangeCaptor.capture());
+        then(chainMock).should().filter(exchangeCaptor.capture());
 
-        List<String> actualParamValues = exchangeCaptor.getValue().getRequest().getQueryParams().get(paramInitializer.getParamName());
-
+        List<String> actualParamValues = exchangeCaptor.getValue()
+                .getRequest()
+                .getQueryParams()
+                .get(paramInitializer.getParamName());
+        List<String> expectedParamValues = testParamValues.stream()
+                .map(String::valueOf)
+                .toList();
         assertThat(actualParamValues)
                 .asList()
-                .containsExactlyInAnyOrderElementsOf(testParamValues.stream().map(String::valueOf).toList());
+                .containsExactlyInAnyOrderElementsOf(expectedParamValues);
     }
 }

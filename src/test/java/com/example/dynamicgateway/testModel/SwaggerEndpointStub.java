@@ -51,9 +51,5 @@ public class SwaggerEndpointStub extends SwaggerEndpoint {
         public SwaggerEndpointStub build() {
             return new SwaggerEndpointStub(this);
         }
-
-        public String toString() {
-            return "SwaggerEndpointStub.SwaggerEndpointStubBuilder(method=" + detailsBuilder.getMethod() + ", path=" + detailsBuilder.getPath() + ")";
-        }
     }
 }

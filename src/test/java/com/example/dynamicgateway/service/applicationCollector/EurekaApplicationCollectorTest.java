@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
 class EurekaApplicationCollectorTest {
@@ -54,7 +54,7 @@ class EurekaApplicationCollectorTest {
         Application phonyApp = new Application("phony-app");
 
         eurekaClientMock = mock(EurekaClient.class, RETURNS_DEEP_STUBS);
-        when(eurekaClientMock.getApplications().getRegisteredApplications()).thenReturn(List.of(
+        given(eurekaClientMock.getApplications().getRegisteredApplications()).willReturn(List.of(
                 app, anotherApp, phonyApp
         ));
 

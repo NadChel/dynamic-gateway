@@ -1,7 +1,6 @@
-package com.example.dynamicgateway.service.authenticator;
+package com.example.dynamicgateway.service.authenticationExtractor;
 
 import com.example.dynamicgateway.constant.JWT;
-import com.example.dynamicgateway.model.authorizationHeader.AuthorizationHeader;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -9,8 +8,9 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -18,39 +18,22 @@ import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
 
-public class BearerAuthenticator extends Authenticator {
-    public BearerAuthenticator(String credentials) {
-        super(credentials);
-    }
-    public BearerAuthenticator(AuthorizationHeader header) {
-        super(header);
-    }
+/**
+ * A {@link BearerAuthorizationHeaderAuthenticationExtractor} that parses JSON Web Tokens
+ */
+@Component
+public class JwtBearerAuthorizationHeaderAuthenticationExtractor
+        implements BearerAuthorizationHeaderAuthenticationExtractor {
 
     @Override
-    public String getHandledScheme() {
-        return "bearer";
-    }
-
-    @Override
-    public Authentication buildAuthentication() {
-        Claims claims = getClaims(credentials);
-
-        Object clientId = getPrincipalName(claims);
-        List<? extends GrantedAuthority> authorities = getGrantedAuthorities(claims);
-
-        return new UsernamePasswordAuthenticationToken(clientId, null, authorities);
+    public Mono<Authentication> tryExtractAuthentication(String token) {
+        return Mono.just(token)
+                .map(this::getClaims)
+                .onErrorMap(JwtException.class, this::toBadCredentialsException)
+                .map(this::toUpat);
     }
 
     private Claims getClaims(String jwt) {
-        try {
-            return doGetClaims(jwt);
-        } catch (JwtException e) {
-            throw new BadCredentialsException(
-                    MessageFormat.format("Invalid token. {0}", e.getMessage()), e);
-        }
-    }
-
-    private Claims doGetClaims(String jwt) {
         SecretKey hashedKey = Keys.hmacShaKeyFor(JWT.KEY.getBytes(StandardCharsets.UTF_8));
         return Jwts.parserBuilder()
                 .setSigningKey(hashedKey)
@@ -59,11 +42,23 @@ public class BearerAuthenticator extends Authenticator {
                 .getBody();
     }
 
+    private BadCredentialsException toBadCredentialsException(JwtException e) {
+        return new BadCredentialsException(
+                MessageFormat.format("Invalid token. {0}", e.getMessage()), e);
+    }
+
+    private UsernamePasswordAuthenticationToken toUpat(Claims claims) {
+        Object subject = getPrincipalName(claims);
+        List<SimpleGrantedAuthority> authorities = getGrantedAuthorities(claims);
+
+        return new UsernamePasswordAuthenticationToken(subject, null, authorities);
+    }
+
     private Object getPrincipalName(Claims claims) {
         return claims.get(JWT.SUB);
     }
 
-    private List<? extends GrantedAuthority> getGrantedAuthorities(Claims claims) {
+    private List<SimpleGrantedAuthority> getGrantedAuthorities(Claims claims) {
         Object nullableRoles = claims.get(JWT.ROLES);
         return (nullableRoles instanceof List<?> roles) ?
                 buildGrantedAuthoritiesFrom(roles) :

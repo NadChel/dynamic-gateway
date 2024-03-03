@@ -8,23 +8,23 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.BDDMockito.given;
 
 class ParamInitializersTest {
     @Test
     void findInitializerForParam_withSupportedParam() {
         ParamInitializer paramOneInitializerMock = mock(ParamInitializer.class);
-        when(paramOneInitializerMock.getParamName()).thenReturn("paramOne");
+        given(paramOneInitializerMock.getParamName()).willReturn("paramOne");
 
         ParamInitializer paramTwoInitializerMock = mock(ParamInitializer.class);
-        when(paramTwoInitializerMock.getParamName()).thenReturn("paramTwo");
+        given(paramTwoInitializerMock.getParamName()).willReturn("paramTwo");
 
         List<ParamInitializer> testParamInitializers = List.of(
                 paramOneInitializerMock, paramTwoInitializerMock
         );
 
         EndpointParameter paramOneMock = mock(EndpointParameter.class);
-        when(paramOneMock.getName()).thenReturn("paramOne");
+        given(paramOneMock.getName()).willReturn("paramOne");
 
         ParamInitializers paramInitializers = new ParamInitializers(testParamInitializers);
         Optional<ParamInitializer> initializerForParam = paramInitializers.findInitializerForParam(paramOneMock);
@@ -35,17 +35,17 @@ class ParamInitializersTest {
     @Test
     void findInitializerForParam_withNonSupportedParam() {
         ParamInitializer paramOneInitializerMock = mock(ParamInitializer.class);
-        when(paramOneInitializerMock.getParamName()).thenReturn("paramOne");
+        given(paramOneInitializerMock.getParamName()).willReturn("paramOne");
 
         ParamInitializer paramTwoInitializerMock = mock(ParamInitializer.class);
-        when(paramTwoInitializerMock.getParamName()).thenReturn("paramTwo");
+        given(paramTwoInitializerMock.getParamName()).willReturn("paramTwo");
 
         List<ParamInitializer> testParamInitializers = List.of(
                 paramOneInitializerMock, paramTwoInitializerMock
         );
 
         EndpointParameter paramOneMock = mock(EndpointParameter.class);
-        when(paramOneMock.getName()).thenReturn("paramThree");
+        given(paramOneMock.getName()).willReturn("paramThree");
 
         ParamInitializers paramInitializers = new ParamInitializers(testParamInitializers);
         Optional<ParamInitializer> initializerForParam = paramInitializers.findInitializerForParam(paramOneMock);

@@ -10,6 +10,7 @@ class V3SwaggerDocParserTest {
     void testParse() {
         V3SwaggerDocParser v3SwaggerDocParser = new V3SwaggerDocParser();
         OpenAPIV3Parser openAPIV3Parser = new OpenAPIV3Parser();
+
         String docString = getDocString();
         assertThat(v3SwaggerDocParser.parse(docString)).isEqualTo(openAPIV3Parser.readContents(docString));
     }

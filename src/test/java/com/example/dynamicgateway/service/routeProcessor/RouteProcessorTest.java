@@ -29,7 +29,6 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.web.server.ServerWebExchange;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -43,13 +42,12 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.will;
+import static org.mockito.BDDMockito.willReturn;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class RouteProcessorTest {
@@ -61,8 +59,8 @@ class RouteProcessorTest {
 
     @Test
     void basePredicateProcessor_withMatchingRequest() {
-        when(gatewayMetaMock.getVersionPrefix()).thenReturn("/api/v1");
-        when(gatewayMetaMock.getIgnoredPrefixes()).thenReturn(List.of("/auth"));
+        given(gatewayMetaMock.getVersionPrefix()).willReturn("/api/v1");
+        given(gatewayMetaMock.getIgnoredPrefixes()).willReturn(List.of("/auth"));
 
         DocumentedEndpoint<?> endpoint = SwaggerEndpointStub.builder()
                 .method(HttpMethod.GET)
@@ -84,7 +82,7 @@ class RouteProcessorTest {
 
     @Test
     void basePredicateProcessor_withNonMatchingRequest() {
-        when(gatewayMetaMock.getVersionPrefix()).thenReturn("/api/v1");
+        given(gatewayMetaMock.getVersionPrefix()).willReturn("/api/v1");
 
         DocumentedEndpoint<?> endpoint = SwaggerEndpointStub.builder()
                 .method(HttpMethod.GET)
@@ -116,7 +114,7 @@ class RouteProcessorTest {
     @Test
     void removeGatewayPrefixRouteProcessor() {
         String testGatewayPrefix = "/api/v1";
-        when(gatewayMetaMock.getVersionPrefix()).thenReturn(testGatewayPrefix);
+        given(gatewayMetaMock.getVersionPrefix()).willReturn(testGatewayPrefix);
 
         EndpointRouteProcessor removeGatewayPrefixRouteProcessor = routeProcessorConfig.removeGatewayPrefixRouteProcessor();
         removeGatewayPrefixRouteProcessor.process(routeBuilder, null);
@@ -138,16 +136,15 @@ class RouteProcessorTest {
         ArgumentCaptor<ServerWebExchange> exchangeCaptor = ArgumentCaptor.forClass(ServerWebExchange.class);
 
         GatewayFilterChain chainMock = mock(GatewayFilterChain.class);
-        when(chainMock.filter(any())).thenReturn(Mono.empty());
+        given(chainMock.filter(any())).willReturn(Mono.empty());
 
         StepVerifier.create(filters.get(0).filter(exchangeMock, chainMock))
                 .expectComplete()
                 .verify();
 
-        verify(chainMock).filter(exchangeCaptor.capture());
+        then(chainMock).should().filter(exchangeCaptor.capture());
 
         String requestPath = exchangeCaptor.getValue().getRequest().getPath().value();
-
         assertThat(requestPath).asString().doesNotStartWith(testGatewayPrefix);
     }
 
@@ -157,11 +154,11 @@ class RouteProcessorTest {
         String appName = "test-app";
 
         DiscoverableApplication<?> discoverableAppMock = mock(DiscoverableApplication.class);
-        when(discoverableAppMock.getDiscoveryServiceScheme()).thenReturn(scheme);
-        when(discoverableAppMock.getName()).thenReturn(appName);
+        given(discoverableAppMock.getDiscoveryServiceScheme()).willReturn(scheme);
+        given(discoverableAppMock.getName()).willReturn(appName);
 
         DocumentedEndpoint<?> endpointMock = mock(DocumentedEndpoint.class, RETURNS_DEEP_STUBS);
-        when(endpointMock.getDeclaringApp().getDiscoverableApp()).thenAnswer(i -> discoverableAppMock);
+        given(endpointMock.getDeclaringApp().getDiscoverableApp()).will(i -> discoverableAppMock);
 
         EndpointRouteProcessor uriRouteProcessor = routeProcessorConfig.uriRouteProcessor();
         uriRouteProcessor.process(routeBuilder, endpointMock);
@@ -176,22 +173,20 @@ class RouteProcessorTest {
         String prefixedPath = prefix + path;
 
         DocumentedEndpoint<?> endpointMock = mock(DocumentedEndpoint.class, RETURNS_DEEP_STUBS);
-        when(endpointMock.getDetails().getPath()).thenReturn(prefixedPath);
+        given(endpointMock.getDetails().getPath()).willReturn(prefixedPath);
 
-        when(gatewayMetaMock.getIgnoredPrefixes()).thenReturn(List.of(prefix));
+        given(gatewayMetaMock.getIgnoredPrefixes()).willReturn(List.of(prefix));
 
         EndpointRouteProcessor appendEndpointPrefixRouteProcessor =
                 routeProcessorConfig.appendEndpointPrefixRouteProcessor();
         appendEndpointPrefixRouteProcessor.process(routeBuilder, endpointMock);
 
         List<GatewayFilter> filters = RouteBuilderUtil.getFilters(routeBuilder);
-
         assumeThat(filters.size()).isEqualTo(1);
 
         ServerWebExchange exchangeMock = MockServerWebExchange.from(
                 MockServerHttpRequest.method(HttpMethod.DELETE, path)
         );
-
         assumeThat(exchangeMock).extracting(ServerWebExchange::getRequest)
                 .extracting(ServerHttpRequest::getPath)
                 .extracting(PathContainer::value)
@@ -201,16 +196,15 @@ class RouteProcessorTest {
         ArgumentCaptor<ServerWebExchange> exchangeCaptor = ArgumentCaptor.forClass(ServerWebExchange.class);
 
         GatewayFilterChain chainMock = mock(GatewayFilterChain.class);
-        when(chainMock.filter(any())).thenReturn(Mono.empty());
+        given(chainMock.filter(any())).willReturn(Mono.empty());
 
         StepVerifier.create(filters.get(0).filter(exchangeMock, chainMock))
                 .expectComplete()
                 .verify();
 
-        verify(chainMock).filter(exchangeCaptor.capture());
+        then(chainMock).should().filter(exchangeCaptor.capture());
 
         String requestPath = exchangeCaptor.getValue().getRequest().getPath().value();
-
         assertThat(requestPath).asString().startsWith(prefix);
     }
 
@@ -227,7 +221,7 @@ class RouteProcessorTest {
     @Test
     void methodRouteProcessor() {
         DocumentedEndpoint<?> endpointMock = mock(DocumentedEndpoint.class, RETURNS_DEEP_STUBS);
-        when(endpointMock.getDetails().getMethod()).thenReturn(HttpMethod.PATCH);
+        given(endpointMock.getDetails().getMethod()).willReturn(HttpMethod.PATCH);
 
         EndpointRouteProcessor methodRouteProcessor = routeProcessorConfig.methodRouteProcessor();
         methodRouteProcessor.process(routeBuilder, endpointMock);
@@ -254,14 +248,12 @@ class RouteProcessorTest {
     }
 
     @Test
-    @SuppressWarnings("ReactiveStreamsUnusedPublisher")
     void paramInitializingRouteProcessor_doesntDoAnything_ifNoParams() {
         DocumentedEndpoint<?> endpointMock = mock(DocumentedEndpoint.class, RETURNS_DEEP_STUBS);
-        when(endpointMock.getDetails().getParameters()).thenReturn(Collections.emptyList());
+        given(endpointMock.getDetails().getParameters()).willReturn(Collections.emptyList());
 
         ParamInitializer paramInitializerMock = mock(ParamInitializer.class);
-        when(paramInitializerMock.getParamName()).thenReturn("someParam");
-        lenient().doReturn(Flux.just(1, 2, 3)).when(paramInitializerMock).getParamValues(any());
+        given(paramInitializerMock.getParamName()).willReturn("someParam");
 
         EndpointRouteProcessor paramInitializingRouteProcessor =
                 routeProcessorConfig.paramInitializingRouteProcessor(new ParamInitializers(List.of(
@@ -279,10 +271,10 @@ class RouteProcessorTest {
                 .toList();
 
         EndpointDetails detailsMock = mock(EndpointDetails.class);
-        doReturn(params).when(detailsMock).getParameters();
+        willReturn(params).given(detailsMock).getParameters();
 
         DocumentedEndpoint<?> endpointMock = mock(DocumentedEndpoint.class);
-        when(endpointMock.getDetails()).thenReturn(detailsMock);
+        given(endpointMock.getDetails()).willReturn(detailsMock);
 
         EndpointRouteProcessor paramInitializingRouteProcessor =
                 routeProcessorConfig.paramInitializingRouteProcessor(new ParamInitializers(Collections.emptyList()));
@@ -296,27 +288,26 @@ class RouteProcessorTest {
         EndpointParameter param = mock(EndpointParameter.class);
 
         EndpointDetails detailsMock = mock(EndpointDetails.class);
-        doReturn(List.of(param)).when(detailsMock).getParameters();
+        willReturn(List.of(param)).given(detailsMock).getParameters();
 
         DocumentedEndpoint<?> endpointMock = mock(DocumentedEndpoint.class);
-        when(endpointMock.getDetails()).thenReturn(detailsMock);
+        given(endpointMock.getDetails()).willReturn(detailsMock);
 
         GatewayFilter filterMock = mock(GatewayFilter.class);
 
         ParamInitializer paramInitializerMock = mock(ParamInitializer.class);
-        doAnswer(
+        will(
                 invocation -> invocation.getArgument(0, Route.AsyncBuilder.class).filter(filterMock)
-        ).when(paramInitializerMock).initialize(routeBuilder);
+        ).given(paramInitializerMock).initialize(routeBuilder);
 
         ParamInitializers paramInitializersMock = mock(ParamInitializers.class);
-        when(paramInitializersMock.findInitializerForParam(param))
-                .thenReturn(Optional.of(paramInitializerMock));
+        given(paramInitializersMock.findInitializerForParam(param))
+                .willReturn(Optional.of(paramInitializerMock));
 
         EndpointRouteProcessor paramInitializingRouteProcessor =
                 routeProcessorConfig.paramInitializingRouteProcessor(paramInitializersMock);
 
         List<GatewayFilter> filters = RouteBuilderUtil.getFilters(routeBuilder);
-
         assumeThat(filters).isEmpty();
 
         paramInitializingRouteProcessor.process(routeBuilder, endpointMock);
@@ -331,26 +322,23 @@ class RouteProcessorTest {
         GatewayFilter filterMock = mock(GatewayFilter.class);
 
         SpringCloudCircuitBreakerFilterFactory circuitBreakerFilterFactoryMock = mock(SpringCloudCircuitBreakerFilterFactory.class);
-        when(circuitBreakerFilterFactoryMock.apply(any(),
+        given(circuitBreakerFilterFactoryMock.apply(any(),
                 (Consumer<SpringCloudCircuitBreakerFilterFactory.Config>) any()))
-                .thenReturn(filterMock);
+                .willReturn(filterMock);
 
-        EndpointRouteProcessor circuitBreakerEndpointRouteProcessor = routeProcessorConfig.circuitBreakerEndpointRouteProcessor(circuitBreakerFilterFactoryMock);
-
-        DocumentedEndpoint<?> endpoint = SwaggerEndpointStub.builder().build();
+        EndpointRouteProcessor circuitBreakerEndpointRouteProcessor =
+                routeProcessorConfig.circuitBreakerEndpointRouteProcessor(circuitBreakerFilterFactoryMock);
 
         List<GatewayFilter> filters = RouteBuilderUtil.getFilters(routeBuilder);
-
         assumeThat(filters).isEmpty();
 
+        DocumentedEndpoint<?> endpoint = SwaggerEndpointStub.builder().build();
         circuitBreakerEndpointRouteProcessor.process(routeBuilder, endpoint);
 
         assertThat(filters.size()).isEqualTo(1);
         GatewayFilter filter = filters.get(0);
-        if (filter instanceof OrderedGatewayFilter orderedGatewayFilter) {
+        if (filter instanceof OrderedGatewayFilter orderedGatewayFilter)
             assertThat(orderedGatewayFilter.getDelegate()).isEqualTo(filterMock);
-        } else {
-            assertThat(filter).isEqualTo(filterMock);
-        }
+        else assertThat(filter).isEqualTo(filterMock);
     }
 }

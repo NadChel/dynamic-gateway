@@ -15,9 +15,9 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThatCode;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class RolesParamInitializerTest {
     private final RolesParamInitializer initializer = new RolesParamInitializer();
@@ -28,7 +28,7 @@ class RolesParamInitializerTest {
                 new SimpleGrantedAuthority("admin")
         );
         Authentication authenticationMock = mock(Authentication.class);
-        doReturn(roles).when(authenticationMock).getAuthorities();
+        willReturn(roles).given(authenticationMock).getAuthorities();
 
         Collection<?> paramValues = initializer.extractValuesFromAuthentication(authenticationMock);
 
@@ -47,7 +47,7 @@ class RolesParamInitializerTest {
                 null, null, roles
         );
         ServerWebExchange exchangeMock = mock(ServerWebExchange.class);
-        when(exchangeMock.getPrincipal()).thenReturn(Mono.just(authentication));
+        given(exchangeMock.getPrincipal()).willReturn(Mono.just(authentication));
 
         assumeThatCode(() -> {
             Collection<?> paramValues = initializer.extractValuesFromAuthentication(authentication);

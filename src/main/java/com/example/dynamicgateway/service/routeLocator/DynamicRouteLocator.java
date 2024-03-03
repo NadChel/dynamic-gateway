@@ -12,10 +12,10 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * {@link RouteLocator} that dynamically supplies {@link Route}s built from discovered {@link DocumentedEndpoint}s
@@ -24,7 +24,7 @@ import java.util.Set;
 @Slf4j
 @RequiredArgsConstructor
 public class DynamicRouteLocator implements RouteLocator {
-    private final Set<Route> routes = new HashSet<>();
+    private final Set<Route> routes = ConcurrentHashMap.newKeySet();
     private final List<EndpointRouteProcessor> endpointRouteProcessors;
 
     @Override

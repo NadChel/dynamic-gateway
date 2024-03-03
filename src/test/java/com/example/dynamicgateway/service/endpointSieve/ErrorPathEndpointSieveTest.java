@@ -19,7 +19,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
 class ErrorPathEndpointSieveTest {
@@ -32,7 +32,7 @@ class ErrorPathEndpointSieveTest {
 
     @Test
     void allowsAnything_ifNoIgnoredPatternsProvided() {
-        when(gatewayMetaMock.getIgnoredPatterns()).thenReturn(Collections.emptyList());
+        given(gatewayMetaMock.getIgnoredPatterns()).willReturn(Collections.emptyList());
 
         errorPathEndpointSieve = endpointSieveConfig.errorPathEndpointSieve(gatewayMetaMock, antPathMatcherMock);
         for (int i = 0; i < 20; i++) {
@@ -46,26 +46,26 @@ class ErrorPathEndpointSieveTest {
     void doesntAllowIgnoredPatterns() {
         String ignoredPattern = "/ignored-path/**";
         String anotherIgnoredPattern = "/*/another-ignored-path";
-        when(gatewayMetaMock.getIgnoredPatterns()).thenReturn(List.of(
+        given(gatewayMetaMock.getIgnoredPatterns()).willReturn(List.of(
                 ignoredPattern, anotherIgnoredPattern
         ));
 
         String pathToExclude = "/ignored-path";
         String anotherPathToExclude = "/it-is/another-ignored-path";
 
-        when(antPathMatcherMock.match(any(), any())).thenReturn(false);
-        when(antPathMatcherMock.match(ignoredPattern, pathToExclude)).thenReturn(true);
-        when(antPathMatcherMock.match(anotherIgnoredPattern, anotherPathToExclude)).thenReturn(true);
+        given(antPathMatcherMock.match(any(), any())).willReturn(false);
+        given(antPathMatcherMock.match(ignoredPattern, pathToExclude)).willReturn(true);
+        given(antPathMatcherMock.match(anotherIgnoredPattern, anotherPathToExclude)).willReturn(true);
 
         DocumentedEndpoint<?> endpointToExclude = mock(DocumentedEndpoint.class, RETURNS_DEEP_STUBS);
-        when(endpointToExclude.getDetails().getPath()).thenReturn(pathToExclude);
+        given(endpointToExclude.getDetails().getPath()).willReturn(pathToExclude);
 
         DocumentedEndpoint<?> anotherEndpointToExclude = mock(DocumentedEndpoint.class, RETURNS_DEEP_STUBS);
-        when(anotherEndpointToExclude.getDetails().getPath()).thenReturn(anotherPathToExclude);
+        given(anotherEndpointToExclude.getDetails().getPath()).willReturn(anotherPathToExclude);
 
         String okPath = "/another-ignored-path/on-second-thought-it-is-not";
         SwaggerEndpoint endpointToKeep = mock(SwaggerEndpoint.class, RETURNS_DEEP_STUBS);
-        when(endpointToKeep.getDetails().getPath()).thenReturn(okPath);
+        given(endpointToKeep.getDetails().getPath()).willReturn(okPath);
 
         errorPathEndpointSieve = endpointSieveConfig.errorPathEndpointSieve(gatewayMetaMock, antPathMatcherMock);
 
