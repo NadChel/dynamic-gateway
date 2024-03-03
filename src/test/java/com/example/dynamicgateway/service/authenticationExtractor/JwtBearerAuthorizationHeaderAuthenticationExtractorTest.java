@@ -1,13 +1,17 @@
-package com.example.dynamicgateway.service.authenticator;
+package com.example.dynamicgateway.service.authenticationExtractor;
 
 import com.example.dynamicgateway.constant.JWT;
 import com.example.dynamicgateway.model.authorizationHeader.AuthorizationHeader;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.Test;
-import org.springframework.security.core.Authentication;
+import org.springframework.http.HttpHeaders;
+import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
+import org.springframework.mock.web.server.MockServerWebExchange;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import reactor.test.StepVerifier;
 
 import javax.crypto.SecretKey;
 import java.sql.Date;
@@ -15,12 +19,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-class BearerAuthenticatorTest {
-    static final String BEARER_SPACE = "bearer ";
+class JwtBearerAuthorizationHeaderAuthenticationExtractorTest {
+    private final JwtBearerAuthorizationHeaderAuthenticationExtractor extractor = new JwtBearerAuthorizationHeaderAuthenticationExtractor();
 
     @Test
     void testTryExtractAuthentication_withValidToken() {
@@ -35,14 +35,17 @@ class BearerAuthenticatorTest {
                 .setExpiration(Date.valueOf(LocalDate.now().plusYears(1)))
                 .signWith(key)
                 .compact();
-        AuthorizationHeader header = new AuthorizationHeader(BEARER_SPACE + validToken);
-        BearerAuthenticator authenticator = new BearerAuthenticator();
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/")
+                .header(HttpHeaders.AUTHORIZATION, AuthorizationHeader.BEARER_SPACE + validToken)
+                .build());
 
-        assertThatCode(() -> authenticator.tryExtractAuthentication(header)).doesNotThrowAnyException();
+        UsernamePasswordAuthenticationToken expectedAuthentication =
+                UsernamePasswordAuthenticationToken.authenticated(principal, null,
+                        roles.stream().map(SimpleGrantedAuthority::new).toList());
 
-        Authentication authentication = authenticator.tryExtractAuthentication(header);
-        assertThat(authentication.getPrincipal()).isEqualTo(principal);
-        assertThat(authentication.getAuthorities()).map(GrantedAuthority::getAuthority).isEqualTo(roles);
+        StepVerifier.create(extractor.tryExtractAuthentication(exchange))
+                .expectNext(expectedAuthentication)
+                .verifyComplete();
     }
 
     @Test
@@ -58,10 +61,13 @@ class BearerAuthenticatorTest {
     }
 
     private void testForInvalidToken(String invalidToken) {
-        AuthorizationHeader header = new AuthorizationHeader(BEARER_SPACE + invalidToken);
-        BearerAuthenticator authenticator = new BearerAuthenticator();
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/")
+                .header(HttpHeaders.AUTHORIZATION, AuthorizationHeader.BEARER_SPACE + invalidToken)
+                .build());
 
-        assertThatThrownBy(() -> authenticator.tryExtractAuthentication(header)).isInstanceOf(AuthenticationException.class);
+        StepVerifier.create(extractor.tryExtractAuthentication(exchange))
+                .expectError(AuthenticationException.class)
+                .verify();
     }
 
     @Test
