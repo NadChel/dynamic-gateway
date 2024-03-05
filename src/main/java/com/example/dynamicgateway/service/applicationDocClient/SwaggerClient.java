@@ -13,7 +13,10 @@ import java.text.MessageFormat;
 import java.util.function.Function;
 
 /**
- * An {@link ApplicationDocClient} implementation for finding Swagger (Open API) documentation exposed by {@link DiscoverableApplication}s
+ * An {@link ApplicationDocClient} implementation for finding Swagger (Open API) documentation
+ * exposed by {@link DiscoverableApplication}s
+ * <p>
+ * Instances can be created using {@link SwaggerClientConfigurer}
  */
 @Getter
 @Slf4j

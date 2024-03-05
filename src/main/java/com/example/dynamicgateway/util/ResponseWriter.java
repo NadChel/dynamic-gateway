@@ -7,6 +7,8 @@ import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import java.nio.charset.StandardCharsets;
+
 public class ResponseWriter {
     public static Mono<Void> writeUnauthorizedResponse(ServerWebExchange exchange, Throwable throwable) {
         ServerHttpResponse response = exchange.getResponse();
@@ -15,7 +17,7 @@ public class ResponseWriter {
     }
 
     private static DataBuffer createErrorBody(String errorBody) {
-        byte[] bytes = errorBody.getBytes();
+        byte[] bytes = errorBody.getBytes(StandardCharsets.UTF_8);
         return DefaultDataBufferFactory.sharedInstance.wrap(bytes);
     }
 }

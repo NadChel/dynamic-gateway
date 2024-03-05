@@ -15,7 +15,7 @@ public interface AuthorizationHeaderAuthenticationExtractor extends HeaderAuthen
     default Mono<Authentication> tryExtractAuthentication(HttpHeaders headers) {
         return Mono.just(headers)
                 .mapNotNull(h -> h.getFirst(HttpHeaders.AUTHORIZATION))
-                .map(AuthorizationHeader::new)
+                .map(AuthorizationHeader::fromString)
                 .flatMap(this::tryExtractAuthentication);
     }
 
@@ -24,7 +24,7 @@ public interface AuthorizationHeaderAuthenticationExtractor extends HeaderAuthen
     @Override
     default boolean areSupportedHeaders(HttpHeaders headers) {
         String header = headers.getFirst(HttpHeaders.AUTHORIZATION);
-        return isSupportedAuthorizationHeader(new AuthorizationHeader(header));
+        return isSupportedAuthorizationHeader(AuthorizationHeader.fromString(header));
     }
 
     boolean isSupportedAuthorizationHeader(AuthorizationHeader header);
