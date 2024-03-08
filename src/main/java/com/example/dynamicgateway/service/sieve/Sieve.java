@@ -1,4 +1,4 @@
-package com.example.dynamicgateway.service.endpointSieve;
+package com.example.dynamicgateway.service.sieve;
 
 /**
  * In effect, a glorified {@code Predicate} that serves to filter out unwanted elements

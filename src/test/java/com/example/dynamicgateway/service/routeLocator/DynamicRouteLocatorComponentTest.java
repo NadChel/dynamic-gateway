@@ -5,7 +5,7 @@ import com.example.dynamicgateway.events.DocumentedEndpointFoundEvent;
 import com.example.dynamicgateway.model.documentedEndpoint.DocumentedEndpoint;
 import com.example.dynamicgateway.model.gatewayMeta.GatewayMeta;
 import com.example.dynamicgateway.service.paramInitializer.ParamInitializers;
-import com.example.dynamicgateway.service.routeLocator.DynamicRouteLocatorIntegrationTest.DynamicRouteLocatorIntegrationTestConfig;
+import com.example.dynamicgateway.service.routeLocator.DynamicRouteLocatorComponentTest.DynamicRouteLocatorIntegrationTestConfig;
 import com.example.dynamicgateway.service.routeProcessor.EndpointRouteProcessor;
 import com.example.dynamicgateway.testModel.SwaggerEndpointStub;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.mock;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = DynamicRouteLocatorIntegrationTestConfig.class)
-public class DynamicRouteLocatorIntegrationTest {
+public class DynamicRouteLocatorComponentTest {
     @Autowired
     List<EndpointRouteProcessor> routeProcessors;
 

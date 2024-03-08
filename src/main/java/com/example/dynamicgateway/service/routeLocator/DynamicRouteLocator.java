@@ -11,6 +11,7 @@ import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.Iterator;
 import java.util.List;
@@ -36,19 +37,17 @@ public class DynamicRouteLocator implements RouteLocator {
 
     @EventListener
     public void onDocumentedEndpointFoundEvent(DocumentedEndpointFoundEvent event) {
-        DocumentedEndpoint<?> foundEndpoint = event.getFoundEndpoint();
-        Route route = transformToRoute(foundEndpoint);
-        boolean isNewRouteAdded = routes.add(route);
-
-        if (isNewRouteAdded) {
-            log.info("""
+        Mono.justOrEmpty(event)
+                .mapNotNull(DocumentedEndpointFoundEvent::getFoundEndpoint)
+                .map(this::transformToRoute)
+                .filter(routes::add)
+                .subscribe(route -> log.info("""
                             New route is built:
                             -----------------------------------
                             {}
                             -----------------------------------
-                            Will be available at the next getRoutes() invocation""",
-                    route);
-        }
+                            Will be available at the next getRoutes() invocation                        
+                        """, route));
     }
 
     private Route transformToRoute(DocumentedEndpoint<?> documentedEndpoint) {
@@ -67,7 +66,7 @@ public class DynamicRouteLocator implements RouteLocator {
             String lostAppName = event.getLostApp().getName();
             if (routesAppName.equals(lostAppName)) {
                 iterator.remove();
-                log.info("Route {} serviced by {} was evicted",
+                log.info("Route {} serviced by lost {} was evicted",
                         route.getId(), lostAppName);
             }
         }

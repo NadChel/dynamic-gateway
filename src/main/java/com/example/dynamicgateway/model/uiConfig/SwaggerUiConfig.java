@@ -5,11 +5,9 @@ import com.example.dynamicgateway.service.swaggerUiSupport.serializer.SwaggerUiC
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.Collection;
 
-@NoArgsConstructor
 @Getter
 public class SwaggerUiConfig {
     @JsonProperty("urls")

@@ -3,3 +3,9 @@ spring:
     name: ${APPLICATION_NAME:dynamic-gateway}
   profiles:
     active: dev
+
+springdoc:
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui
+    config-url: /swagger-ui/config

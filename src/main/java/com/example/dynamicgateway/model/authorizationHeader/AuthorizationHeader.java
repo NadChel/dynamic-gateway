@@ -49,15 +49,15 @@ public class AuthorizationHeader {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public final boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AuthorizationHeader that = (AuthorizationHeader) o;
-        return Objects.equals(scheme, that.scheme) && Objects.equals(credentials, that.credentials);
+        if (!(o instanceof AuthorizationHeader that)) return false;
+        return Objects.equals(scheme, that.scheme) &&
+                Objects.equals(credentials, that.credentials);
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         return Objects.hash(scheme, credentials);
     }
 

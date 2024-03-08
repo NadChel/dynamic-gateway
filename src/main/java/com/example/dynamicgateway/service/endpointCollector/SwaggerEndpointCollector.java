@@ -7,7 +7,7 @@ import com.example.dynamicgateway.model.discoverableApplication.DiscoverableAppl
 import com.example.dynamicgateway.model.documentedApplication.SwaggerApplication;
 import com.example.dynamicgateway.model.documentedEndpoint.SwaggerEndpoint;
 import com.example.dynamicgateway.service.applicationDocClient.ApplicationDocClient;
-import com.example.dynamicgateway.service.endpointSieve.EndpointSieve;
+import com.example.dynamicgateway.service.sieve.EndpointSieve;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -53,8 +53,7 @@ public class SwaggerEndpointCollector implements EndpointCollector<SwaggerEndpoi
     }
 
     private void subscribeToDocs(DiscoverableApplication<?> application) {
-        Mono<SwaggerParseResult> appDocMono = applicationDocClient.findApplicationDoc(application);
-        appDocMono
+        applicationDocClient.findApplicationDoc(application)
                 .map(applicationDoc -> new SwaggerApplication(application, applicationDoc))
                 .flatMapIterable(SwaggerApplication::getEndpoints)
                 .switchIfEmpty(Mono.defer(() -> {

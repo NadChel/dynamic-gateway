@@ -27,6 +27,7 @@ import org.springframework.web.server.handler.DefaultWebFilterChain;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.Collection;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -76,19 +77,23 @@ class AuthenticationExtractionWebFilterTest {
     }
 
     @Test
-    void testFilter_withValidToken_authenticationPassedToSecurityContextHolder() {
+    void testFilter_withValidToken_withNoRoles_authenticationHasEmptyCollectionOfRoles() {
         String sub = "mickey_m";
         List<String> roles = List.of("user", "admin");
         TestingAuthenticationToken authenticationToken = new TestingAuthenticationToken(
                 sub, null, roles.stream().map(SimpleGrantedAuthority::new).toList()
         );
 
+        assertAuthenticationInSecurityContextHolderCorrect(authenticationToken);
+    }
+
+    private void assertAuthenticationInSecurityContextHolderCorrect(Authentication token) {
         MockServerHttpRequest request = MockServerHttpRequest
                 .get("/")
                 .build();
         ServerWebExchange exchange = MockServerWebExchange.from(request);
         given(authenticationExtractorMock.isSupportedSource(exchange)).willReturn(true);
-        given(authenticationExtractorMock.tryExtractAuthentication(exchange)).willReturn(Mono.just(authenticationToken));
+        given(authenticationExtractorMock.tryExtractAuthentication(exchange)).willReturn(Mono.just(token));
 
         WebHandler handlerMock = mock(WebHandler.class);
         given(handlerMock.handle(exchange)).willReturn(Mono.empty());
@@ -96,7 +101,7 @@ class AuthenticationExtractionWebFilterTest {
         WebFilter authenticationAssertingFilter = (e, c) -> ReactiveSecurityContextHolder.getContext()
                 .map(SecurityContext::getAuthentication)
                 .switchIfEmpty(Mono.error(new AssertionError("No authentication")))
-                .filter(a -> isExpectedAuthentication(a, sub, roles))
+                .filter(a -> isExpectedAuthentication(a, token.getPrincipal(), token.getAuthorities()))
                 .switchIfEmpty(Mono.error(new AssertionError("Authentication doesn't match expected parameters")))
                 .flatMap(a -> c.filter(e));
 
@@ -107,14 +112,22 @@ class AuthenticationExtractionWebFilterTest {
                 .verifyComplete();
     }
 
-    private boolean isExpectedAuthentication(Authentication authentication, Object principal, List<String> roleStrings) {
-        List<String> roleStringsFromAuthentication = authentication.getAuthorities()
-                .stream()
-                .map(GrantedAuthority::getAuthority)
-                .toList();
+    @SuppressWarnings("SuspiciousMethodCalls")
+    private boolean isExpectedAuthentication(Authentication authentication, Object principal,
+                                             Collection<? extends GrantedAuthority> roles) {
         return authentication.getPrincipal().equals(principal) &&
-                roleStrings.containsAll(roleStringsFromAuthentication) &&
-                roleStringsFromAuthentication.containsAll(roleStrings);
+                roles.containsAll(authentication.getAuthorities()) &&
+                authentication.getAuthorities().containsAll(roles);
+    }
+
+    @Test
+    void testFilter_withValidToken_withRoles_authenticationInSecurityContextHolderMatchesExpectedParameters() {
+        String sub = "scrooge_m";
+        TestingAuthenticationToken authenticationToken = new TestingAuthenticationToken(
+                sub, null, (List<? extends GrantedAuthority>) null
+        );
+
+        assertAuthenticationInSecurityContextHolderCorrect(authenticationToken);
     }
 
     @Test

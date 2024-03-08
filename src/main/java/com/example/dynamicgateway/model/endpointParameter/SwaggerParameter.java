@@ -2,23 +2,29 @@ package com.example.dynamicgateway.model.endpointParameter;
 
 
 import io.swagger.v3.oas.models.parameters.Parameter;
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 public class SwaggerParameter implements EndpointParameter {
-    private final Parameter parameter;
+    private final Parameter nativeParameter;
 
     public SwaggerParameter(String paramName) {
-        this.parameter = new Parameter().name(paramName);
+        this(new Parameter().name(
+                (paramName == null) ? "" : paramName));
+    }
+
+    public SwaggerParameter(Parameter nativeParameter) {
+        this.nativeParameter = (nativeParameter == null) ?
+                new Parameter() :
+                nativeParameter;
     }
 
     @Override
     public String getName() {
-        return parameter.getName();
+        return nativeParameter.getName();
     }
 
     @Override
     public boolean isRequired() {
-        return parameter.getRequired();
+        return nativeParameter.getRequired() != null &&
+                nativeParameter.getRequired();
     }
 }

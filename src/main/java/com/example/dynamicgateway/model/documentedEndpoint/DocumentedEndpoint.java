@@ -6,10 +6,10 @@ import com.example.dynamicgateway.model.endpointDetails.EndpointDetails;
 /**
  * Endpoint exposed by a {@link DocumentedApplication} as part of its public API
  *
- * @param <T> type of {@link DocumentedApplication} that exposes this endpoint
+ * @param <A> type of {@code DocumentedApplication} that exposes this endpoint
  */
-public interface DocumentedEndpoint<T extends DocumentedApplication<?>> {
-    T getDeclaringApp();
+public interface DocumentedEndpoint<A extends DocumentedApplication<?>> {
+    A getDeclaringApp();
 
     EndpointDetails getDetails();
 }

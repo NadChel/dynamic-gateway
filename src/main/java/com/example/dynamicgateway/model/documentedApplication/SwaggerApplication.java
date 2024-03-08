@@ -11,6 +11,7 @@ import lombok.Getter;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
@@ -18,14 +19,15 @@ import java.util.stream.Stream;
  */
 public class SwaggerApplication implements DocumentedApplication<SwaggerParseResult> {
     public static final String V3_DOC_PATH = "/v3/api-docs";
-    private final DiscoverableApplication<?> application;
+    private final DiscoverableApplication<?> discoverableApplication;
     @Getter
     private final String description;
     private final List<SwaggerEndpoint> endpoints;
     private final SwaggerParseResult doc;
 
-    public SwaggerApplication(DiscoverableApplication<?> application, SwaggerParseResult parseResult) {
-        this.application = application;
+    public SwaggerApplication(DiscoverableApplication<?> discoverableApplication, SwaggerParseResult parseResult) {
+        Stream.of(discoverableApplication, parseResult).forEach(Objects::requireNonNull);
+        this.discoverableApplication = discoverableApplication;
         this.doc = parseResult;
         this.description = extractDescription(parseResult);
         this.endpoints = extractEndpoints(parseResult);
@@ -60,17 +62,17 @@ public class SwaggerApplication implements DocumentedApplication<SwaggerParseRes
     private SwaggerEndpointDetails buildEndpointDetails(Map.Entry<String, PathItem> pathPathItemEntry,
                                                         Map.Entry<PathItem.HttpMethod, Operation> methodOperationEntry) {
         return SwaggerEndpointDetails.builder()
-                .setMethod(methodOperationEntry.getKey())
-                .setPath(pathPathItemEntry.getKey())
-                .setParameters(methodOperationEntry.getValue().getParameters())
-                .setRequestBody(methodOperationEntry.getValue().getRequestBody())
-                .setTags(methodOperationEntry.getValue().getTags())
+                .method(methodOperationEntry.getKey())
+                .path(pathPathItemEntry.getKey())
+                .parameters(methodOperationEntry.getValue().getParameters())
+                .requestBody(methodOperationEntry.getValue().getRequestBody())
+                .tags(methodOperationEntry.getValue().getTags())
                 .build();
     }
 
     @Override
     public DiscoverableApplication<?> getDiscoverableApp() {
-        return application;
+        return discoverableApplication;
     }
 
     @Override
@@ -84,20 +86,20 @@ public class SwaggerApplication implements DocumentedApplication<SwaggerParseRes
     }
 
     @Override
-    public boolean equals(Object o) {
+    public final boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof SwaggerApplication that)) return false;
 
-        return application.getName().equals(that.application.getName());
+        return discoverableApplication.getName().equals(that.discoverableApplication.getName());
     }
 
     @Override
-    public int hashCode() {
-        return application.getName().hashCode();
+    public final int hashCode() {
+        return discoverableApplication.getName().hashCode();
     }
 
     @Override
     public String toString() {
-        return MessageFormat.format("SwaggerApplication {0}", application.getName());
+        return MessageFormat.format("SwaggerApplication {0}", discoverableApplication.getName());
     }
 }

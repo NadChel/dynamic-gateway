@@ -9,8 +9,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public class EndpointUtil {
-
     private static final Pattern pattern = Pattern.compile("/[^?#/]+");
+
+    private EndpointUtil() {
+    }
 
     public static String withRemovedPrefix(DocumentedEndpoint<?> endpoint, GatewayMeta meta) {
         return findSegment(endpoint, meta, PathSegmentPicker.pathWithoutPrefix());

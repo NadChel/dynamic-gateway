@@ -19,6 +19,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 class JwtBearerAuthorizationHeaderAuthenticationExtractorTest {
     private final JwtBearerAuthorizationHeaderAuthenticationExtractor extractor = new JwtBearerAuthorizationHeaderAuthenticationExtractor();
 
@@ -57,10 +59,10 @@ class JwtBearerAuthorizationHeaderAuthenticationExtractorTest {
                 .signWith(key)
                 .compact();
 
-        testForInvalidToken(expiredToken);
+        assertTryExtractAuthenticationThrowsWithToken(expiredToken);
     }
 
-    private void testForInvalidToken(String invalidToken) {
+    private void assertTryExtractAuthenticationThrowsWithToken(String invalidToken) {
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/")
                 .header(HttpHeaders.AUTHORIZATION, AuthorizationHeader.BEARER_SPACE + invalidToken)
                 .build());
@@ -71,7 +73,7 @@ class JwtBearerAuthorizationHeaderAuthenticationExtractorTest {
     }
 
     @Test
-    void testTryExtractAuthentication_withPhonySigningKey() {
+    void tryExtractAuthentication_withPhonySigningKey_throws() {
         SecretKey phonyKey = Keys.hmacShaKeyFor(UUID.randomUUID().toString().getBytes());
 
         String jwtWithPhonyKey = Jwts.builder()
@@ -79,11 +81,11 @@ class JwtBearerAuthorizationHeaderAuthenticationExtractorTest {
                 .signWith(phonyKey)
                 .compact();
 
-        testForInvalidToken(jwtWithPhonyKey);
+        assertTryExtractAuthenticationThrowsWithToken(jwtWithPhonyKey);
     }
 
     @Test
-    void testTryExtractAuthentication_withMalformedToken() {
+    void tryExtractAuthentication_withMalformedToken_throws() {
         SecretKey key = Keys.hmacShaKeyFor(JWT.KEY.getBytes());
 
         String malformedToken = Jwts.builder()
@@ -91,6 +93,27 @@ class JwtBearerAuthorizationHeaderAuthenticationExtractorTest {
                 .signWith(key)
                 .compact() + ".somebs";
 
-        testForInvalidToken(malformedToken);
+        assertTryExtractAuthenticationThrowsWithToken(malformedToken);
+    }
+
+    @Test
+    void tryExtractAuthentication_withTokenWithNoRoles_setsEmptyCollection() {
+        SecretKey key = Keys.hmacShaKeyFor(JWT.KEY.getBytes());
+
+        String tokenWithNoRoles = Jwts.builder()
+                .setExpiration(Date.valueOf(LocalDate.now().plusYears(1)))
+                .signWith(key)
+                .compact();
+
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/")
+                .header(HttpHeaders.AUTHORIZATION, AuthorizationHeader.BEARER_SPACE + tokenWithNoRoles)
+                .build());
+
+        StepVerifier.create(extractor.tryExtractAuthentication(exchange))
+                .assertNext(authentication -> {
+                    assertThat(authentication.getAuthorities()).isNotNull();
+                    assertThat(authentication.getAuthorities()).isEmpty();
+                })
+                .verifyComplete();
     }
 }

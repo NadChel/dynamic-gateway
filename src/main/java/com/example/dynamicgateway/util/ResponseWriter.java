@@ -10,6 +10,9 @@ import reactor.core.publisher.Mono;
 import java.nio.charset.StandardCharsets;
 
 public class ResponseWriter {
+    private ResponseWriter() {
+    }
+
     public static Mono<Void> writeUnauthorizedResponse(ServerWebExchange exchange, Throwable throwable) {
         ServerHttpResponse response = exchange.getResponse();
         response.setStatusCode(HttpStatus.UNAUTHORIZED);

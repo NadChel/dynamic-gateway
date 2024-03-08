@@ -1,6 +1,6 @@
 package com.example.dynamicgateway.config;
 
-import com.example.dynamicgateway.service.endpointSieve.DiscoverableApplicationSieve;
+import com.example.dynamicgateway.service.sieve.DiscoverableApplicationSieve;
 import com.netflix.discovery.EurekaClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

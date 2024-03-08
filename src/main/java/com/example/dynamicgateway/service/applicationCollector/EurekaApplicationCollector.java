@@ -3,7 +3,7 @@ package com.example.dynamicgateway.service.applicationCollector;
 import com.example.dynamicgateway.events.DiscoverableApplicationFoundEvent;
 import com.example.dynamicgateway.events.DiscoverableApplicationLostEvent;
 import com.example.dynamicgateway.model.discoverableApplication.EurekaDiscoverableApplication;
-import com.example.dynamicgateway.service.endpointSieve.DiscoverableApplicationSieve;
+import com.example.dynamicgateway.service.sieve.DiscoverableApplicationSieve;
 import com.netflix.discovery.CacheRefreshedEvent;
 import com.netflix.discovery.EurekaClient;
 import lombok.extern.slf4j.Slf4j;

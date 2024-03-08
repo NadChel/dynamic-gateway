@@ -44,39 +44,39 @@ public class SwaggerEndpointDetails implements EndpointDetails {
         private Builder() {
         }
 
-        public Builder setPath(String path) {
+        public Builder path(String path) {
             UriValidator.requireValidPath(path);
             this.path = path;
             return this;
         }
 
-        public Builder setMethod(PathItem.HttpMethod method) {
+        public Builder method(PathItem.HttpMethod method) {
             Objects.requireNonNull(method);
             this.method = HttpMethod.valueOf(method.name());
             return this;
         }
 
-        public Builder setMethod(HttpMethod method) {
+        public Builder method(HttpMethod method) {
             Objects.requireNonNull(method);
             this.method = method;
             return this;
         }
 
-        public Builder setParameters(List<Parameter> parameters) {
+        public Builder parameters(List<Parameter> parameters) {
             if (parameters != null) {
                 this.parameters = parameters.stream().map(SwaggerParameter::new).toList();
             }
             return this;
         }
 
-        public Builder setRequestBody(RequestBody requestBody) {
+        public Builder requestBody(RequestBody requestBody) {
             if (requestBody != null) {
                 this.requestBody = new SwaggerRequestBody(requestBody);
             }
             return this;
         }
 
-        public Builder setTags(List<String> tags) {
+        public Builder tags(List<String> tags) {
             if (tags != null) {
                 this.tags = tags;
             }
@@ -85,10 +85,6 @@ public class SwaggerEndpointDetails implements EndpointDetails {
 
         public SwaggerEndpointDetails build() {
             return new SwaggerEndpointDetails(this);
-        }
-
-        public String toString() {
-            return "SwaggerEndpointDetails.Builder(path=" + this.path + ", method=" + this.method + ", parameters=" + this.parameters + ", requestBody=" + this.requestBody + ", tags=" + this.tags + ")";
         }
     }
 }

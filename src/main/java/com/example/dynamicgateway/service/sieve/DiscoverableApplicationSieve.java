@@ -1,4 +1,4 @@
-package com.example.dynamicgateway.service.endpointSieve;
+package com.example.dynamicgateway.service.sieve;
 
 import com.example.dynamicgateway.model.discoverableApplication.DiscoverableApplication;
 

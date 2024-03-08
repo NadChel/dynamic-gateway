@@ -18,6 +18,9 @@ import java.util.regex.Pattern;
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc3986">RFC 3986</a>
  */
 public class UriValidator {
+    private UriValidator() {
+    }
+
     /**
      * Checks the validity of a URI path throwing an exception if the check fails
      *

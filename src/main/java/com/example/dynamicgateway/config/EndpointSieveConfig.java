@@ -1,7 +1,7 @@
 package com.example.dynamicgateway.config;
 
 import com.example.dynamicgateway.model.gatewayMeta.GatewayMeta;
-import com.example.dynamicgateway.service.endpointSieve.EndpointSieve;
+import com.example.dynamicgateway.service.sieve.EndpointSieve;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.AntPathMatcher;

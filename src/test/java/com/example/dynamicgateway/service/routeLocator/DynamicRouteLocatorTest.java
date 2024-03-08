@@ -1,10 +1,12 @@
 package com.example.dynamicgateway.service.routeLocator;
 
+import com.example.dynamicgateway.events.DiscoverableApplicationLostEvent;
 import com.example.dynamicgateway.events.DocumentedEndpointFoundEvent;
+import com.example.dynamicgateway.model.discoverableApplication.DiscoverableApplication;
+import com.example.dynamicgateway.model.documentedEndpoint.DocumentedEndpoint;
 import com.example.dynamicgateway.service.routeLocator.util.PathOnlyAsyncPredicate;
 import com.example.dynamicgateway.service.routeProcessor.EndpointRouteProcessor;
 import lombok.SneakyThrows;
-import org.assertj.core.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.springframework.cloud.gateway.route.Route;
 import reactor.test.StepVerifier;
@@ -14,31 +16,85 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.Assumptions.assumeThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThatCode;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 
 class DynamicRouteLocatorTest {
     private DynamicRouteLocator dynamicRouteLocator;
 
     @Test
-    void ifNoEventsFired_returnsEmptyFlux() {
+    void ifNoEventsFired_hasNoEndpoints() {
         dynamicRouteLocator = new DynamicRouteLocator(Collections.emptyList());
 
+        assertNoRoutes();
+    }
+
+    private void assertNoRoutes() {
+        assertRouteCount(0);
+    }
+
+    private void assertRouteCount(int expectedNumberOfEndpoints) {
+        assertThat(getRouteSet()).hasSize(expectedNumberOfEndpoints);
         StepVerifier.create(dynamicRouteLocator.getRoutes())
-                .expectComplete()
-                .verify();
+                .expectNextCount(expectedNumberOfEndpoints)
+                .verifyComplete();
+    }
+
+    @SneakyThrows
+    @SuppressWarnings("unchecked")
+    private Set<Route> getRouteSet() {
+        Field routesField = dynamicRouteLocator.getClass()
+                .getDeclaredField("routes");
+        routesField.setAccessible(true);
+        return (Set<Route>) routesField.get(dynamicRouteLocator);
     }
 
     @Test
-    void testOnDocumentedEndpointFoundEvent_withOneEvent() {
-        dynamicRouteLocator = new DynamicRouteLocator(getEndpointRouteProcessorStub());
+    void onNullDocumentedEndpointFoundEvent_stillHasNoEndpoints() {
+        dynamicRouteLocator = new DynamicRouteLocator(Collections.emptyList());
+
+        assumeNoRoutes();
+
+        dynamicRouteLocator.onDocumentedEndpointFoundEvent(null);
+
+        assertNoRoutes();
+    }
+
+    private void assumeNoRoutes() {
+        assumeThatCode(this::assertNoRoutes).doesNotThrowAnyException();
+    }
+
+    @Test
+    void onNonNullDocumentedEndpointFoundEvent_whichHasNullEndpoint_locatorStillHasNoEndpoints() {
+        dynamicRouteLocator = new DynamicRouteLocator(Collections.emptyList());
 
         DocumentedEndpointFoundEvent eventMock = mock(DocumentedEndpointFoundEvent.class);
+        given(eventMock.getFoundEndpoint()).willReturn(null);
+
+        assumeNoRoutes();
 
         dynamicRouteLocator.onDocumentedEndpointFoundEvent(eventMock);
 
-        assertThat(getRouteSet().size()).isEqualTo(1);
+        assertNoRoutes();
+    }
+
+    @Test
+    void onNonNullDocumentedEndpointFoundEvent_withNonNullEndpoint_buildsRoute() {
+        dynamicRouteLocator = new DynamicRouteLocator(getEndpointRouteProcessorStub());
+
+        DocumentedEndpoint<?> endpointMock = mock(DocumentedEndpoint.class);
+
+        DocumentedEndpointFoundEvent eventMock = mock(DocumentedEndpointFoundEvent.class);
+        given(eventMock.getFoundEndpoint()).willAnswer(i -> endpointMock);
+
+        assumeNoRoutes();
+
+        dynamicRouteLocator.onDocumentedEndpointFoundEvent(eventMock);
+
+        assertOneRoute();
     }
 
     private List<EndpointRouteProcessor> getEndpointRouteProcessorStub() {
@@ -48,67 +104,118 @@ class DynamicRouteLocatorTest {
     }
 
     private static Route.AsyncBuilder getRouteBuilderStub() {
+        return getLegalRouteBuilderWithUri("https://example.com");
+    }
+
+    private static Route.AsyncBuilder getLegalRouteBuilderWithUri(String uri) {
         return Route.async()
-                .id("123")
-                .uri("https://example.com")
-                .asyncPredicate(PathOnlyAsyncPredicate.from("/test-path"));
+                .id(String.valueOf(uri.hashCode()))
+                .uri(uri)
+                .asyncPredicate(PathOnlyAsyncPredicate.from("/"));
+    }
+
+    private void assertOneRoute() {
+        assertRouteCount(1);
     }
 
     @Test
-    void testOnDocumentedEndpointFoundEvent_withTwoIdenticalEvents() {
+    void ifSameEndpointFoundTwice_buildsOnlyOneRoute() {
         dynamicRouteLocator = new DynamicRouteLocator(getEndpointRouteProcessorStub());
+
+        DocumentedEndpoint<?> documentedEndpointMock = mock(DocumentedEndpoint.class);
 
         DocumentedEndpointFoundEvent eventMock = mock(DocumentedEndpointFoundEvent.class);
         DocumentedEndpointFoundEvent eventMockCopy = mock(DocumentedEndpointFoundEvent.class);
 
+        given(eventMock.getFoundEndpoint()).willAnswer(i -> documentedEndpointMock);
+        given(eventMockCopy.getFoundEndpoint()).willAnswer(i -> documentedEndpointMock);
+
+        assumeNoRoutes();
+
         dynamicRouteLocator.onDocumentedEndpointFoundEvent(eventMock);
         dynamicRouteLocator.onDocumentedEndpointFoundEvent(eventMockCopy);
 
-        assertThat(getRouteSet().size()).isEqualTo(1);
-    }
-
-    @SneakyThrows
-    @SuppressWarnings("unchecked")
-    private Set<Route> getRouteSet() {
-        Field routesField =  dynamicRouteLocator.getClass()
-                .getDeclaredField("routes");
-        routesField.setAccessible(true);
-        return (Set<Route>) routesField.get(dynamicRouteLocator);
+        assertOneRoute();
     }
 
     @Test
-    void ifOneEventFired_returnsFluxOfOneRoute() {
+    void onDocumentedEndpointFoundEvent_buildsRouteMatchingExpectedParameters() {
         dynamicRouteLocator = new DynamicRouteLocator(getEndpointRouteProcessorStub());
 
+        DocumentedEndpoint<?> endpointMock = mock(DocumentedEndpoint.class);
+
         DocumentedEndpointFoundEvent eventMock = mock(DocumentedEndpointFoundEvent.class);
+        given(eventMock.getFoundEndpoint()).willAnswer(i -> endpointMock);
+
+        assumeNoRoutes();
 
         dynamicRouteLocator.onDocumentedEndpointFoundEvent(eventMock);
 
-        assumeThat(getRouteSet().size()).isEqualTo(1);
+        assumeOneRoute();
 
-        StepVerifier.create(dynamicRouteLocator.getRoutes())
-                .expectNextCount(1)
-                .expectComplete()
-                .verify();
+        assertOnlyRoute(getRouteBuilderStub().build());
+    }
+
+    private void assumeOneRoute() {
+        assumeThatCode(this::assertOneRoute).doesNotThrowAnyException();
+    }
+
+    private void assertOnlyRoute(Route onlyExpectedRoute) {
+        assertOnlyRoutes(onlyExpectedRoute);
+    }
+
+    private void assertOnlyRoutes(Route... onlyExpectedRoutes) {
+        assertThat(getRouteSet()).containsExactlyInAnyOrder(onlyExpectedRoutes);
+        StepVerifier.create(dynamicRouteLocator.getRoutes().collectList())
+                .assertNext(routes -> assertThat(routes).containsExactlyInAnyOrder(onlyExpectedRoutes))
+                .verifyComplete();
     }
 
     @Test
-    void testGetRoutes_ifEventFired_returnsFluxOfExpectedRoute() {
-        dynamicRouteLocator = new DynamicRouteLocator(getEndpointRouteProcessorStub());
+    void onDiscoverableApplicationLostEvent_removesAssociatedRoutes() {
+        String scheme = "scheme://";
 
-        DocumentedEndpointFoundEvent eventMock = mock(DocumentedEndpointFoundEvent.class);
+        dynamicRouteLocator = new DynamicRouteLocator(List.of(
+                (routeInConstruction, endpoint) -> getLegalRouteBuilderWithUri(scheme + endpoint.getDeclaringApp().getName())
+        ));
 
-        Assumptions.assumeThatCode(() -> {
-            dynamicRouteLocator.onDocumentedEndpointFoundEvent(eventMock);
-            StepVerifier.create(dynamicRouteLocator.getRoutes())
-                    .expectNextCount(1)
-                    .expectComplete()
-                    .verify();
-        }).doesNotThrowAnyException();
+        String appName = "some-app";
+        String anotherAppName = "some-other-app";
 
-        StepVerifier.create(dynamicRouteLocator.getRoutes())
-                .expectNext(getRouteBuilderStub().build())
-                .expectComplete()
-                .verify();
+        DocumentedEndpoint<?> endpointMock = mock(DocumentedEndpoint.class, RETURNS_DEEP_STUBS);
+        given(endpointMock.getDeclaringApp().getName()).willReturn(appName);
+
+        DocumentedEndpoint<?> anotherEndpointMock = mock(DocumentedEndpoint.class, RETURNS_DEEP_STUBS);
+        given(anotherEndpointMock.getDeclaringApp().getName()).willReturn(anotherAppName);
+
+        DocumentedEndpointFoundEvent endpointFoundEventMock = mock(DocumentedEndpointFoundEvent.class);
+        given(endpointFoundEventMock.getFoundEndpoint()).willAnswer(i -> endpointMock);
+
+        DocumentedEndpointFoundEvent anotherEndpointFoundEventMock = mock(DocumentedEndpointFoundEvent.class);
+        given(anotherEndpointFoundEventMock.getFoundEndpoint()).willAnswer(i -> anotherEndpointMock);
+
+        assumeNoRoutes();
+
+        dynamicRouteLocator.onDocumentedEndpointFoundEvent(endpointFoundEventMock);
+        dynamicRouteLocator.onDocumentedEndpointFoundEvent(anotherEndpointFoundEventMock);
+
+        assumeOnlyRoutes(
+                getLegalRouteBuilderWithUri(scheme + appName).build(),
+                getLegalRouteBuilderWithUri(scheme + anotherAppName).build()
+        );
+
+        DiscoverableApplication<?> appMock = mock(DiscoverableApplication.class);
+        given(appMock.getName()).willReturn(appName);
+
+        DiscoverableApplicationLostEvent eventMock = mock(DiscoverableApplicationLostEvent.class);
+        given(eventMock.getLostApp()).willAnswer(i -> appMock);
+
+        dynamicRouteLocator.onDiscoverableApplicationLostEvent(eventMock);
+
+        assertOnlyRoute(getLegalRouteBuilderWithUri(scheme + anotherAppName).build());
+    }
+
+    private void assumeOnlyRoutes(Route... expectedRoutes) {
+        assumeThatCode(() -> assertOnlyRoutes(expectedRoutes)).doesNotThrowAnyException();
     }
 }

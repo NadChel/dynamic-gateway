@@ -29,12 +29,6 @@ eureka:
     non-secure-port-enabled: false
     secure-port-enabled: true
 
-springdoc:
-  swagger-ui:
-    enabled: true
-    path: /swagger-ui
-    config-url: /swagger-ui/config
-
 gateway:
   servers:
     - url: http://localhost:${server.port}
@@ -47,6 +41,7 @@ gateway:
     - /swagger-ui/**
     - /webjars/**
     - /doc/*
+    - /fallback/**
   ignoredPatterns:
     - /error/**
   ignoredPrefixes:

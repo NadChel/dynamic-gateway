@@ -8,16 +8,16 @@ import java.util.List;
 /**
  * Application that exposes its API documentation, including available endpoints
  *
- * @param <T> type of document object of this {@code DocumentedApplication}
+ * @param <D> type of document object of this {@code DocumentedApplication}
  */
-public interface DocumentedApplication<T> {
+public interface DocumentedApplication<D> {
     DiscoverableApplication<?> getDiscoverableApp();
 
     String getDescription();
 
     List<? extends DocumentedEndpoint<?>> getEndpoints();
 
-    T getNativeDoc();
+    D getNativeDoc();
 
     default String getName() {
         return getDiscoverableApp().getName();

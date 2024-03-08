@@ -25,8 +25,8 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
-import static org.mockito.Mockito.mock;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
 class SwaggerEndpointCollectorTest {
     private SwaggerEndpointCollector collector;
@@ -96,7 +96,7 @@ class SwaggerEndpointCollectorTest {
                 .build();
 
         SwaggerEndpoint endpointToLeaveOut = SwaggerEndpointStub.builder()
-                .method(HttpMethod.POST)
+                .method(HttpMethod.GET)
                 .path("/test-path-two")
                 .build();
 

@@ -8,14 +8,11 @@ import com.example.dynamicgateway.model.endpointDetails.SwaggerEndpointDetails;
 import com.example.dynamicgateway.testUtil.SwaggerParseResultGenerator;
 import com.netflix.discovery.shared.Application;
 import lombok.Getter;
-import lombok.Setter;
 import org.springframework.http.HttpMethod;
 
-@Getter
-@Setter
 public class SwaggerEndpointStub extends SwaggerEndpoint {
     private SwaggerEndpointStub(Builder builder) {
-        super(builder.getSwaggerApplication(), builder.getDetailsBuilder().build());
+        super(builder.getDeclaringApp(), builder.getDetailsBuilder().build());
     }
 
     public static Builder builder() {
@@ -24,27 +21,27 @@ public class SwaggerEndpointStub extends SwaggerEndpoint {
 
     @Getter
     public static class Builder {
-        private final SwaggerApplication swaggerApplication;
+        private final SwaggerApplication declaringApp;
         private final SwaggerEndpointDetails.Builder detailsBuilder = SwaggerEndpointDetails.builder();
 
         private Builder() {
             Application eurekaApplication = new Application("test-app");
             DiscoverableApplication<Application> discoverableApplication = new EurekaDiscoverableApplication(eurekaApplication);
-            swaggerApplication = new SwaggerApplication(discoverableApplication, SwaggerParseResultGenerator.empty());
+            declaringApp = new SwaggerApplication(discoverableApplication, SwaggerParseResultGenerator.empty());
         }
 
         public Builder declaringAppName(String name) {
-            ((Application) swaggerApplication.getDiscoverableApp().unwrap()).setName(name);
+            ((Application) declaringApp.getDiscoverableApp().unwrap()).setName(name);
             return this;
         }
 
         public Builder method(HttpMethod method) {
-            detailsBuilder.setMethod(method);
+            detailsBuilder.method(method);
             return this;
         }
 
         public Builder path(String path) {
-            detailsBuilder.setPath(path);
+            detailsBuilder.path(path);
             return this;
         }
 

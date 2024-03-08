@@ -25,13 +25,16 @@ public class Cloner {
         objectMapper.registerModule(new ParameterNamesModule());
     }
 
+    private Cloner() {
+    }
+
     /**
      * Serializes and then deserializes an object, thus producing its deep copy
      *
      * @param object object to copy
      * @param type class of the object
-     * @return deep copy of the object
      * @param <T> type of the object to be copied
+     * @return deep copy of the object
      * @throws JsonProcessingException if serialization or deserialization fails
      */
     @SneakyThrows

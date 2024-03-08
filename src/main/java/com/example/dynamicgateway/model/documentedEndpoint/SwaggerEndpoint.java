@@ -11,45 +11,40 @@ import java.util.stream.Stream;
 /**
  * {@link DocumentedEndpoint} exposed by a {@link SwaggerApplication}
  */
+@Getter
 public class SwaggerEndpoint implements DocumentedEndpoint<SwaggerApplication> {
-    private final SwaggerApplication documentedApp;
-    @Getter
+    private final SwaggerApplication declaringApp;
     private final SwaggerEndpointDetails details;
 
-    public SwaggerEndpoint(SwaggerApplication documentedApp, SwaggerEndpointDetails details) {
-        Stream.of(documentedApp, details).forEach(Objects::requireNonNull);
-        this.documentedApp = documentedApp;
+    public SwaggerEndpoint(SwaggerApplication declaringApp, SwaggerEndpointDetails details) {
+        Stream.of(declaringApp, details).forEach(Objects::requireNonNull);
+        this.declaringApp = declaringApp;
         this.details = details;
-    }
-
-    @Override
-    public SwaggerApplication getDeclaringApp() {
-        return documentedApp;
     }
 
     @Override
     public String toString() {
         return MessageFormat.format(
                 "{0} {1} {2}",
-                documentedApp.getName(),
+                declaringApp.getName(),
                 details.getMethod(),
                 details.getPath()
         );
     }
 
     @Override
-    public boolean equals(Object o) {
+    public final boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof SwaggerEndpoint otherEndpoint)) return false;
 
-        return documentedApp.getName().equals(otherEndpoint.getDeclaringApp().getName()) &&
+        return declaringApp.getName().equals(otherEndpoint.getDeclaringApp().getName()) &&
                 details.getMethod().equals(otherEndpoint.getDetails().getMethod()) &&
                 details.getPath().equals(otherEndpoint.getDetails().getPath());
     }
 
     @Override
-    public int hashCode() {
-        int result = documentedApp.getName().hashCode();
+    public final int hashCode() {
+        int result = declaringApp.getName().hashCode();
         result = 31 * result + details.getMethod().hashCode();
         result = 31 * result + details.getPath().hashCode();
         return result;

@@ -3,6 +3,7 @@ package com.example.dynamicgateway.service.routeLocator.util;
 import org.reactivestreams.Publisher;
 import org.springframework.cloud.gateway.handler.AsyncPredicate;
 import org.springframework.http.server.RequestPath;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -21,7 +22,9 @@ public class PathOnlyAsyncPredicate implements AsyncPredicate<ServerWebExchange>
 
     @Override
     public Publisher<Boolean> apply(ServerWebExchange exchange) {
-        return Mono.just(exchange.getRequest().getPath().equals(path));
+        return Mono.just(exchange.getRequest())
+                .map(ServerHttpRequest::getPath)
+                .map(path -> path.equals(this.path));
     }
 
     @Override
