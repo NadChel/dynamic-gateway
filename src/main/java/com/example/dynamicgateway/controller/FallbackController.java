@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
+import java.text.MessageFormat;
+
 @RestController
 @Slf4j
 public class FallbackController {
@@ -22,7 +24,7 @@ public class FallbackController {
         private String message;
 
         public CircuitBreakerFallbackMessage(String message) {
-            this.message = "%s is currently unavailable".formatted(message);
+            this.message = MessageFormat.format("{0} is currently unavailable", message);
         }
     }
 }

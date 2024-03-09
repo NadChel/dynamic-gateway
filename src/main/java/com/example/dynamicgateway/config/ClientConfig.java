@@ -1,7 +1,7 @@
 package com.example.dynamicgateway.config;
 
 import com.example.dynamicgateway.service.applicationDocClient.ApplicationDocClient;
-import com.example.dynamicgateway.service.applicationDocClient.SwaggerClientConfigurer;
+import com.example.dynamicgateway.service.applicationDocClient.SwaggerClient;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
@@ -18,6 +18,6 @@ public class ClientConfig {
 
     @Bean
     public ApplicationDocClient<SwaggerParseResult> applicationDocClient() {
-        return SwaggerClientConfigurer.configure(balancedWebClientBuilder().build()).build();
+        return SwaggerClient.builder(balancedWebClientBuilder().build()).build();
     }
 }

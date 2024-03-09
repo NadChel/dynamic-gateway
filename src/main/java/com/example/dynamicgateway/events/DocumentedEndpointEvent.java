@@ -4,7 +4,7 @@ import com.example.dynamicgateway.model.documentedEndpoint.DocumentedEndpoint;
 import org.springframework.context.ApplicationEvent;
 
 /**
- * {@link ApplicationEvent} concerning a {@link DocumentedEndpoint}
+ * An {@link ApplicationEvent} concerning a {@link DocumentedEndpoint}
  */
 public abstract class DocumentedEndpointEvent extends ApplicationEvent {
     protected final DocumentedEndpoint<?> endpoint;

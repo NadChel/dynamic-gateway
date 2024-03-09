@@ -1,16 +1,18 @@
 package com.example.dynamicgateway.util;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.Getter;
 import lombok.Setter;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
 class ClonerTest {
     @Test
-    void testDeepCopy() {
+    void deepCopy_returnsDeepCopy_onValidObject() {
         String oldValue = "some string";
         SomeDependency someDependency = new SomeDependency(oldValue);
         SomeClass someClass = new SomeClass(someDependency);
@@ -21,6 +23,13 @@ class ClonerTest {
         someClassCopy.getSomeDependency().setSomeString(newValue);
         assumeThat(someClassCopy.getSomeDependency().getSomeString()).isEqualTo(newValue);
         assertThat(someClass.getSomeDependency().getSomeString()).isEqualTo(oldValue);
+    }
+
+    @Test
+    void returnsDeepCopy_throwsJsonProcessingException_onInvalidObject() {
+        SomeClassWithNoExposedCreationMechanism invalidObject = new SomeClassWithNoExposedCreationMechanism();
+        assertThatThrownBy(() -> Cloner.deepCopy(invalidObject, SomeClassWithNoExposedCreationMechanism.class))
+                .isInstanceOf(JsonProcessingException.class);
     }
 
     @Getter
@@ -42,5 +51,9 @@ class ClonerTest {
         public SomeDependency(String someString) {
             this.someString = someString;
         }
+    }
+
+    static class SomeClassWithNoExposedCreationMechanism {
+        private SomeClassWithNoExposedCreationMechanism() {}
     }
 }

@@ -14,7 +14,7 @@ public class SwaggerUiConfig {
     @JsonSerialize(contentUsing = SwaggerUiConfigSerializer.class)
     private Collection<SwaggerApplication> swaggerApplications;
 
-    public SwaggerUiConfig(Collection<SwaggerApplication> swaggerApplications) {
+    private SwaggerUiConfig(Collection<SwaggerApplication> swaggerApplications) {
         this.swaggerApplications = swaggerApplications;
     }
 

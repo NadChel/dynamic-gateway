@@ -10,7 +10,8 @@ import org.springframework.util.AntPathMatcher;
 public class EndpointSieveConfig {
     @Bean
     public EndpointSieve errorPathEndpointSieve(GatewayMeta gatewayMeta, AntPathMatcher antPathMatcher) {
-        return endpoint -> gatewayMeta.getIgnoredPatterns().stream()
+        return endpoint -> gatewayMeta.getIgnoredPatterns()
+                .stream()
                 .noneMatch(ignoredPattern -> antPathMatcher.match(ignoredPattern, endpoint.getDetails().getPath()));
     }
 

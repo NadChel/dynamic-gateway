@@ -9,7 +9,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
- * {@link DocumentedEndpoint} exposed by a {@link SwaggerApplication}
+ * A {@link DocumentedEndpoint} exposed by a {@link SwaggerApplication}
  */
 @Getter
 public class SwaggerEndpoint implements DocumentedEndpoint<SwaggerApplication> {
@@ -38,8 +38,8 @@ public class SwaggerEndpoint implements DocumentedEndpoint<SwaggerApplication> {
         if (!(o instanceof SwaggerEndpoint otherEndpoint)) return false;
 
         return declaringApp.getName().equals(otherEndpoint.getDeclaringApp().getName()) &&
-                details.getMethod().equals(otherEndpoint.getDetails().getMethod()) &&
-                details.getPath().equals(otherEndpoint.getDetails().getPath());
+                Objects.equals(details.getMethod(), otherEndpoint.getDetails().getMethod()) &&
+                Objects.equals(details.getPath(), otherEndpoint.getDetails().getPath());
     }
 
     @Override

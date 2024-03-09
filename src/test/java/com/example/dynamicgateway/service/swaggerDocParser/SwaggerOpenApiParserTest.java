@@ -5,14 +5,14 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-class V3SwaggerDocParserTest {
+class SwaggerOpenApiParserTest {
     @Test
     void testParse() {
-        V3SwaggerDocParser v3SwaggerDocParser = new V3SwaggerDocParser();
+        SwaggerOpenApiParser swaggerOpenApiParser = new SwaggerOpenApiParser();
         OpenAPIV3Parser openAPIV3Parser = new OpenAPIV3Parser();
 
         String docString = getDocString();
-        assertThat(v3SwaggerDocParser.parse(docString)).isEqualTo(openAPIV3Parser.readContents(docString));
+        assertThat(swaggerOpenApiParser.parse(docString)).isEqualTo(openAPIV3Parser.readContents(docString));
     }
 
     private String getDocString() {

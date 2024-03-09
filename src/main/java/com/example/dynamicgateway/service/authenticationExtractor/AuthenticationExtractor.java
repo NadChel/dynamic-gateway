@@ -7,14 +7,17 @@ import reactor.core.publisher.Mono;
 
 /**
  * Object that tries to build an {@link Authentication} from a provided {@link ServerWebExchange}.
- *
- * <p>Functionally similar to {@link ServerAuthenticationConverter}
+ * <p>
+ * Implementations <b>should not</b> attempt to perform any authentication and are instead expected
+ * to return authentication claims as is
+ * <p>
+ * Functionally similar to {@link ServerAuthenticationConverter}
  */
 public interface AuthenticationExtractor {
     /**
      * Attempts to extract an {@link Authentication} object from a passed-in {@code ServerWebExchange}
      *
-     * @param exchange {@code ServerWebExchange} that may contain an extractable authentication
+     * @param exchange {@code ServerWebExchange} that may contain extractable authentication claims
      * @return {@code Mono} that may contain an extracted {@code Authentication}
      */
     Mono<Authentication> tryExtractAuthentication(ServerWebExchange exchange);

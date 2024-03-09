@@ -1,17 +1,19 @@
 package com.example.dynamicgateway.model.discoverableApplication;
 
 import com.netflix.discovery.shared.Application;
-import lombok.RequiredArgsConstructor;
 
 import java.util.Objects;
 
 /**
- * {@link DiscoverableApplication} that wraps a Eureka-registered {@link Application}
+ * A {@link DiscoverableApplication} that wraps a Eureka-registered {@link Application}
  */
-@RequiredArgsConstructor
 public class EurekaDiscoverableApplication implements DiscoverableApplication<Application> {
     public static final String LB_SCHEME = "lb://";
     private final Application eurekaApplication;
+
+    public EurekaDiscoverableApplication(Application eurekaApplication) {
+        this.eurekaApplication = eurekaApplication;
+    }
 
     @Override
     public String getName() {

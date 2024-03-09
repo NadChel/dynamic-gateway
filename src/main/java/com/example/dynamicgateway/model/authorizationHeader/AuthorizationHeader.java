@@ -6,7 +6,7 @@ import lombok.Getter;
 import java.util.Objects;
 
 /**
- * An object representing an `Authorization` HTTP header
+ * An object representing an {@code Authorization} HTTP header
  *
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc7235#section-2">RFC 7235</a>
  */

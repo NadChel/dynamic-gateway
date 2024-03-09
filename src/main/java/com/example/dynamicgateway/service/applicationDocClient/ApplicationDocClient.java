@@ -4,14 +4,14 @@ import com.example.dynamicgateway.model.discoverableApplication.DiscoverableAppl
 import reactor.core.publisher.Mono;
 
 /**
- * Client that can be used to find exposed API documentation of a {@link DiscoverableApplication}
+ * A client that can be used to find exposed API documentation of a {@link DiscoverableApplication}
  *
- * @param <T> type of documentation object supplied by an application
+ * @param <D> type of documentation object supplied by an application
  */
-public interface ApplicationDocClient<T> {
+public interface ApplicationDocClient<D> {
     /**
      * Returns a {@code Mono} of documentation object
      * @param application queried application
      */
-    Mono<T> findApplicationDoc(DiscoverableApplication<?> application);
+    Mono<D> findApplicationDoc(DiscoverableApplication<?> application);
 }

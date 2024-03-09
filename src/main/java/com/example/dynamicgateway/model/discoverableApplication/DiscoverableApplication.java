@@ -1,11 +1,11 @@
 package com.example.dynamicgateway.model.discoverableApplication;
 
 /**
- * Application whose instances can be located by means of a discovery service
+ * An application whose instances can be located by means of a discovery service
  *
- * @param <T> type of provider-specific application object
+ * @param <A> type of provider-specific application object
  */
-public interface DiscoverableApplication<T> {
+public interface DiscoverableApplication<A> {
     String getName();
 
     String getDiscoveryServiceScheme();
@@ -13,5 +13,5 @@ public interface DiscoverableApplication<T> {
     /**
      * Returns a provider-specific application object wrapped by this {@code DiscoverableApplication}
      */
-    T unwrap();
+    A unwrap();
 }

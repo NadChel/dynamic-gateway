@@ -4,7 +4,7 @@ import com.example.dynamicgateway.model.discoverableApplication.DiscoverableAppl
 import org.springframework.context.ApplicationEvent;
 
 /**
- * {@link ApplicationEvent} concerning a {@link DiscoverableApplication}
+ * An {@link ApplicationEvent} concerning a {@link DiscoverableApplication}
  */
 public abstract class DiscoverableApplicationEvent extends ApplicationEvent {
     protected final DiscoverableApplication<?> app;

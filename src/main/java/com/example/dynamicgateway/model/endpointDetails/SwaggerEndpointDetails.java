@@ -1,5 +1,6 @@
 package com.example.dynamicgateway.model.endpointDetails;
 
+import com.example.dynamicgateway.model.endpointParameter.EndpointParameter;
 import com.example.dynamicgateway.model.endpointParameter.SwaggerParameter;
 import com.example.dynamicgateway.model.endpointRequestBody.SwaggerRequestBody;
 import com.example.dynamicgateway.util.UriValidator;
@@ -9,15 +10,17 @@ import io.swagger.v3.oas.models.parameters.RequestBody;
 import lombok.Getter;
 import org.springframework.http.HttpMethod;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 
-@Getter
 public class SwaggerEndpointDetails implements EndpointDetails {
+    @Getter
     private final String path;
+    @Getter
     private final HttpMethod method;
     private final List<SwaggerParameter> parameters;
+    @Getter
     private final SwaggerRequestBody requestBody;
     private final List<String> tags;
 
@@ -33,13 +36,23 @@ public class SwaggerEndpointDetails implements EndpointDetails {
         return new Builder();
     }
 
+    @Override
+    public List<String> getTags() {
+        return List.copyOf(tags);
+    }
+
+    @Override
+    public List<? extends EndpointParameter> getParameters() {
+        return List.copyOf(parameters);
+    }
+
     @Getter
     public static class Builder {
         private String path = "/";
         private HttpMethod method = HttpMethod.GET;
-        private List<SwaggerParameter> parameters = new ArrayList<>();
+        private List<SwaggerParameter> parameters = new CopyOnWriteArrayList<>();
         private SwaggerRequestBody requestBody = SwaggerRequestBody.empty();
-        private List<String> tags = new ArrayList<>();
+        private List<String> tags = new CopyOnWriteArrayList<>();
 
         private Builder() {
         }

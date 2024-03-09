@@ -6,7 +6,7 @@ import com.example.dynamicgateway.model.documentedEndpoint.DocumentedEndpoint;
 import java.util.List;
 
 /**
- * Application that exposes its API documentation, including available endpoints
+ * An application that exposes its API documentation, including publicly available endpoints
  *
  * @param <D> type of document object of this {@code DocumentedApplication}
  */

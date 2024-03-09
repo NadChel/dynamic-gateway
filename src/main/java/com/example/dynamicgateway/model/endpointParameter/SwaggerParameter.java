@@ -24,7 +24,7 @@ public class SwaggerParameter implements EndpointParameter {
 
     @Override
     public boolean isRequired() {
-        return nativeParameter.getRequired() != null &&
+        return (nativeParameter.getRequired() != null) &&
                 nativeParameter.getRequired();
     }
 }

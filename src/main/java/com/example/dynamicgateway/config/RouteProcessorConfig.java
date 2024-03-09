@@ -8,7 +8,6 @@ import com.example.dynamicgateway.service.paramInitializer.ParamInitializer;
 import com.example.dynamicgateway.service.paramInitializer.ParamInitializers;
 import com.example.dynamicgateway.service.routeProcessor.EndpointRouteProcessor;
 import com.example.dynamicgateway.util.EndpointUtil;
-import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.OrderedGatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.PrefixPathGatewayFilterFactory;
@@ -27,9 +26,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Configuration
-@RequiredArgsConstructor
 public class RouteProcessorConfig {
     private final GatewayMeta gatewayMeta;
+
+    public RouteProcessorConfig(GatewayMeta gatewayMeta) {
+        this.gatewayMeta = gatewayMeta;
+    }
 
     @Bean
     public EndpointRouteProcessor basePredicateProcessor() {
@@ -40,9 +42,12 @@ public class RouteProcessorConfig {
     }
 
     /**
-     * Sets base route predicate matching Gateway's prefix plus endpoint path stripped of non-semantic prefixes. For example,
-     * if the passed endpoint's path is {@code /auth/example}, {@code /auth} is the endpoint's non-semantic prefix, and
+     * Sets base route predicate matching Gateway's prefix plus endpoint path stripped of the ignored prefix. For example,
+     * if the passed endpoint's path is {@code /auth/example}, {@code /auth} is an ignored prefix, and
      * Gateway's prefix is {@code /api/v1}, this method will set a base predicate matching {@code /api/v1/example}
+     *
+     * @see GatewayMeta#getVersionPrefix()
+     * @see GatewayMeta#getIgnoredPrefixes()
      */
     private void setBasePredicate(Route.AsyncBuilder routeInConstruction, DocumentedEndpoint<?> endpoint) {
         String nonPrefixedPath = EndpointUtil.withRemovedPrefix(endpoint, gatewayMeta);
@@ -53,7 +58,7 @@ public class RouteProcessorConfig {
                 ));
     }
 
-    private void addPredicate(Route.AsyncBuilder routeInConstruction, AsyncPredicate<ServerWebExchange> predicate) {
+    private static void addPredicate(Route.AsyncBuilder routeInConstruction, AsyncPredicate<ServerWebExchange> predicate) {
         if (routeInConstruction.getPredicate() == null)
             routeInConstruction.asyncPredicate(predicate);
         else routeInConstruction.and(predicate);
@@ -76,11 +81,11 @@ public class RouteProcessorConfig {
      * At the point of this writing, some filters, such as the one produced by a
      * {@link PrefixPathGatewayFilterFactory}, don't work unless wrapped in such a way
      *
-     * @param wrapee filter to wrap
+     * @param wrappee filter to wrap
      * @return {@code OrderedGatewayFilter} with order of zero
      */
-    private GatewayFilter wrapInOrderedGatewayFilter(GatewayFilter wrapee) {
-        return new OrderedGatewayFilter(wrapee, 0);
+    private static GatewayFilter wrapInOrderedGatewayFilter(GatewayFilter wrappee) {
+        return new OrderedGatewayFilter(wrappee, 0);
     }
 
     @Bean

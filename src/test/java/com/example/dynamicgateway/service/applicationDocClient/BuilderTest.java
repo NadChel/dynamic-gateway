@@ -1,6 +1,6 @@
 package com.example.dynamicgateway.service.applicationDocClient;
 
-import com.example.dynamicgateway.service.swaggerDocParser.SwaggerDocParser;
+import com.example.dynamicgateway.service.swaggerDocParser.OpenApiParser;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -17,13 +17,13 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
-class SwaggerClientConfigurerTest {
+class BuilderTest {
     @Mock
     private WebClient mockWebClient;
 
     @Test
     void ifNoSettersAreCalled_propertiesAreSetToSomeDefaultValues() {
-        SwaggerClient swaggerClient = SwaggerClientConfigurer.configure(mockWebClient).build();
+        SwaggerClient swaggerClient = SwaggerClient.builder(mockWebClient).build();
         List<Object> fieldValues = Arrays.stream(swaggerClient.getClass().getDeclaredFields())
                 .peek(field -> field.setAccessible(true))
                 .map(field -> ReflectionUtils.getField(field, swaggerClient))
@@ -39,7 +39,7 @@ class SwaggerClientConfigurerTest {
     @Test
     void testSetScheme() {
         String scheme = "abc://";
-        SwaggerClient swaggerClient = SwaggerClientConfigurer.configure(mockWebClient)
+        SwaggerClient swaggerClient = SwaggerClient.builder(mockWebClient)
                 .setScheme(scheme)
                 .build();
 
@@ -49,7 +49,7 @@ class SwaggerClientConfigurerTest {
     @Test
     void ifInvalidSchemeIsSet_throwsRuntimeException() {
         String invalidScheme = "invalid_scheme";
-        SwaggerClientConfigurer swaggerClientConfigurer = SwaggerClientConfigurer.configure(mockWebClient);
+        SwaggerClient.Builder swaggerClientConfigurer = SwaggerClient.builder(mockWebClient);
 
         assertThatThrownBy(() -> swaggerClientConfigurer.setScheme(invalidScheme)).isInstanceOf(RuntimeException.class);
     }
@@ -57,7 +57,7 @@ class SwaggerClientConfigurerTest {
     @Test
     void testSetDocPath() {
         String docPath = "/docs";
-        SwaggerClient swaggerClient = SwaggerClientConfigurer.configure(mockWebClient)
+        SwaggerClient swaggerClient = SwaggerClient.builder(mockWebClient)
                 .setDocPath(docPath)
                 .build();
 
@@ -67,16 +67,16 @@ class SwaggerClientConfigurerTest {
     @Test
     void ifInvalidPathIsSet_throwsRuntimeException() {
         String invalidPath = "invalid-path/";
-        SwaggerClientConfigurer swaggerClientConfigurer = SwaggerClientConfigurer.configure(mockWebClient);
+        SwaggerClient.Builder swaggerClientConfigurer = SwaggerClient.builder(mockWebClient);
 
         assertThatThrownBy(() -> swaggerClientConfigurer.setScheme(invalidPath)).isInstanceOf(RuntimeException.class);
     }
 
     @Test
     void testSetParser() {
-        SwaggerDocParser parserMock = mock(SwaggerDocParser.class);
+        OpenApiParser parserMock = mock(OpenApiParser.class);
 
-        SwaggerClient swaggerClient = SwaggerClientConfigurer.configure(mockWebClient)
+        SwaggerClient swaggerClient = SwaggerClient.builder(mockWebClient)
                 .setParser(parserMock)
                 .build();
 
@@ -86,7 +86,7 @@ class SwaggerClientConfigurerTest {
     @Test
     void ifNullParserSet_throwsRuntimeException() {
         assertThatThrownBy(() ->
-                SwaggerClientConfigurer.configure(mockWebClient).setParser(null)
+                SwaggerClient.builder(mockWebClient).setParser(null)
         ).isInstanceOf(RuntimeException.class);
     }
 }

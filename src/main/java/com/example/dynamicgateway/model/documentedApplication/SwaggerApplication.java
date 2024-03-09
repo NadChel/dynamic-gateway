@@ -15,7 +15,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
- * {@link DocumentedApplication} that exposes its API by means of Swagger (Open API)
+ * A {@link DocumentedApplication} that exposes its API by means of Swagger (Open API)
  */
 public class SwaggerApplication implements DocumentedApplication<SwaggerParseResult> {
     public static final String V3_DOC_PATH = "/v3/api-docs";

@@ -35,7 +35,7 @@ class SwaggerUiConfigControllerTest {
         SwaggerApplication application2 = mock(SwaggerApplication.class);
         given(application1.getName()).willReturn("app-one");
         given(application2.getName()).willReturn("app-two");
-        SwaggerUiConfig swaggerUiConfig = new SwaggerUiConfig(List.of(application1, application2));
+        SwaggerUiConfig swaggerUiConfig = SwaggerUiConfig.from(List.of(application1, application2));
         given(swaggerUiSupportMock.getSwaggerUiConfig()).willReturn(Mono.just(swaggerUiConfig));
 
         testClient

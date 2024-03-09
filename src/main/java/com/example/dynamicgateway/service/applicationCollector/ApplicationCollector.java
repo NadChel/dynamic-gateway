@@ -6,8 +6,8 @@ import com.example.dynamicgateway.model.discoverableApplication.DiscoverableAppl
 import java.util.Set;
 
 /**
- * Local cache of {@link DiscoverableApplication}s registered with the same discovery service
- * as this application
+ * A local cache of {@link DiscoverableApplication}s registered with the same discovery service
+ * as this Gateway
  */
 public interface ApplicationCollector {
     /**

@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Holder of meta information relating to this Gateway
+ * The holder of meta information relating to this Gateway
  */
 @Component
 @ConfigurationProperties(prefix = "gateway")

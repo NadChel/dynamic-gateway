@@ -1,7 +1,7 @@
 package com.example.dynamicgateway.service.applicationDocClient;
 
 import com.example.dynamicgateway.model.discoverableApplication.DiscoverableApplication;
-import com.example.dynamicgateway.service.swaggerDocParser.SwaggerDocParser;
+import com.example.dynamicgateway.service.swaggerDocParser.OpenApiParser;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,7 @@ class SwaggerClientTest {
 
         String serializedParseResult = "{ let's imagine: it's a serialized parse result }";
         SwaggerParseResult parseResult = mock(SwaggerParseResult.class);
-        SwaggerDocParser parserMock = mock(SwaggerDocParser.class);
+        OpenApiParser parserMock = mock(OpenApiParser.class);
         given(parserMock.parse(serializedParseResult)).willReturn(parseResult);
 
         WebClient webClientMock = mock(WebClient.class, RETURNS_DEEP_STUBS);
@@ -34,7 +34,7 @@ class SwaggerClientTest {
                 .bodyToMono(String.class)
         ).willReturn(Mono.just(serializedParseResult));
 
-        SwaggerClientConfigurer swaggerClientConfigurerMock = mock(SwaggerClientConfigurer.class);
+        SwaggerClient.Builder swaggerClientConfigurerMock = mock(SwaggerClient.Builder.class);
         given(swaggerClientConfigurerMock.getWebClient()).willReturn(webClientMock);
         given(swaggerClientConfigurerMock.getParser()).willReturn(parserMock);
         given(swaggerClientConfigurerMock.getScheme()).willReturn(scheme);
