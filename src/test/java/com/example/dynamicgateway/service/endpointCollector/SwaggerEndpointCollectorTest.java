@@ -4,9 +4,11 @@ import com.example.dynamicgateway.events.DiscoverableApplicationFoundEvent;
 import com.example.dynamicgateway.events.DiscoverableApplicationLostEvent;
 import com.example.dynamicgateway.model.discoverableApplication.DiscoverableApplication;
 import com.example.dynamicgateway.model.discoverableApplication.EurekaDiscoverableApplication;
+import com.example.dynamicgateway.model.documentedEndpoint.DocumentedEndpoint;
 import com.example.dynamicgateway.model.documentedEndpoint.SwaggerEndpoint;
 import com.example.dynamicgateway.service.applicationDocClient.ApplicationDocClient;
 import com.example.dynamicgateway.service.applicationDocClient.SwaggerClient;
+import com.example.dynamicgateway.service.sieve.EndpointSieve;
 import com.example.dynamicgateway.testModel.SwaggerEndpointStub;
 import com.example.dynamicgateway.testUtil.SwaggerParseResultGenerator;
 import com.netflix.discovery.shared.Application;
@@ -15,17 +17,20 @@ import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpMethod;
+import org.springframework.util.ReflectionUtils;
 import reactor.core.publisher.Mono;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
 class SwaggerEndpointCollectorTest {
@@ -63,15 +68,17 @@ class SwaggerEndpointCollectorTest {
     }
 
     @SneakyThrows
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "DataFlowIssue"})
     private void addEndpoint(SwaggerEndpoint endpoint) {
-        Field documentedEndpointsField = collector.getClass().getDeclaredField("documentedEndpoints");
+        Field documentedEndpointsField =
+                ReflectionUtils.findField(SwaggerEndpointCollector.class, "documentedEndpoints");
+        assumeThat(documentedEndpointsField).isNotNull();
         documentedEndpointsField.setAccessible(true);
         ((Set<SwaggerEndpoint>) documentedEndpointsField.get(collector)).add(endpoint);
     }
 
     @Test
-    void testHasEndpoint_withExistingEndpoint() {
+    void hasEndpoint_withExistingEndpoint_returnsTrue() {
         collector = getCollectorWithNullFields();
 
         SwaggerEndpoint endpoint = SwaggerEndpointStub.builder()
@@ -87,7 +94,7 @@ class SwaggerEndpointCollectorTest {
     }
 
     @Test
-    void testHasEndpoint_withNonExistingEndpoint() {
+    void hasEndpoint_withNonExistingEndpoint_returnsFalse() {
         collector = getCollectorWithNullFields();
 
         SwaggerEndpoint endpointToAdd = SwaggerEndpointStub.builder()
@@ -111,7 +118,7 @@ class SwaggerEndpointCollectorTest {
     }
 
     @Test
-    void testOnDiscoverableApplicationFoundEvent() {
+    void onDiscoverableApplicationFoundEvent_collectsAllowedApplicationsEndpoints() {
         String appName = "test-application";
 
         DiscoverableApplication<?> discoverableApplicationMock = mock(DiscoverableApplication.class);
@@ -130,10 +137,18 @@ class SwaggerEndpointCollectorTest {
                         .build(),
                 SwaggerEndpointStub.builder()
                         .declaringAppName(appName)
-                        .method(HttpMethod.PUT)
+                        .method(HttpMethod.POST)
                         .path("/test-path-two")
                         .build()
         );
+
+        Predicate<DocumentedEndpoint<?>> onlyPost = e -> e.getDetails()
+                .getMethod()
+                .equals(HttpMethod.POST);
+
+        List<SwaggerEndpoint> postEndpoints = endpoints.stream()
+                .filter(onlyPost)
+                .toList();
 
         SwaggerParseResult parseResult = SwaggerParseResultGenerator.createForEndpoints(endpoints);
 
@@ -142,18 +157,21 @@ class SwaggerEndpointCollectorTest {
 
         ApplicationEventPublisher eventPublisherMock = mock(ApplicationEventPublisher.class);
 
-        collector = new SwaggerEndpointCollector(docClientMock, Collections.emptyList(), eventPublisherMock);
+        EndpointSieve onlyPostEndpointSieve = onlyPost::test;
+        List<EndpointSieve> sieves = List.of(onlyPostEndpointSieve);
+
+        collector = new SwaggerEndpointCollector(docClientMock, sieves, eventPublisherMock);
 
         assumeThat(collector.getCollectedEndpoints()).isEmpty();
 
         DiscoverableApplicationFoundEvent appFoundEvent = new DiscoverableApplicationFoundEvent(discoverableApplicationMock, this);
         collector.onDiscoverableApplicationFoundEvent(appFoundEvent);
 
-        assertThat(collector.getCollectedEndpoints()).containsExactlyInAnyOrderElementsOf(endpoints);
+        assertThat(collector.getCollectedEndpoints()).containsExactlyInAnyOrderElementsOf(postEndpoints);
     }
 
     @Test
-    void onDiscoverableApplicationLostEvent() {
+    void onDiscoverableApplicationLostEvent_evictsApplicationsEndpoints() {
         String resilientAppName = "resilient-app";
         List<SwaggerEndpoint> resilientEndpoints = List.of(
                 SwaggerEndpointStub.builder()
@@ -203,5 +221,29 @@ class SwaggerEndpointCollectorTest {
         Set<SwaggerEndpoint> retainedEndpoints = collector.getCollectedEndpoints();
         assertThat(retainedEndpoints).containsExactlyInAnyOrderElementsOf(resilientEndpoints);
         assertThat(retainedEndpoints).doesNotContainAnyElementsOf(fragileEndpoints);
+    }
+
+    @Test
+    void onDiscoverableApplicationFoundEvent_ifNoEndpointsFetched_doesntAddOrPublishAnything() {
+        DiscoverableApplication<?> discoverableApplicationMock = mock(DiscoverableApplication.class);
+        given(discoverableApplicationMock.getName()).willReturn("some-app");
+
+        ApplicationDocClient<SwaggerParseResult> docClientMock = mock(SwaggerClient.class);
+        given(docClientMock.findApplicationDoc(discoverableApplicationMock))
+                .willReturn(Mono.just(SwaggerParseResultGenerator.empty()));
+
+        ApplicationEventPublisher eventPublisherMock = mock(ApplicationEventPublisher.class);
+
+        collector = new SwaggerEndpointCollector(docClientMock, Collections.emptyList(), eventPublisherMock);
+
+        DiscoverableApplicationFoundEvent eventMock =
+                new DiscoverableApplicationFoundEvent(discoverableApplicationMock, this);
+
+        assumeThat(collector.getCollectedEndpoints()).isEmpty();
+
+        collector.onDiscoverableApplicationFoundEvent(eventMock);
+
+        assertThat(collector.getCollectedEndpoints()).isEmpty();
+        then(eventPublisherMock).shouldHaveNoInteractions();
     }
 }

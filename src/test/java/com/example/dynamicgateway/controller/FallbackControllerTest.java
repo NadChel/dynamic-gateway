@@ -1,10 +1,10 @@
 package com.example.dynamicgateway.controller;
 
-import com.example.dynamicgateway.controller.FallbackController.CircuitBreakerFallbackMessage;
 import com.example.dynamicgateway.controller.config.EnableMockAuthentication;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
@@ -23,17 +23,16 @@ class FallbackControllerTest {
     @Test
     void testGetFallback() {
         String appName = "some-app";
-        CircuitBreakerFallbackMessage fallbackMessage = testClient
+        String fallbackMessage = testClient
                 .get()
                 .uri(MessageFormat.format("/fallback/{0}", appName))
                 .exchange()
-                .expectStatus().is2xxSuccessful()
-                .expectBody(CircuitBreakerFallbackMessage.class)
+                .expectStatus().isEqualTo(HttpStatus.GATEWAY_TIMEOUT)
+                .expectBody(String.class)
                 .returnResult()
                 .getResponseBody();
+        assertThat(fallbackMessage).isNotNull();
         assertThat(fallbackMessage)
-                .extracting(CircuitBreakerFallbackMessage::getMessage)
-                .asString()
                 .containsPattern(Pattern.compile(appName + " (is )?(currently )?unavailable"));
     }
 }

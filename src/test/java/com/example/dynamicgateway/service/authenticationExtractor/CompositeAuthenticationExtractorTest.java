@@ -73,16 +73,18 @@ public class CompositeAuthenticationExtractorTest {
     @Test
     void testTryExtractAuthentication_withMatchingAuthenticators_delegates() {
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/").build());
-        AuthenticationExtractor authenticatorMock = mock(AuthenticationExtractor.class);
-        given(authenticatorMock.isSupportedSource(exchange)).willReturn(true);
+        AuthenticationExtractor authenticationExtractorMock = mock(AuthenticationExtractor.class);
+        given(authenticationExtractorMock.isSupportedSource(exchange)).willReturn(true);
 
         List<SimpleGrantedAuthority> roles = Stream.of("user")
                 .map(SimpleGrantedAuthority::new)
                 .toList();
-        TestingAuthenticationToken authentication = new TestingAuthenticationToken("mickey_m", "password", roles);
-        given(authenticatorMock.tryExtractAuthentication(exchange)).willReturn(Mono.just(authentication));
+        TestingAuthenticationToken authentication =
+                new TestingAuthenticationToken("mickey_m", "password", roles);
+        given(authenticationExtractorMock.doTryExtractAuthentication(exchange)).willReturn(Mono.just(authentication));
 
-        CompositeAuthenticationExtractor compositeAuthenticationExtractor = new CompositeAuthenticationExtractor(List.of(authenticatorMock));
+        AuthenticationExtractor compositeAuthenticationExtractor =
+                new CompositeAuthenticationExtractor(List.of(authenticationExtractorMock));
 
         StepVerifier.create(compositeAuthenticationExtractor.tryExtractAuthentication(exchange))
                 .expectNext(authentication)

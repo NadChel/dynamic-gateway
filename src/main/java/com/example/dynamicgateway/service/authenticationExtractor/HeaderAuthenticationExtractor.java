@@ -11,14 +11,14 @@ import reactor.core.publisher.Mono;
  */
 public interface HeaderAuthenticationExtractor extends AuthenticationExtractor {
     @Override
-    default Mono<Authentication> tryExtractAuthentication(ServerWebExchange exchange) {
+    default Mono<Authentication> doTryExtractAuthentication(ServerWebExchange exchange) {
         return Mono.just(exchange)
                 .map(ServerWebExchange::getRequest)
                 .map(ServerHttpRequest::getHeaders)
-                .flatMap(this::tryExtractAuthentication);
+                .flatMap(this::doTryExtractAuthentication);
     }
 
-    Mono<Authentication> tryExtractAuthentication(HttpHeaders headers);
+    Mono<Authentication> doTryExtractAuthentication(HttpHeaders headers);
 
     @Override
     default boolean isSupportedSource(ServerWebExchange exchange) {

@@ -46,3 +46,4 @@ gateway:
     - /error/**
   ignoredPrefixes:
     - /auth
+  timeout: 5s

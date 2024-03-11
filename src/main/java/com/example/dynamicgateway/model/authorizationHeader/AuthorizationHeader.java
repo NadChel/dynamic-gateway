@@ -2,7 +2,10 @@ package com.example.dynamicgateway.model.authorizationHeader;
 
 import com.example.dynamicgateway.exception.AuthenticationSchemeNotFoundException;
 import lombok.Getter;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 
+import java.text.MessageFormat;
 import java.util.Objects;
 
 /**
@@ -25,13 +28,16 @@ public class AuthorizationHeader {
     /**
      * Parses the header string and returns an equivalent {@code AuthorizationHeader} instance
      * <p>
-     * The string must be in the format {@code <scheme> <credentials>}, for example {@code bearer 12345}
+     * The string must be in the format {@code "<scheme> <credentials>"}, for example {@code "bearer 12345"}.
+     * Extra spaces are ignored. For instance, {@code "    bearer   12345   "} maps to the same (equal) {@code AuthorizationHeader}
+     * object as {@code "bearer 12345"}
      *
      * @return an {@code AuthorizationHeader} that matches the passed-in string or, in case the argument is
      * {@code null}, an {@code AuthorizationHeader} with schemes and credentials equal to empty strings
      * @throws AuthenticationSchemeNotFoundException if the string doesn't specify an authentication scheme
      */
-    public static AuthorizationHeader fromString(String authorizationHeaderString) {
+    @NonNull
+    public static AuthorizationHeader fromString(@Nullable String authorizationHeaderString) {
         String scheme, credentials;
         if (authorizationHeaderString == null) {
             scheme = "";
@@ -59,6 +65,11 @@ public class AuthorizationHeader {
     @Override
     public final int hashCode() {
         return Objects.hash(scheme, credentials);
+    }
+
+    @Override
+    public String toString() {
+        return MessageFormat.format("{0} {1}", getScheme(), getCredentials());
     }
 
     @Override

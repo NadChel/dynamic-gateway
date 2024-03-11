@@ -26,7 +26,7 @@ public class JwtBearerAuthorizationHeaderAuthenticationExtractor
         implements BearerAuthorizationHeaderAuthenticationExtractor {
 
     @Override
-    public Mono<Authentication> tryExtractAuthentication(String token) {
+    public Mono<Authentication> doTryExtractAuthentication(String token) {
         return Mono.just(token)
                 .map(this::getClaims)
                 .onErrorMap(JwtException.class, this::toBadCredentialsException)

@@ -19,8 +19,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
-import org.springframework.cloud.gateway.filter.OrderedGatewayFilter;
-import org.springframework.cloud.gateway.filter.factory.SpringCloudCircuitBreakerFilterFactory;
 import org.springframework.cloud.gateway.handler.AsyncPredicate;
 import org.springframework.cloud.gateway.route.Route;
 import org.springframework.http.HttpMethod;
@@ -36,7 +34,6 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -314,31 +311,5 @@ class RouteProcessorTest {
 
         assertThat(filters).hasSize(1);
         assertThat(filters.get(0)).isEqualTo(filterMock);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    void testCircuitBreakerEndpointRouteProcessor_addsFilterProvidedByToRoute() {
-        GatewayFilter filterMock = mock(GatewayFilter.class);
-
-        SpringCloudCircuitBreakerFilterFactory circuitBreakerFilterFactoryMock = mock(SpringCloudCircuitBreakerFilterFactory.class);
-        given(circuitBreakerFilterFactoryMock.apply(any(),
-                (Consumer<SpringCloudCircuitBreakerFilterFactory.Config>) any()))
-                .willReturn(filterMock);
-
-        EndpointRouteProcessor circuitBreakerEndpointRouteProcessor =
-                routeProcessorConfig.circuitBreakerEndpointRouteProcessor(circuitBreakerFilterFactoryMock);
-
-        List<GatewayFilter> filters = RouteBuilderUtil.getFilters(routeBuilder);
-        assumeThat(filters).isEmpty();
-
-        DocumentedEndpoint<?> endpoint = SwaggerEndpointStub.builder().build();
-        circuitBreakerEndpointRouteProcessor.process(routeBuilder, endpoint);
-
-        assertThat(filters.size()).isEqualTo(1);
-        GatewayFilter filter = filters.get(0);
-        if (filter instanceof OrderedGatewayFilter orderedGatewayFilter)
-            assertThat(orderedGatewayFilter.getDelegate()).isEqualTo(filterMock);
-        else assertThat(filter).isEqualTo(filterMock);
     }
 }

@@ -1,9 +1,12 @@
 package com.example.dynamicgateway.service.authenticationExtractor;
 
+import com.example.dynamicgateway.exception.UnsupportedAuthenticationSourceException;
 import com.example.dynamicgateway.model.authorizationHeader.AuthorizationHeader;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import reactor.core.publisher.Mono;
+
+import java.util.Objects;
 
 /**
  * A {@link HeaderAuthenticationExtractor} that extracts an {@code Authentication} from the request's {@code Authorization} header
@@ -12,14 +15,16 @@ import reactor.core.publisher.Mono;
  */
 public interface AuthorizationHeaderAuthenticationExtractor extends HeaderAuthenticationExtractor {
     @Override
-    default Mono<Authentication> tryExtractAuthentication(HttpHeaders headers) {
+    default Mono<Authentication> doTryExtractAuthentication(HttpHeaders headers) {
         return Mono.just(headers)
-                .mapNotNull(h -> h.getFirst(HttpHeaders.AUTHORIZATION))
+                .map(h -> Objects.requireNonNull(h.getFirst(HttpHeaders.AUTHORIZATION)))
+                .onErrorMap(NullPointerException.class,
+                        t -> new UnsupportedAuthenticationSourceException("No Authorization header"))
                 .map(AuthorizationHeader::fromString)
-                .flatMap(this::tryExtractAuthentication);
+                .flatMap(this::doTryExtractAuthentication);
     }
 
-    Mono<Authentication> tryExtractAuthentication(AuthorizationHeader authorizationHeader);
+    Mono<Authentication> doTryExtractAuthentication(AuthorizationHeader authorizationHeader);
 
     @Override
     default boolean areSupportedHeaders(HttpHeaders headers) {

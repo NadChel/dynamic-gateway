@@ -1,6 +1,7 @@
 package com.example.dynamicgateway.service.authenticationExtractor;
 
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.server.authentication.ServerAuthenticationConverter;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -11,24 +12,43 @@ import reactor.core.publisher.Mono;
  * Implementations <b>should not</b> attempt to perform any authentication and are instead expected
  * to return authentication claims as is
  * <p>
- * Functionally similar to {@link ServerAuthenticationConverter}
+ * This type is functionally similar to {@link ServerAuthenticationConverter}
  */
 public interface AuthenticationExtractor {
     /**
      * Attempts to extract an {@link Authentication} object from a passed-in {@code ServerWebExchange}
+     * <p>
+     * Implementations are not expected to override this method since it performs exception translation.
+     * Instead, they should override {@link AuthenticationExtractor#doTryExtractAuthentication(ServerWebExchange)}
      *
      * @param exchange {@code ServerWebExchange} that may contain extractable authentication claims
-     * @return {@code Mono} that may contain an extracted {@code Authentication}
+     * @return {@code Mono} of an extracted {@code Authentication} or {@code Mono} of {@link AuthenticationException}
+     * if extraction fails
      */
-    Mono<Authentication> tryExtractAuthentication(ServerWebExchange exchange);
+    default Mono<Authentication> tryExtractAuthentication(ServerWebExchange exchange) {
+        return doTryExtractAuthentication(exchange)
+                .onErrorMap(this::isNotAuthenticationException,
+                        this::wrapInAuthenticationException);
+    }
+
+    Mono<Authentication> doTryExtractAuthentication(ServerWebExchange exchange);
+
+    private boolean isNotAuthenticationException(Throwable throwable) {
+        return !(throwable instanceof AuthenticationException);
+    }
+
+    private AuthenticationException wrapInAuthenticationException(Throwable throwable) {
+        return new AuthenticationException("Extraction of authentication claims failed", throwable) {
+        };
+    }
 
     /**
      * Tests if this {@code AuthenticationExtractor} <em>may</em> extract an {@code Authentication} from
      * the provided {@code ServerWebExchange}
      *
      * <p>
-     * <b>It provides no guarantee that an actual {@code Authentication} object will be extracted from the exchange.</b>
-     * If the method returns {@code true}, it only means that the likelihood of a successful extraction is more than 0%.
+     * <b>If this method returns {@code true}, it does not guarantee that an {@code Authentication} object will be extracted from the exchange.</b>
+     * Instead, it only means that the likelihood of a successful extraction is more than 0%.
      * For instance, it may mean that this {@code AuthenticationExtractor} discovers a specific request header whose value
      * it parses – which may not necessarily contain a valid token
      *

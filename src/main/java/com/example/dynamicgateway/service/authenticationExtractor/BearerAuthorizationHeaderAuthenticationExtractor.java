@@ -13,16 +13,16 @@ import reactor.core.publisher.Mono;
  */
 public interface BearerAuthorizationHeaderAuthenticationExtractor extends AuthorizationHeaderAuthenticationExtractor {
     @Override
-    default Mono<Authentication> tryExtractAuthentication(AuthorizationHeader authorizationHeader) {
+    default Mono<Authentication> doTryExtractAuthentication(AuthorizationHeader authorizationHeader) {
         return Mono.just(authorizationHeader)
                 .filter(this::isSupportedAuthorizationHeader)
                 .switchIfEmpty(Mono.error(
                         new UnsupportedAuthenticationSchemeException(authorizationHeader.getScheme())))
                 .map(AuthorizationHeader::getCredentials)
-                .flatMap(this::tryExtractAuthentication);
+                .flatMap(this::doTryExtractAuthentication);
     }
 
-    Mono<Authentication> tryExtractAuthentication(String bearerToken);
+    Mono<Authentication> doTryExtractAuthentication(String bearerToken);
 
     @Override
     default boolean isSupportedAuthorizationHeader(AuthorizationHeader header) {

@@ -1,29 +1,41 @@
 package com.example.dynamicgateway.service.endpointCollector;
 
 import com.example.dynamicgateway.model.documentedEndpoint.DocumentedEndpoint;
+import com.example.dynamicgateway.model.endpointDetails.EndpointDetails;
 import org.springframework.http.HttpMethod;
 
 import java.util.Set;
 import java.util.stream.Stream;
 
 /**
- * Local cache of all known {@link DocumentedEndpoint}s
+ * A local cache of all collected {@link DocumentedEndpoint}s
+ * <p>
+ * Implementations are free to decide what endpoints they collect.
+ * It may or may not include all <em>accessible</em> endpoints
  *
- * @param <T> type of {@link DocumentedEndpoint}s that are collected by this {@code EndpointCollector}
+ * @param <E> type of {@link DocumentedEndpoint}s that are collected by this {@code EndpointCollector}
  */
-public interface EndpointCollector<T extends DocumentedEndpoint<?>> {
+public interface EndpointCollector<E extends DocumentedEndpoint<?>> {
     /**
-     * Returns a {@code Set} of all {@link DocumentedEndpoint}s cached by this {@code EndpointCollector}
+     * Returns a {@code Set} of all {@link DocumentedEndpoint}s collected by this {@code EndpointCollector}
      */
-    Set<T> getCollectedEndpoints();
+    Set<E> getCollectedEndpoints();
 
+    /**
+     * Tests if the provided method-path pair corresponds to at least one endpoint
+     * collected by this {@code EndpointCollector}
+     *
+     * @return {@code true} if a match is found, {@code false} otherwise
+     */
     default boolean hasEndpoint(HttpMethod method, String path) {
-        return stream().anyMatch(endpoint ->
-                endpoint.getDetails().getMethod().equals(method) &&
-                        endpoint.getDetails().getPath().equals(path));
+        return stream().anyMatch(endpoint -> {
+            EndpointDetails details = endpoint.getDetails();
+            return details.getMethod().equals(method) &&
+                    details.getPath().equals(path);
+        });
     }
 
-    default Stream<T> stream() {
+    default Stream<E> stream() {
         return getCollectedEndpoints().stream();
     }
 }

@@ -39,7 +39,7 @@ class BasicSwaggerUiSupportTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    void getSwaggerUiConfig() {
+    void getSwaggerUiConfig_returnsExpectedConfig() {
         Set<SwaggerEndpoint> endpoints = appNames.stream()
                 .map(this::appNameToEndpointStub).collect(Collectors.toSet());
 
@@ -51,8 +51,7 @@ class BasicSwaggerUiSupportTest {
 
         StepVerifier.create(uiSupport.getSwaggerUiConfig())
                 .expectNextMatches(this::isExpectedCollectionOfApps)
-                .expectComplete()
-                .verify();
+                .verifyComplete();
     }
 
     private SwaggerEndpointStub appNameToEndpointStub(String name) {
@@ -76,22 +75,29 @@ class BasicSwaggerUiSupportTest {
 
     @SneakyThrows
     @Test
-    void testGetSwaggerAppDoc() {
+    void getSwaggerAppDoc_returnsExpectedDoc() {
         String appName = "test-app";
 
         DiscoverableApplication<Application> discoverableApplicationMock = mock(EurekaDiscoverableApplication.class);
         given(discoverableApplicationMock.getName()).willReturn(appName);
 
-        SwaggerParseResult parseResult = SwaggerParseResultGenerator.createForEndpoints(
+        List<SwaggerEndpoint> endpoints = List.of(
                 SwaggerEndpointStub.builder().method(HttpMethod.POST).path("/auth/test-path").build(),
                 SwaggerEndpointStub.builder().method(HttpMethod.DELETE).path("/test-path").build(),
                 SwaggerEndpointStub.builder().method(HttpMethod.GET).path("/test/path").build()
         );
+        SwaggerParseResult parseResult = SwaggerParseResultGenerator.createForEndpoints(endpoints);
 
         SwaggerApplication swaggerApplication = new SwaggerApplication(discoverableApplicationMock, parseResult);
 
-        EndpointCollector<SwaggerEndpoint> testEndpointCollector = new SwaggerEndpointCollector(null, null, null);
-        ReflectionTestUtils.setField(testEndpointCollector, "documentedEndpoints", Set.copyOf(swaggerApplication.getEndpoints()));
+        // to make sure not collected endpoints are not included in the returned doc
+        List<SwaggerEndpoint> subsetOfEndpoints = swaggerApplication.getEndpoints()
+                .stream()
+                .limit(endpoints.size() - 1)
+                .toList();
+
+        EndpointCollector<SwaggerEndpoint> endpointCollector = new SwaggerEndpointCollector(null, null, null);
+        ReflectionTestUtils.setField(endpointCollector, "documentedEndpoints", Set.copyOf(subsetOfEndpoints));
 
         GatewayMeta gatewayMetaMock = mock(GatewayMeta.class);
         given(gatewayMetaMock.getVersionPrefix()).willReturn("/test-api/v0");
@@ -104,13 +110,13 @@ class BasicSwaggerUiSupportTest {
         ObjectMapper objectMapper = new ObjectMapper();
 
         BasicSwaggerUiSupport uiSupport = new BasicSwaggerUiSupport(
-                testEndpointCollector, gatewayMetaMock);
+                endpointCollector, gatewayMetaMock);
 
         String parseResultSnapshot = objectMapper.writeValueAsString(parseResult);
 
         StepVerifier.create(uiSupport.getSwaggerAppDoc(appName))
                 .expectNextMatches(openAPI ->
-                        isOpenApiCorrect(openAPI, swaggerApplication, testEndpointCollector, gatewayMetaMock))
+                        isOpenApiCorrect(openAPI, swaggerApplication, endpointCollector, gatewayMetaMock))
                 .expectComplete()
                 .verify();
 
@@ -160,7 +166,7 @@ class BasicSwaggerUiSupportTest {
         return true;
     }
 
-    private String unprefixPath(String path, String prefix) {
+    private static String unprefixPath(String path, String prefix) {
         return path.substring(prefix.length());
     }
 }

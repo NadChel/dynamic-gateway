@@ -24,14 +24,26 @@
 Here is an overview of properties specific to this application
 
 * `gateway.versionPrefix` – a prefix that will be appended to an endpoint's path when building a route. It is assumed by this application that such a prefix would specify the API version hence the name. For example, if it's set to `/api/v1` and some discovered service has endpoint `GET /example`, a route matching `GET /api/v1/example` will be built. Once it happens, this Gateway upon receiving a request `GET /api/v1/example` will route it to the service's `GET /example`. *Defaults to an empty string*
+
+
 * `gateway.publicPatterns` – a list of [Ant-style path patterns][Ant patterns] that specifies endpoints not requiring an authenticated user. *Defaults to a list of `/{random UUID}` which in effect doesn't match any request path*
+
+
 * `gateway.ignoredPatterns` – a list of Ant path patterns which specifies endpoints that shouldn't be mapped to this Gateway's routes. For example, if a service exposes endpoints `GET /example` and `GET /error`, and the list of ignored patterns includes `/error/**`, only one Route will be built, the one that routes to `GET /example`. *Defaults to an empty unmodifiable list*
+
+
 * `gateway.ignoredPrefixes` – a list of endpoint prefixes that should be ignored when building routes. For example, if the list includes `/auth`, and the endpoint `GET /auth/example` was discovered, the route `GET <versionPrefix>/example` will be built (not `GET <versionPrefix>/auth/example`). *Defaults to an empty unmodifiable list*
-* `gateway.servers` – a list of this Gateway's servers. This property is mainly for Swagger UI's dropdown menu.  *Defaults to a list of `http://localhost:{server-port}`* 
+
+
+* `gateway.servers` – a list of this Gateway's servers. This property is mainly for Swagger UI's dropdown menu.  *Defaults to a list of `http://localhost:{server-port}`*
+
+
+* `gateway.timeout` – timeout `Duration` used by Dynamic Gateway's [circuit breaker][]. If a service doesn't respond in the specified period of time, Dynamic Gateway will return a default fallback message. *Defaults to five seconds*
 
 The properties are encapsulated by the `GatewayMeta` class
 
 [Ant patterns]: https://docs.spring.io/spring-framework/docs/3.2.0.RELEASE_to_3.2.1.RELEASE/Spring%20Framework%203.2.1.RELEASE/org/springframework/util/AntPathMatcher.html
+[circuit breaker]: https://microservices.io/patterns/reliability/circuit-breaker.html
 
 <a id="getting-started"></a>
 # Getting started
@@ -64,6 +76,8 @@ docker-compose up gateway eureka
 If you want Dynamic Gateway to pick up endpoints of your own service, it should meet these two requirements (unless you choose to reconfigure Dynamic Gateway):
 1. It should provide its Open API at `GET /v3/api-docs`
 2. It should be connected to the same Eureka server as this Gateway
+
+All services referenced in the `docker-compose` file, including Dynamic Gateway, expose their API via Swagger UI at `/swagger-ui`
 
 [eureka]: https://hub.docker.com/repository/docker/nadchel/eureka-server
 [token-service]: https://hub.docker.com/repository/docker/nadchel/token-service

@@ -1,8 +1,6 @@
 package com.example.dynamicgateway.service.swaggerUiSupport;
 
-import com.example.dynamicgateway.model.documentedApplication.DocumentedApplication;
 import com.example.dynamicgateway.model.documentedApplication.SwaggerApplication;
-import com.example.dynamicgateway.model.documentedEndpoint.DocumentedEndpoint;
 import com.example.dynamicgateway.model.documentedEndpoint.SwaggerEndpoint;
 import com.example.dynamicgateway.model.gatewayMeta.GatewayMeta;
 import com.example.dynamicgateway.model.uiConfig.SwaggerUiConfig;
@@ -13,16 +11,15 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -39,30 +36,27 @@ public class BasicSwaggerUiSupport implements SwaggerUiSupport {
 
     @Override
     public Mono<SwaggerUiConfig> getSwaggerUiConfig() {
-        Set<SwaggerApplication> swaggerApps = endpointCollector.stream()
-                .map(DocumentedEndpoint::getDeclaringApp)
-                .collect(Collectors.toSet());
-        return Mono.just(SwaggerUiConfig.from(swaggerApps));
+        return Flux.fromStream(endpointCollector.stream())
+                .map(SwaggerEndpoint::getDeclaringApp)
+                .collect(Collectors.toSet())
+                .map(SwaggerUiConfig::from);
     }
 
     @Override
-    @SneakyThrows
     public Mono<OpenAPI> getSwaggerAppDoc(String appName) {
-        return Mono.just(
-                endpointCollector.stream()
-                        .map(DocumentedEndpoint::getDeclaringApp)
-                        .filter(documentedApplication -> documentedApplication.getName().equals(appName))
-                        .map(DocumentedApplication::getNativeDoc)
-                        .map(SwaggerParseResult::getOpenAPI)
-                        .map(this::deepCopy)
-                        .peek(this::removeIgnoredEndpoints)
-                        .peek(this::setGatewayPrefixes)
-                        .peek(this::setGatewayServers)
-                        .findFirst()
-                        .orElseThrow(() -> new IllegalArgumentException(MessageFormat.format(
-                                "No service with name {0} is known to this Gateway", appName
-                        )))
-        );
+        return Flux.fromStream(endpointCollector.stream())
+                .map(SwaggerEndpoint::getDeclaringApp)
+                .filter(documentedApplication -> documentedApplication.getName().equals(appName))
+                .switchIfEmpty(Mono.error(new IllegalArgumentException(MessageFormat.format(
+                        "No service with name {0} is known to this Gateway", appName
+                ))))
+                .next()
+                .map(SwaggerApplication::getNativeDoc)
+                .map(SwaggerParseResult::getOpenAPI)
+                .map(this::deepCopy)
+                .doOnNext(this::removeIgnoredEndpoints)
+                .doOnNext(this::setGatewayPrefixes)
+                .doOnNext(this::setGatewayServers);
     }
 
     private OpenAPI deepCopy(OpenAPI openAPI) {

@@ -11,7 +11,9 @@ import reactor.core.publisher.Flux;
 import java.net.URI;
 
 /**
- * Type whose purpose is to add parameter values to requests received by this Gateway
+ * Type that adds <em>parameter initializing filters</em> to provided {@link Route.AsyncBuilder}s.
+ * Parameter initializing filters are {@link GatewayFilter}s that add parameters to requests
+ * received by this Gateway
  */
 public interface ParamInitializer {
     String getParamName();

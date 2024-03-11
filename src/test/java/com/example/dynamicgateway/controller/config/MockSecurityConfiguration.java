@@ -23,7 +23,7 @@ public class MockSecurityConfiguration {
     public AuthenticationExtractor mockAuthenticationExtractor() {
         return new AuthenticationExtractor() {
             @Override
-            public Mono<Authentication> tryExtractAuthentication(ServerWebExchange exchange) {
+            public Mono<Authentication> doTryExtractAuthentication(ServerWebExchange exchange) {
                 return Mono.just(new TestingAuthenticationToken("user", "password",
                         List.of(new SimpleGrantedAuthority("user"))));
             }

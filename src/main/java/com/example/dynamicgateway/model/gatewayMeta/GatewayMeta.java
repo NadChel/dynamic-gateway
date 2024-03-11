@@ -1,12 +1,14 @@
 package com.example.dynamicgateway.model.gatewayMeta;
 
 import io.swagger.v3.oas.models.servers.Server;
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -21,7 +23,7 @@ public class GatewayMeta {
     private String port;
     @Setter
     @Getter
-    private List<Server> servers = List.of(new Server().url("http://localhost:" + port));
+    private List<Server> servers;
     @Setter
     @Getter
     private String versionPrefix = "";
@@ -34,4 +36,14 @@ public class GatewayMeta {
     @Setter
     @Getter
     private List<String> ignoredPrefixes = Collections.emptyList();
+    @Setter
+    @Getter
+    private Duration timeout = Duration.ofSeconds(5);
+
+    @PostConstruct
+    private void init() {
+        if (servers == null) {
+            servers = List.of(new Server().url("http://localhost:" + port));
+        }
+    }
 }

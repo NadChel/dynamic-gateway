@@ -26,17 +26,17 @@ public class CompositeAuthenticationExtractor implements AuthenticationExtractor
      * Finds the first delegate that supports the provided exchange and delegates extraction to it
      *
      * @return {@code Mono} of {@code Authentication} on successful extraction,
-     * {@code Mono.error(..)} of {@link UnsupportedAuthenticationSourceException} if none of the delegates
+     * {@code Mono} of {@link UnsupportedAuthenticationSourceException} if none of the delegates
      * supports the source
      * @see AuthenticationExtractor#isSupportedSource
      */
     @Override
-    public Mono<Authentication> tryExtractAuthentication(ServerWebExchange exchange) {
+    public Mono<Authentication> doTryExtractAuthentication(ServerWebExchange exchange) {
         return Flux.fromIterable(authenticationExtractors)
                 .filter(extractor -> extractor.isSupportedSource(exchange))
                 .switchIfEmpty(Mono.error(new UnsupportedAuthenticationSourceException()))
                 .next()
-                .flatMap(extractor -> extractor.tryExtractAuthentication(exchange));
+                .flatMap(extractor -> extractor.doTryExtractAuthentication(exchange));
     }
 
     /**
@@ -47,7 +47,8 @@ public class CompositeAuthenticationExtractor implements AuthenticationExtractor
      */
     @Override
     public boolean isSupportedSource(ServerWebExchange exchange) {
-        return authenticationExtractors.stream().anyMatch(extractor -> extractor.isSupportedSource(exchange));
+        return authenticationExtractors.stream()
+                .anyMatch(extractor -> extractor.isSupportedSource(exchange));
     }
 }
 

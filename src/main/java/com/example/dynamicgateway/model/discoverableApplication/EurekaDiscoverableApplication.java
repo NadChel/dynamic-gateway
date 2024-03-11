@@ -1,6 +1,8 @@
 package com.example.dynamicgateway.model.discoverableApplication;
 
+import com.example.dynamicgateway.config.annotation.ExcludeFromJacocoGeneratedReport;
 import com.netflix.discovery.shared.Application;
+import org.springframework.lang.NonNull;
 
 import java.util.Objects;
 
@@ -11,7 +13,8 @@ public class EurekaDiscoverableApplication implements DiscoverableApplication<Ap
     public static final String LB_SCHEME = "lb://";
     private final Application eurekaApplication;
 
-    public EurekaDiscoverableApplication(Application eurekaApplication) {
+    public EurekaDiscoverableApplication(@NonNull Application eurekaApplication) {
+        Objects.requireNonNull(eurekaApplication);
         this.eurekaApplication = eurekaApplication;
     }
 
@@ -35,18 +38,19 @@ public class EurekaDiscoverableApplication implements DiscoverableApplication<Ap
     }
 
     @Override
-    public boolean equals(Object o) {
+    public final boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof EurekaDiscoverableApplication that)) return false;
         return getName().equals(that.getName());
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         return Objects.hash(getName());
     }
 
     @Override
+    @ExcludeFromJacocoGeneratedReport
     public String toString() {
         return getName();
     }
