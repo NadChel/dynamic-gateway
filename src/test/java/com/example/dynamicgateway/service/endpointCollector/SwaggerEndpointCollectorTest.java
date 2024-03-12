@@ -2,6 +2,7 @@ package com.example.dynamicgateway.service.endpointCollector;
 
 import com.example.dynamicgateway.events.DiscoverableApplicationFoundEvent;
 import com.example.dynamicgateway.events.DiscoverableApplicationLostEvent;
+import com.example.dynamicgateway.events.DocumentedEndpointFoundEvent;
 import com.example.dynamicgateway.model.discoverableApplication.DiscoverableApplication;
 import com.example.dynamicgateway.model.discoverableApplication.EurekaDiscoverableApplication;
 import com.example.dynamicgateway.model.documentedEndpoint.DocumentedEndpoint;
@@ -15,6 +16,7 @@ import com.netflix.discovery.shared.Application;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.ReflectionUtils;
@@ -32,6 +34,7 @@ import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 
 class SwaggerEndpointCollectorTest {
     private SwaggerEndpointCollector collector;
@@ -146,10 +149,6 @@ class SwaggerEndpointCollectorTest {
                 .getMethod()
                 .equals(HttpMethod.POST);
 
-        List<SwaggerEndpoint> postEndpoints = endpoints.stream()
-                .filter(onlyPost)
-                .toList();
-
         SwaggerParseResult parseResult = SwaggerParseResultGenerator.createForEndpoints(endpoints);
 
         ApplicationDocClient<SwaggerParseResult> docClientMock = mock(SwaggerClient.class);
@@ -167,7 +166,19 @@ class SwaggerEndpointCollectorTest {
         DiscoverableApplicationFoundEvent appFoundEvent = new DiscoverableApplicationFoundEvent(discoverableApplicationMock, this);
         collector.onDiscoverableApplicationFoundEvent(appFoundEvent);
 
-        assertThat(collector.getCollectedEndpoints()).containsExactlyInAnyOrderElementsOf(postEndpoints);
+        List<SwaggerEndpoint> distinctPostEndpoints = endpoints.stream()
+                .filter(onlyPost)
+                .distinct()
+                .toList();
+        assertThat(collector.getCollectedEndpoints()).containsExactlyInAnyOrderElementsOf(distinctPostEndpoints);
+
+        ArgumentCaptor<DocumentedEndpointFoundEvent> eventCaptor = ArgumentCaptor.forClass(DocumentedEndpointFoundEvent.class);
+        int expectedNumberOfInvocations = distinctPostEndpoints.size();
+        then(eventPublisherMock).should(times(expectedNumberOfInvocations)).publishEvent(eventCaptor.capture());
+        assertThat(eventCaptor.getAllValues())
+                .extracting(DocumentedEndpointFoundEvent::getFoundEndpoint)
+                .map(SwaggerEndpoint.class::cast)
+                .allMatch(distinctPostEndpoints::contains);
     }
 
     @Test

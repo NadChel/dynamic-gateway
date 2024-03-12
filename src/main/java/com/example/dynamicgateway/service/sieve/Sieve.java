@@ -4,6 +4,8 @@ import java.util.function.Predicate;
 
 /**
  * A functional equivalent of {@link Predicate} that serves to filter out unwanted elements
+ *
+ * @param <T> type of screened elements
  */
 @FunctionalInterface
 public interface Sieve<T> {

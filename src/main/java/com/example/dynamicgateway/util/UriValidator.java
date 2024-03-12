@@ -28,8 +28,7 @@ public class UriValidator {
      * @throws IllegalArgumentException if the passed path is invalid
      */
     public static void requireValidPath(String path) {
-        boolean matchesPathPattern = isValidPath(path);
-        if (!matchesPathPattern) {
+        if (!isValidPath(path)) {
             throw new IllegalArgumentException("Invalid path: " + path);
         }
     }
@@ -51,8 +50,7 @@ public class UriValidator {
      * @throws IllegalArgumentException if the passed scheme is invalid
      */
     public static void requireValidScheme(String scheme) {
-        boolean matchesSchemePattern = isValidScheme(scheme);
-        if (!matchesSchemePattern) {
+        if (!isValidScheme(scheme)) {
             throw new IllegalArgumentException("Invalid scheme: " + scheme);
         }
     }

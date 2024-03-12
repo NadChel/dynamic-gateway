@@ -7,6 +7,7 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import lombok.Getter;
+import org.springframework.lang.NonNull;
 
 import java.text.MessageFormat;
 import java.util.List;
@@ -25,7 +26,8 @@ public class SwaggerApplication implements DocumentedApplication<SwaggerParseRes
     private final List<SwaggerEndpoint> endpoints;
     private final SwaggerParseResult doc;
 
-    public SwaggerApplication(DiscoverableApplication<?> discoverableApplication, SwaggerParseResult parseResult) {
+    public SwaggerApplication(@NonNull DiscoverableApplication<?> discoverableApplication,
+                              @NonNull SwaggerParseResult parseResult) {
         Stream.of(discoverableApplication, parseResult).forEach(Objects::requireNonNull);
         this.discoverableApplication = discoverableApplication;
         this.doc = parseResult;

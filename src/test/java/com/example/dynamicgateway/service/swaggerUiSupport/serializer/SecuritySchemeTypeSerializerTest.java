@@ -22,7 +22,7 @@ public class SecuritySchemeTypeSerializerTest {
 
         JsonGenerator jsonGenerator = JsonFactory.builder().build().createGenerator(outputStream);
 
-        SecuritySchemeTypeSerializer securitySchemeTypeSerializer = new SecuritySchemeTypeSerializer();
+        SecuritySchemeTypeJsonSerializer securitySchemeTypeSerializer = new SecuritySchemeTypeJsonSerializer();
 
         securitySchemeTypeSerializer.serialize(securitySchemeType, jsonGenerator, null);
 

@@ -47,7 +47,7 @@ import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
-class RouteProcessorTest {
+class RouteAssemblerTest {
     private final Route.AsyncBuilder routeBuilder = Route.async();
     @Mock
     private GatewayMeta gatewayMetaMock;
@@ -64,7 +64,7 @@ class RouteProcessorTest {
                 .path("/auth/test-path")
                 .build();
 
-        EndpointRouteProcessor basePredicateRouteProcessor = routeProcessorConfig.basePredicateProcessor();
+        EndpointRouteAssembler basePredicateRouteProcessor = routeProcessorConfig.basePredicateProcessor();
         basePredicateRouteProcessor.process(routeBuilder, endpoint);
 
         MockServerWebExchange exchangeMock = MockServerWebExchange.builder(
@@ -86,7 +86,7 @@ class RouteProcessorTest {
                 .path("/auth/test-path")
                 .build();
 
-        EndpointRouteProcessor basePredicateRouteProcessor = routeProcessorConfig.basePredicateProcessor();
+        EndpointRouteAssembler basePredicateRouteProcessor = routeProcessorConfig.basePredicateProcessor();
         basePredicateRouteProcessor.process(routeBuilder, endpoint);
 
         MockServerWebExchange nonMatchingExchangeMock = MockServerWebExchange.builder(
@@ -113,7 +113,7 @@ class RouteProcessorTest {
         String testGatewayPrefix = "/api/v1";
         given(gatewayMetaMock.getVersionPrefix()).willReturn(testGatewayPrefix);
 
-        EndpointRouteProcessor removeGatewayPrefixRouteProcessor = routeProcessorConfig.removeGatewayPrefixRouteProcessor();
+        EndpointRouteAssembler removeGatewayPrefixRouteProcessor = routeProcessorConfig.removeGatewayPrefixRouteProcessor();
         removeGatewayPrefixRouteProcessor.process(routeBuilder, null);
 
         List<GatewayFilter> filters = RouteBuilderUtil.getFilters(routeBuilder);
@@ -157,7 +157,7 @@ class RouteProcessorTest {
         DocumentedEndpoint<?> endpointMock = mock(DocumentedEndpoint.class, RETURNS_DEEP_STUBS);
         given(endpointMock.getDeclaringApp().getDiscoverableApp()).will(i -> discoverableAppMock);
 
-        EndpointRouteProcessor uriRouteProcessor = routeProcessorConfig.uriRouteProcessor();
+        EndpointRouteAssembler uriRouteProcessor = routeProcessorConfig.uriRouteProcessor();
         uriRouteProcessor.process(routeBuilder, endpointMock);
 
         assertThat(RouteBuilderUtil.getUri(routeBuilder)).isEqualTo(URI.create(scheme + appName));
@@ -174,7 +174,7 @@ class RouteProcessorTest {
 
         given(gatewayMetaMock.getIgnoredPrefixes()).willReturn(List.of(prefix));
 
-        EndpointRouteProcessor appendEndpointPrefixRouteProcessor =
+        EndpointRouteAssembler appendEndpointPrefixRouteProcessor =
                 routeProcessorConfig.appendEndpointPrefixRouteProcessor();
         appendEndpointPrefixRouteProcessor.process(routeBuilder, endpointMock);
 
@@ -209,7 +209,7 @@ class RouteProcessorTest {
     void idRouteProcessor() {
         assumeThat(routeBuilder.getId()).isNull();
 
-        EndpointRouteProcessor idRouteProcessor = routeProcessorConfig.idRouteProcessor();
+        EndpointRouteAssembler idRouteProcessor = routeProcessorConfig.idRouteProcessor();
         idRouteProcessor.process(routeBuilder, null);
 
         assertThat(routeBuilder.getId()).isNotNull();
@@ -220,7 +220,7 @@ class RouteProcessorTest {
         DocumentedEndpoint<?> endpointMock = mock(DocumentedEndpoint.class, RETURNS_DEEP_STUBS);
         given(endpointMock.getDetails().getMethod()).willReturn(HttpMethod.PATCH);
 
-        EndpointRouteProcessor methodRouteProcessor = routeProcessorConfig.methodRouteProcessor();
+        EndpointRouteAssembler methodRouteProcessor = routeProcessorConfig.methodRouteProcessor();
         methodRouteProcessor.process(routeBuilder, endpointMock);
 
         MockServerWebExchange matchingExchangeMock = MockServerWebExchange.builder(
@@ -252,7 +252,7 @@ class RouteProcessorTest {
         ParamInitializer paramInitializerMock = mock(ParamInitializer.class);
         given(paramInitializerMock.getParamName()).willReturn("someParam");
 
-        EndpointRouteProcessor paramInitializingRouteProcessor =
+        EndpointRouteAssembler paramInitializingRouteProcessor =
                 routeProcessorConfig.paramInitializingRouteProcessor(new ParamInitializers(List.of(
                         paramInitializerMock
                 )));
@@ -273,7 +273,7 @@ class RouteProcessorTest {
         DocumentedEndpoint<?> endpointMock = mock(DocumentedEndpoint.class);
         given(endpointMock.getDetails()).willReturn(detailsMock);
 
-        EndpointRouteProcessor paramInitializingRouteProcessor =
+        EndpointRouteAssembler paramInitializingRouteProcessor =
                 routeProcessorConfig.paramInitializingRouteProcessor(new ParamInitializers(Collections.emptyList()));
         paramInitializingRouteProcessor.process(routeBuilder, endpointMock);
 
@@ -301,7 +301,7 @@ class RouteProcessorTest {
         given(paramInitializersMock.findInitializerForParam(param))
                 .willReturn(Optional.of(paramInitializerMock));
 
-        EndpointRouteProcessor paramInitializingRouteProcessor =
+        EndpointRouteAssembler paramInitializingRouteProcessor =
                 routeProcessorConfig.paramInitializingRouteProcessor(paramInitializersMock);
 
         List<GatewayFilter> filters = RouteBuilderUtil.getFilters(routeBuilder);

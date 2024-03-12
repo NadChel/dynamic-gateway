@@ -5,7 +5,7 @@ import com.example.dynamicgateway.events.DocumentedEndpointFoundEvent;
 import com.example.dynamicgateway.model.discoverableApplication.DiscoverableApplication;
 import com.example.dynamicgateway.model.documentedEndpoint.DocumentedEndpoint;
 import com.example.dynamicgateway.service.routeLocator.util.PathOnlyAsyncPredicate;
-import com.example.dynamicgateway.service.routeProcessor.EndpointRouteProcessor;
+import com.example.dynamicgateway.service.routeProcessor.EndpointRouteAssembler;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.springframework.cloud.gateway.route.Route;
@@ -97,7 +97,7 @@ class DynamicRouteLocatorTest {
         assertOneRoute();
     }
 
-    private List<EndpointRouteProcessor> getEndpointRouteProcessorStub() {
+    private List<EndpointRouteAssembler> getEndpointRouteProcessorStub() {
         return List.of(
                 (routeInConstruction, endpoint) -> getRouteBuilderStub()
         );

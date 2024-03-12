@@ -3,7 +3,7 @@ package com.example.dynamicgateway.service.routeProcessor.circuitBreaker;
 import com.example.dynamicgateway.config.RouteProcessorConfig;
 import com.example.dynamicgateway.model.documentedEndpoint.DocumentedEndpoint;
 import com.example.dynamicgateway.model.gatewayMeta.GatewayMeta;
-import com.example.dynamicgateway.service.routeProcessor.EndpointRouteProcessor;
+import com.example.dynamicgateway.service.routeProcessor.EndpointRouteAssembler;
 import com.example.dynamicgateway.testUtil.RouteBuilderUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-import static com.example.dynamicgateway.service.routeProcessor.circuitBreaker.CircuitBreakerEndpointRouteProcessorTest.CircuitBreakerTestConfig;
+import static com.example.dynamicgateway.service.routeProcessor.circuitBreaker.CircuitBreakerEndpointRouteAssemblerTest.CircuitBreakerTestConfig;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.mockito.BDDMockito.given;
@@ -38,7 +38,7 @@ import static org.mockito.Mockito.mock;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = CircuitBreakerTestConfig.class)
-public class CircuitBreakerEndpointRouteProcessorTest {
+public class CircuitBreakerEndpointRouteAssemblerTest {
     static final Duration TIMEOUT = Duration.ofMillis(100);
     static final String appName = "some-app";
     @Autowired
@@ -49,7 +49,7 @@ public class CircuitBreakerEndpointRouteProcessorTest {
     @Test
     void circuitBreakerEndpointRouteProcessor_addsFilterProvidedByCircuitBreakerFactoryToRoute() {
         RouteProcessorConfig routeProcessorConfig = new RouteProcessorConfig(gatewayMeta);
-        EndpointRouteProcessor circuitBreakerEndpointRouteProcessor =
+        EndpointRouteAssembler circuitBreakerEndpointRouteProcessor =
                 routeProcessorConfig.circuitBreakerEndpointRouteProcessor(filterFactory);
         Route.AsyncBuilder routeBuilder = Route.async().id(UUID.randomUUID().toString());
 

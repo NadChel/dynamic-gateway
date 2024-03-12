@@ -146,7 +146,7 @@ class BasicSwaggerUiSupportTest {
     private boolean gatewayPrefixesSet(String path, SwaggerApplication swaggerApplication, GatewayMeta gatewayMeta) {
         return swaggerApplication.getEndpoints()
                 .stream()
-                .map(endpoint -> EndpointUtil.withRemovedPrefix(endpoint, gatewayMeta))
+                .map(endpoint -> EndpointUtil.pathWithRemovedPrefix(endpoint, gatewayMeta))
                 .anyMatch(nonPrefixedPath -> path.equals(gatewayMeta.getVersionPrefix() + nonPrefixedPath));
     }
 
@@ -159,7 +159,7 @@ class BasicSwaggerUiSupportTest {
 
             boolean mismatch = endpointCollector.stream().noneMatch(collectorEndpoint ->
                     collectorEndpoint.getDetails().getMethod().equals(openApiMethod) &&
-                            EndpointUtil.withRemovedPrefix(collectorEndpoint, gatewayMeta).equals(openApiUnprefixedPath));
+                            EndpointUtil.pathWithRemovedPrefix(collectorEndpoint, gatewayMeta).equals(openApiUnprefixedPath));
 
             if (mismatch) return false;
         }

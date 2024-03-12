@@ -4,9 +4,9 @@ import com.example.dynamicgateway.model.documentedEndpoint.DocumentedEndpoint;
 import org.springframework.cloud.gateway.route.Route;
 
 /**
- * {@link RouteProcessor} that sources mutation data from supplied {@link DocumentedEndpoint}s
+ * A {@link RouteAssembler} that models {@code Route} builders after supplied {@link DocumentedEndpoint}s
  */
 @FunctionalInterface
-public interface EndpointRouteProcessor extends RouteProcessor<DocumentedEndpoint<?>> {
+public interface EndpointRouteAssembler extends RouteAssembler<DocumentedEndpoint<?>> {
     Route.AsyncBuilder process(Route.AsyncBuilder routeInConstruction, DocumentedEndpoint<?> endpoint);
 }

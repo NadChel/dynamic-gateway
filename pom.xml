@@ -173,12 +173,12 @@
                                         <limit>
                                             <counter>INSTRUCTION</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.9</minimum>
+                                            <minimum>0.95</minimum>
                                         </limit>
                                         <limit>
                                             <counter>BRANCH</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.9</minimum>
+                                            <minimum>0.95</minimum>
                                         </limit>
                                         <limit>
                                             <counter>CLASS</counter>
@@ -195,8 +195,6 @@
                     <excludes>
                         <exclude>**/*Exception.*</exclude>
                         <exclude>**/DynamicGatewayApplication.*</exclude>
-                        <exclude>**/*.equals</exclude>
-                        <exclude>**/*.get*</exclude>
                     </excludes>
                 </configuration>
             </plugin>

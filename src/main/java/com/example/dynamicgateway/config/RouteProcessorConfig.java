@@ -6,7 +6,7 @@ import com.example.dynamicgateway.model.endpointParameter.EndpointParameter;
 import com.example.dynamicgateway.model.gatewayMeta.GatewayMeta;
 import com.example.dynamicgateway.service.paramInitializer.ParamInitializer;
 import com.example.dynamicgateway.service.paramInitializer.ParamInitializers;
-import com.example.dynamicgateway.service.routeProcessor.EndpointRouteProcessor;
+import com.example.dynamicgateway.service.routeProcessor.EndpointRouteAssembler;
 import com.example.dynamicgateway.util.EndpointUtil;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.OrderedGatewayFilter;
@@ -34,7 +34,7 @@ public class RouteProcessorConfig {
     }
 
     @Bean
-    public EndpointRouteProcessor basePredicateProcessor() {
+    public EndpointRouteAssembler basePredicateProcessor() {
         return (routeInConstruction, endpoint) -> {
             setBasePredicate(routeInConstruction, endpoint);
             return routeInConstruction;
@@ -50,7 +50,7 @@ public class RouteProcessorConfig {
      * @see GatewayMeta#getIgnoredPrefixes()
      */
     private void setBasePredicate(Route.AsyncBuilder routeInConstruction, DocumentedEndpoint<?> endpoint) {
-        String nonPrefixedPath = EndpointUtil.withRemovedPrefix(endpoint, gatewayMeta);
+        String nonPrefixedPath = EndpointUtil.pathWithRemovedPrefix(endpoint, gatewayMeta);
         String basePredicatePath = gatewayMeta.getVersionPrefix() + nonPrefixedPath;
         addPredicate(routeInConstruction,
                 new PathRoutePredicateFactory().applyAsync(
@@ -65,7 +65,7 @@ public class RouteProcessorConfig {
     }
 
     @Bean
-    public EndpointRouteProcessor removeGatewayPrefixRouteProcessor() {
+    public EndpointRouteAssembler removeGatewayPrefixRouteProcessor() {
         return (routeInConstruction, endpoint) -> {
             routeInConstruction.filter(wrapInOrderedGatewayFilter(
                     new RewritePathGatewayFilterFactory().apply(config -> config
@@ -89,7 +89,7 @@ public class RouteProcessorConfig {
     }
 
     @Bean
-    public EndpointRouteProcessor uriRouteProcessor() {
+    public EndpointRouteAssembler uriRouteProcessor() {
         return (routeInConstruction, endpoint) -> {
             DiscoverableApplication<?> discoverableApp = endpoint.getDeclaringApp().getDiscoverableApp();
             return routeInConstruction.uri(discoverableApp.getDiscoveryServiceScheme() + discoverableApp.getName());
@@ -97,9 +97,9 @@ public class RouteProcessorConfig {
     }
 
     @Bean
-    public EndpointRouteProcessor appendEndpointPrefixRouteProcessor() {
+    public EndpointRouteAssembler appendEndpointPrefixRouteProcessor() {
         return (routeInConstruction, endpoint) -> {
-            String endpointPrefix = EndpointUtil.extractPrefix(endpoint, gatewayMeta);
+            String endpointPrefix = EndpointUtil.pathPrefix(endpoint, gatewayMeta);
             if (!endpointPrefix.isEmpty()) {
                 routeInConstruction.filter(wrapInOrderedGatewayFilter(
                         new PrefixPathGatewayFilterFactory().apply(config -> config
@@ -111,12 +111,12 @@ public class RouteProcessorConfig {
     }
 
     @Bean
-    public EndpointRouteProcessor idRouteProcessor() {
+    public EndpointRouteAssembler idRouteProcessor() {
         return (routeInConstruction, endpoint) -> routeInConstruction.id(UUID.randomUUID().toString());
     }
 
     @Bean
-    public EndpointRouteProcessor methodRouteProcessor() {
+    public EndpointRouteAssembler methodRouteProcessor() {
         return (routeInConstruction, endpoint) -> {
             appendHttpMethodPredicate(routeInConstruction, endpoint);
             return routeInConstruction;
@@ -131,7 +131,7 @@ public class RouteProcessorConfig {
     }
 
     @Bean
-    public EndpointRouteProcessor paramInitializingRouteProcessor(ParamInitializers paramInitializers) {
+    public EndpointRouteAssembler paramInitializingRouteProcessor(ParamInitializers paramInitializers) {
         return (routeInConstruction, endpoint) -> {
             for (EndpointParameter param : endpoint.getDetails().getParameters()) {
                 Optional<ParamInitializer> optionalParamInitializer = paramInitializers.findInitializerForParam(param);
@@ -144,11 +144,12 @@ public class RouteProcessorConfig {
     }
 
     @Bean
-    public EndpointRouteProcessor circuitBreakerEndpointRouteProcessor(SpringCloudCircuitBreakerFilterFactory filterFactory) {
+    public EndpointRouteAssembler circuitBreakerEndpointRouteProcessor(SpringCloudCircuitBreakerFilterFactory filterFactory) {
         return (routeInConstruction, endpoint) -> {
             routeInConstruction.filter(wrapInOrderedGatewayFilter(
                     filterFactory.apply(routeInConstruction.getId(),
                             config -> config.setFallbackUri("/fallback/" + endpoint.getDeclaringApp().getName())
+                                    .setName("Default circuit breaker")
                     )));
             return routeInConstruction;
         };

@@ -8,6 +8,15 @@ import lombok.SneakyThrows;
 
 import java.text.MessageFormat;
 
+/**
+ * A {@link JsonSerializer} that serializes {@link SwaggerApplication}s to JSONs of the following format:
+ * <pre>
+ * {
+ *     "url": "/doc/app-name",
+ *     "name": "app-name"
+ * }
+ * </pre>
+ */
 public class SwaggerUiConfigSerializer extends JsonSerializer<SwaggerApplication> {
     @Override
     @SneakyThrows

@@ -26,6 +26,6 @@ public interface BearerAuthorizationHeaderAuthenticationExtractor extends Author
 
     @Override
     default boolean isSupportedAuthorizationHeader(AuthorizationHeader header) {
-        return header.getScheme().equals(AuthorizationHeader.BEARER_SPACE.trim());
+        return header.getScheme().equalsIgnoreCase(AuthorizationHeader.BEARER_SPACE.trim());
     }
 }

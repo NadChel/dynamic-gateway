@@ -26,7 +26,7 @@ class EndpointUtilTest {
 
         given(gatewayMetaMock.getIgnoredPrefixes()).willReturn(Collections.emptyList());
 
-        String returnedPath = EndpointUtil.withRemovedPrefix(endpoint, gatewayMetaMock);
+        String returnedPath = EndpointUtil.pathWithRemovedPrefix(endpoint, gatewayMetaMock);
         assertThat(returnedPath).isEqualTo(path);
     }
 
@@ -38,7 +38,7 @@ class EndpointUtilTest {
 
         given(gatewayMetaMock.getIgnoredPrefixes()).willReturn(List.of(prefix));
 
-        String returnedPath = EndpointUtil.withRemovedPrefix(endpoint, gatewayMetaMock);
+        String returnedPath = EndpointUtil.pathWithRemovedPrefix(endpoint, gatewayMetaMock);
 
         String expectedPath = path.substring(prefix.length());
         assertThat(returnedPath).isEqualTo(expectedPath);
@@ -54,7 +54,7 @@ class EndpointUtilTest {
 
         given(gatewayMetaMock.getIgnoredPrefixes()).willReturn(List.of(prefix, longerPrefix));
 
-        String returnedPath = EndpointUtil.withRemovedPrefix(endpoint, gatewayMetaMock);
+        String returnedPath = EndpointUtil.pathWithRemovedPrefix(endpoint, gatewayMetaMock);
 
         String expectedPath = path.substring(longerPrefix.length());
         assertThat(returnedPath).isEqualTo(expectedPath);
@@ -69,7 +69,7 @@ class EndpointUtilTest {
 
         given(gatewayMetaMock.getIgnoredPrefixes()).willReturn(List.of(prefix));
 
-        String returnedPath = EndpointUtil.withRemovedPrefix(endpoint, gatewayMetaMock);
+        String returnedPath = EndpointUtil.pathWithRemovedPrefix(endpoint, gatewayMetaMock);
         assertThat(returnedPath).isEqualTo(path);
     }
 
@@ -82,7 +82,7 @@ class EndpointUtilTest {
 
         given(gatewayMetaMock.getIgnoredPrefixes()).willReturn(Collections.emptyList());
 
-        String returnedPrefix = EndpointUtil.extractPrefix(endpoint, gatewayMetaMock);
+        String returnedPrefix = EndpointUtil.pathPrefix(endpoint, gatewayMetaMock);
         assertThat(returnedPrefix).isEqualTo("");
     }
 
@@ -95,7 +95,7 @@ class EndpointUtilTest {
 
         given(gatewayMetaMock.getIgnoredPrefixes()).willReturn(List.of(prefix));
 
-        String returnedPrefix = EndpointUtil.extractPrefix(endpoint, gatewayMetaMock);
+        String returnedPrefix = EndpointUtil.pathPrefix(endpoint, gatewayMetaMock);
         assertThat(returnedPrefix).isEqualTo(prefix);
     }
 
@@ -109,7 +109,7 @@ class EndpointUtilTest {
 
         given(gatewayMetaMock.getIgnoredPrefixes()).willReturn(List.of(prefix, longerPrefix));
 
-        String returnedPrefix = EndpointUtil.extractPrefix(endpoint, gatewayMetaMock);
+        String returnedPrefix = EndpointUtil.pathPrefix(endpoint, gatewayMetaMock);
         assertThat(returnedPrefix).isEqualTo(longerPrefix);
     }
 
@@ -122,7 +122,7 @@ class EndpointUtilTest {
 
         given(gatewayMetaMock.getIgnoredPrefixes()).willReturn(List.of(prefix));
 
-        String returnedPath = EndpointUtil.extractPrefix(endpoint, gatewayMetaMock);
+        String returnedPath = EndpointUtil.pathPrefix(endpoint, gatewayMetaMock);
         assertThat(returnedPath).isEqualTo("");
     }
 }

@@ -1,7 +1,7 @@
 package com.example.dynamicgateway.config;
 
-import com.example.dynamicgateway.service.swaggerUiSupport.serializer.SecuritySchemeInSerializer;
-import com.example.dynamicgateway.service.swaggerUiSupport.serializer.SecuritySchemeTypeSerializer;
+import com.example.dynamicgateway.service.swaggerUiSupport.serializer.SecuritySchemeInJsonSerializer;
+import com.example.dynamicgateway.service.swaggerUiSupport.serializer.SecuritySchemeTypeJsonSerializer;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.Module;
@@ -31,11 +31,11 @@ public class JacksonConfig {
 
     @Bean
     public JsonSerializer<SecurityScheme.Type> securitySchemeTypeSerializer() {
-        return new SecuritySchemeTypeSerializer();
+        return new SecuritySchemeTypeJsonSerializer();
     }
 
     @Bean
     public JsonSerializer<SecurityScheme.In> securitySchemeInSerializer() {
-        return new SecuritySchemeInSerializer();
+        return new SecuritySchemeInJsonSerializer();
     }
 }

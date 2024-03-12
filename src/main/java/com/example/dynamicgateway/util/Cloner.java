@@ -8,7 +8,7 @@ import lombok.SneakyThrows;
 
 /**
  * Utility class with the purpose of creating deep copies of objects by means of
- * a serialization/deserialization cycle.
+ * a serialization/deserialization cycle
  * <p>
  * This class delegates the actual serialization/deserialization to an {@link ObjectMapper}
  * dependency with a registered {@link ParameterNamesModule}. Clients must ensure that passed

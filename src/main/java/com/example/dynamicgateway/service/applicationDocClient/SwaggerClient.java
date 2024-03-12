@@ -28,7 +28,7 @@ public class SwaggerClient implements ApplicationDocClient<SwaggerParseResult> {
     private final String scheme;
     private final String docPath;
     private final WebClient webClient;
-    private final OpenApiParser parser;
+    private final OpenApiParser<SwaggerParseResult> parser;
 
     SwaggerClient(Builder builder) {
         this.scheme = builder.getScheme();
@@ -77,7 +77,7 @@ public class SwaggerClient implements ApplicationDocClient<SwaggerParseResult> {
         @Getter
         private String docPath = SwaggerApplication.V3_DOC_PATH;
         @Getter
-        private OpenApiParser parser = new SwaggerOpenApiParser();
+        private OpenApiParser<SwaggerParseResult> parser = new SwaggerOpenApiParser();
         private final WebClient resolvingWebClient;
 
         private Builder(@NonNull WebClient resolvingWebClient) {
@@ -121,7 +121,7 @@ public class SwaggerClient implements ApplicationDocClient<SwaggerParseResult> {
          * @return this {@code Builder}
          * @throws NullPointerException if the provided parser is {@code null}
          */
-        public Builder setParser(@NonNull OpenApiParser parser) {
+        public Builder setParser(@NonNull OpenApiParser<SwaggerParseResult> parser) {
             Objects.requireNonNull(parser, "Parser cannot be null");
             this.parser = parser;
             return this;

@@ -35,6 +35,10 @@ public interface EndpointCollector<E extends DocumentedEndpoint<?>> {
         });
     }
 
+    /**
+     * Returns a {@link Stream} of {@code DocumentedEndpoint}s collected by this
+     * {@code EndpointCollector}
+     */
     default Stream<E> stream() {
         return getCollectedEndpoints().stream();
     }

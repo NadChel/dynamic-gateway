@@ -6,7 +6,7 @@ import com.example.dynamicgateway.model.documentedEndpoint.DocumentedEndpoint;
 import com.example.dynamicgateway.model.gatewayMeta.GatewayMeta;
 import com.example.dynamicgateway.service.paramInitializer.ParamInitializers;
 import com.example.dynamicgateway.service.routeLocator.DynamicRouteLocatorComponentTest.DynamicRouteLocatorComponentTestConfig;
-import com.example.dynamicgateway.service.routeProcessor.EndpointRouteProcessor;
+import com.example.dynamicgateway.service.routeProcessor.EndpointRouteAssembler;
 import com.example.dynamicgateway.testModel.SwaggerEndpointStub;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.mock;
 @ContextConfiguration(classes = DynamicRouteLocatorComponentTestConfig.class)
 public class DynamicRouteLocatorComponentTest {
     @Autowired
-    List<EndpointRouteProcessor> routeProcessors;
+    List<EndpointRouteAssembler> routeProcessors;
 
     @Test
     void testWhenBuildingRoute_orderOfInjectedRouteProcessorsDoesntMatter() {
