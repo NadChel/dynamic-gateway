@@ -18,7 +18,7 @@ import java.net.URI;
 public interface ParamInitializer {
     String getParamName();
 
-    default void initialize(Route.AsyncBuilder routeInConstruction) {
+    default void addInitializingFilter(Route.AsyncBuilder routeInConstruction) {
         routeInConstruction.filter(new OrderedGatewayFilter(
                 initializingFilter(), 0
         ));

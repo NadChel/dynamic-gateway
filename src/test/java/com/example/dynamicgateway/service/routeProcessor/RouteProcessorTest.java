@@ -295,7 +295,7 @@ class RouteProcessorTest {
         ParamInitializer paramInitializerMock = mock(ParamInitializer.class);
         will(
                 invocation -> invocation.getArgument(0, Route.AsyncBuilder.class).filter(filterMock)
-        ).given(paramInitializerMock).initialize(routeBuilder);
+        ).given(paramInitializerMock).addInitializingFilter(routeBuilder);
 
         ParamInitializers paramInitializersMock = mock(ParamInitializers.class);
         given(paramInitializersMock.findInitializerForParam(param))

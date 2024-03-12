@@ -41,7 +41,7 @@ class ParamInitializerTest {
     void whenInitializeInvoked_filterAdded() {
         assumeThat(RouteBuilderUtil.getFilters(routeBuilder)).isEmpty();
 
-        paramInitializer.initialize(routeBuilder);
+        paramInitializer.addInitializingFilter(routeBuilder);
 
         List<GatewayFilter> filters = RouteBuilderUtil.getFilters(routeBuilder);
         assertThat(filters).hasSize(1);
@@ -51,7 +51,7 @@ class ParamInitializerTest {
     void whenInitializeInvoked_filterCorrect() {
         assumeThat(RouteBuilderUtil.getFilters(routeBuilder)).asList().isEmpty();
 
-        paramInitializer.initialize(routeBuilder);
+        paramInitializer.addInitializingFilter(routeBuilder);
 
         List<GatewayFilter> filters = RouteBuilderUtil.getFilters(routeBuilder);
         assumeThat(filters).asList().hasSize(1);

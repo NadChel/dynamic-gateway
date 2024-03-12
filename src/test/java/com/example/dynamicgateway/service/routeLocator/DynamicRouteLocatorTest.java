@@ -111,7 +111,7 @@ class DynamicRouteLocatorTest {
         return Route.async()
                 .id(String.valueOf(uri.hashCode()))
                 .uri(uri)
-                .asyncPredicate(PathOnlyAsyncPredicate.from("/"));
+                .asyncPredicate(PathOnlyAsyncPredicate.fromPath("/"));
     }
 
     private void assertOneRoute() {

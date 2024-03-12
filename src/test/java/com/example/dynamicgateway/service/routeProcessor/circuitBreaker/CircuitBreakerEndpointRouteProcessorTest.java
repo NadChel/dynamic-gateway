@@ -14,9 +14,6 @@ import org.springframework.cloud.gateway.filter.factory.SpringCloudCircuitBreake
 import org.springframework.cloud.gateway.route.Route;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.http.server.reactive.MockServerHttpResponse;
@@ -69,9 +66,9 @@ public class CircuitBreakerEndpointRouteProcessorTest {
 
         MockServerWebExchange exchange =
                 MockServerWebExchange.builder(MockServerHttpRequest.get("/").build()).build();
-        long marginOfError = 50;
+        long marginOfErrorInMillis = 50;
         GatewayFilterChain slowChain = e ->
-                Mono.delay(TIMEOUT.plusMillis(marginOfError)).then(Mono.empty());
+                Mono.delay(TIMEOUT.plusMillis(marginOfErrorInMillis)).then(Mono.empty());
         StepVerifier.create(circuitBreakerFilter.filter(exchange, slowChain))
                 .verifyComplete();
         MockServerHttpResponse response = exchange.getResponse();
@@ -89,8 +86,6 @@ public class CircuitBreakerEndpointRouteProcessorTest {
     @Configuration
     @EnableCircuitBreaker
     @EnableWebFlux
-    @Import(PropertySourcesPlaceholderConfigurer.class)
-    @PropertySource("classpath:application-test.properties")
     static class CircuitBreakerTestConfig {
         @Bean
         GatewayMeta testGatewayMeta() {

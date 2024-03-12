@@ -136,7 +136,7 @@ public class RouteProcessorConfig {
             for (EndpointParameter param : endpoint.getDetails().getParameters()) {
                 Optional<ParamInitializer> optionalParamInitializer = paramInitializers.findInitializerForParam(param);
                 optionalParamInitializer.ifPresent(
-                        paramInitializer -> paramInitializer.initialize(routeInConstruction)
+                        paramInitializer -> paramInitializer.addInitializingFilter(routeInConstruction)
                 );
             }
             return routeInConstruction;

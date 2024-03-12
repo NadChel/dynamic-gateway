@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * The holder of meta information relating to this Gateway
+ * {@link ConfigurationProperties} specific to this Gateway
  */
 @Component
 @ConfigurationProperties(prefix = "gateway")
@@ -43,7 +43,10 @@ public class GatewayMeta {
     @PostConstruct
     private void init() {
         if (servers == null) {
-            servers = List.of(new Server().url("http://localhost:" + port));
+            Server defaultServer = new Server()
+                    .url("http://localhost:" + port)
+                    .description("Default Dynamic Gateway server");
+            servers = List.of(defaultServer);
         }
     }
 }
