@@ -21,6 +21,7 @@ import static org.mockito.Mockito.mock;
 
 class RolesParamInitializerTest {
     private final RolesParamInitializer initializer = new RolesParamInitializer();
+
     @Test
     void testExtractValuesFromAuthentication() {
         List<GrantedAuthority> roles = List.of(
@@ -58,7 +59,9 @@ class RolesParamInitializerTest {
         StepVerifier.create(initializer.getParamValues(exchangeMock).map(GrantedAuthority.class::cast))
                 .recordWith(ArrayList::new)
                 .expectNextCount(2)
-                .expectRecordedMatches(recordedRoles -> recordedRoles.containsAll(roles))
+                .expectRecordedMatches(recordedRoles ->
+                        recordedRoles.containsAll(roles) &&
+                                roles.containsAll(recordedRoles))
                 .expectComplete()
                 .verify();
     }

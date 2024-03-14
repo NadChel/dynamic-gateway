@@ -1,6 +1,6 @@
 package com.example.dynamicgateway.service.routeLocator;
 
-import com.example.dynamicgateway.config.RouteProcessorConfig;
+import com.example.dynamicgateway.config.RouteAssemblerConfig;
 import com.example.dynamicgateway.events.DocumentedEndpointFoundEvent;
 import com.example.dynamicgateway.model.documentedEndpoint.DocumentedEndpoint;
 import com.example.dynamicgateway.model.gatewayMeta.GatewayMeta;
@@ -43,7 +43,7 @@ public class DynamicRouteLocatorComponentTest {
     }
 
     @Configuration
-    @Import(RouteProcessorConfig.class)
+    @Import(RouteAssemblerConfig.class)
     public static class DynamicRouteLocatorComponentTestConfig {
         @Bean
         GatewayMeta gatewayMeta() {

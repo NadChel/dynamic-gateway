@@ -1,6 +1,6 @@
 package com.example.dynamicgateway.service.routeProcessor.circuitBreaker;
 
-import com.example.dynamicgateway.config.RouteProcessorConfig;
+import com.example.dynamicgateway.config.RouteAssemblerConfig;
 import com.example.dynamicgateway.model.documentedEndpoint.DocumentedEndpoint;
 import com.example.dynamicgateway.model.gatewayMeta.GatewayMeta;
 import com.example.dynamicgateway.service.routeProcessor.EndpointRouteAssembler;
@@ -48,9 +48,9 @@ public class CircuitBreakerEndpointRouteAssemblerTest {
 
     @Test
     void circuitBreakerEndpointRouteProcessor_addsFilterProvidedByCircuitBreakerFactoryToRoute() {
-        RouteProcessorConfig routeProcessorConfig = new RouteProcessorConfig(gatewayMeta);
+        RouteAssemblerConfig routeAssemblerConfig = new RouteAssemblerConfig(gatewayMeta);
         EndpointRouteAssembler circuitBreakerEndpointRouteProcessor =
-                routeProcessorConfig.circuitBreakerEndpointRouteProcessor(filterFactory);
+                routeAssemblerConfig.circuitBreakerEndpointRouteAssembler(filterFactory);
         Route.AsyncBuilder routeBuilder = Route.async().id(UUID.randomUUID().toString());
 
         DocumentedEndpoint<?> endpointMock = mock(DocumentedEndpoint.class, RETURNS_DEEP_STUBS);

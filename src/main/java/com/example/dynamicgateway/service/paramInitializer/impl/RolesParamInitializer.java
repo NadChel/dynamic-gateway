@@ -5,6 +5,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 
+/**
+ * An {@link AuthenticationParamInitializer} that retrieves the authorities of an
+ * {@code Authentication} instance
+ */
 @Component
 public class RolesParamInitializer extends AuthenticationParamInitializer {
     public String getParamName() {

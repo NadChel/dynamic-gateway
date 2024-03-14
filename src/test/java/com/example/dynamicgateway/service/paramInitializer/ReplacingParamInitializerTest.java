@@ -22,10 +22,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.given;
 
-class ParamInitializerTest {
+class ReplacingParamInitializerTest {
     private final List<Integer> testParamValues = List.of(1, 2, 3);
     private final Route.AsyncBuilder routeBuilder = Route.async();
-    private final ParamInitializer paramInitializer = new ParamInitializer() {
+    private final ParamInitializer paramInitializer = new ReplacingParamInitializer() {
         @Override
         public String getParamName() {
             return "param";
@@ -56,13 +56,14 @@ class ParamInitializerTest {
         List<GatewayFilter> filters = RouteBuilderUtil.getFilters(routeBuilder);
         assumeThat(filters).asList().hasSize(1);
 
-        checkFilter(filters.get(0));
+        assertFilterReplacesOldParamsOfName(filters.get(0));
     }
 
-    private void checkFilter(GatewayFilter filter) {
-        MockServerHttpRequest requestMock = MockServerHttpRequest.get("/test-path").build();
-
-        assumeThat(requestMock.getQueryParams().get(paramInitializer.getParamName())).isNull();
+    private void assertFilterReplacesOldParamsOfName(GatewayFilter filter) {
+        MockServerHttpRequest requestMock = MockServerHttpRequest.get("/test-path")
+                .queryParam(paramInitializer.getParamName(),
+                        "these", "values", "should", "be", "replaced")
+                .build();
 
         ServerWebExchange exchangeMock = MockServerWebExchange.from(requestMock);
 
