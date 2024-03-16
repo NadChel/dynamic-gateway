@@ -56,7 +56,6 @@ public class EndpointUtil {
         validateSegments(path, prefixes);
 
         return extractSegment(path, prefixes, segmentPicker);
-
     }
 
     private static void validateSegments(String path, List<String> prefixes) {

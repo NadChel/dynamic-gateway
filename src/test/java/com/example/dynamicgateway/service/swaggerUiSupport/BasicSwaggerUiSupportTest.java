@@ -96,7 +96,8 @@ class BasicSwaggerUiSupportTest {
                 .limit(endpoints.size() - 1)
                 .toList();
 
-        EndpointCollector<SwaggerEndpoint> endpointCollector = new SwaggerEndpointCollector(null, null, null);
+        EndpointCollector<SwaggerEndpoint> endpointCollector =
+                new SwaggerEndpointCollector(null, null, null);
         ReflectionTestUtils.setField(endpointCollector, "documentedEndpoints", Set.copyOf(subsetOfEndpoints));
 
         GatewayMeta gatewayMetaMock = mock(GatewayMeta.class);
@@ -117,8 +118,7 @@ class BasicSwaggerUiSupportTest {
         StepVerifier.create(uiSupport.getSwaggerAppDoc(appName))
                 .expectNextMatches(openAPI ->
                         isOpenApiCorrect(openAPI, swaggerApplication, endpointCollector, gatewayMetaMock))
-                .expectComplete()
-                .verify();
+                .verifyComplete();
 
         String parseResultAfterDocForSwaggerUiWasGenerated = objectMapper.writeValueAsString(parseResult);
         assertThat(parseResultAfterDocForSwaggerUiWasGenerated).isEqualTo(parseResultSnapshot);
@@ -131,8 +131,8 @@ class BasicSwaggerUiSupportTest {
     }
 
     private boolean isApiMetaCorrect(OpenAPI openAPI, GatewayMeta gatewayMetaMock) {
-        return openAPI.getServers().size() == gatewayMetaMock.getServers().size() &&
-                openAPI.getServers().containsAll(gatewayMetaMock.getServers());
+        return openAPI.getServers().containsAll(gatewayMetaMock.getServers()) &&
+                gatewayMetaMock.getServers().containsAll(openAPI.getServers());
     }
 
     private boolean areEndpointsCorrect(OpenAPI openAPI, SwaggerApplication swaggerApplication,

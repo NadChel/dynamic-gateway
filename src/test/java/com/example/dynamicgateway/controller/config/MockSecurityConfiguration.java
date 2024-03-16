@@ -9,11 +9,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 @Configuration
 @Import(SecurityConfig.class)
@@ -24,8 +22,11 @@ public class MockSecurityConfiguration {
         return new AuthenticationExtractor() {
             @Override
             public Mono<Authentication> doTryExtractAuthentication(ServerWebExchange exchange) {
-                return Mono.just(new TestingAuthenticationToken("user", "password",
-                        List.of(new SimpleGrantedAuthority("user"))));
+                TestingAuthenticationToken token = new TestingAuthenticationToken(
+                        "user", "password",
+                        AuthorityUtils.createAuthorityList("user")
+                );
+                return Mono.just(token);
             }
 
             @Override

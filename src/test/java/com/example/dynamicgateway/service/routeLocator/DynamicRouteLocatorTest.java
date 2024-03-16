@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.assertj.core.api.Assumptions.assumeThatCode;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -48,6 +49,7 @@ class DynamicRouteLocatorTest {
     private Set<Route> getRouteSet() {
         Field routesField = dynamicRouteLocator.getClass()
                 .getDeclaredField("routes");
+        assumeThat(routesField).isNotNull();
         routesField.setAccessible(true);
         return (Set<Route>) routesField.get(dynamicRouteLocator);
     }
@@ -97,7 +99,7 @@ class DynamicRouteLocatorTest {
         assertOneRoute();
     }
 
-    private List<EndpointRouteAssembler> getEndpointRouteProcessorStub() {
+    private static List<EndpointRouteAssembler> getEndpointRouteProcessorStub() {
         return List.of(
                 (routeInConstruction, endpoint) -> getRouteBuilderStub()
         );

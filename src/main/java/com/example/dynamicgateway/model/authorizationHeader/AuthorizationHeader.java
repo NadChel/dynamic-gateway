@@ -15,8 +15,8 @@ import java.util.Objects;
  */
 @Getter
 public class AuthorizationHeader {
-    public static final String BEARER_SPACE = "bearer ";
-    public static final String BASIC_SPACE = "basic ";
+    public static final String BEARER_SPACE = "Bearer ";
+    public static final String BASIC_SPACE = "Basic ";
     private final String scheme;
     private final String credentials;
 

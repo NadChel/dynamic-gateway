@@ -29,13 +29,14 @@ import static org.mockito.Mockito.mock;
 @ContextConfiguration(classes = DynamicRouteLocatorComponentTestConfig.class)
 public class DynamicRouteLocatorComponentTest {
     @Autowired
-    List<EndpointRouteAssembler> routeProcessors;
+    List<EndpointRouteAssembler> routeAssemblers;
 
     @Test
-    void testWhenBuildingRoute_orderOfInjectedRouteProcessorsDoesntMatter() {
-        DynamicRouteLocator routeLocator = new DynamicRouteLocator(routeProcessors);
-        for (int i = 0; i < 10; i++) {
-            Collections.shuffle(routeProcessors);
+    void whenBuildingRoute_orderOfInjectedRouteProcessorsDoesntMatter() {
+        int reasonableNumberOfReshuffleAndCheckCycles = 10;
+        DynamicRouteLocator routeLocator = new DynamicRouteLocator(routeAssemblers);
+        for (int i = 0; i < reasonableNumberOfReshuffleAndCheckCycles; i++) {
+            Collections.shuffle(routeAssemblers);
             DocumentedEndpoint<?> endpoint = SwaggerEndpointStub.builder().path("/" + UUID.randomUUID()).build();
             DocumentedEndpointFoundEvent event = new DocumentedEndpointFoundEvent(endpoint, this);
             assertThatCode(() -> routeLocator.onDocumentedEndpointFoundEvent(event)).doesNotThrowAnyException();

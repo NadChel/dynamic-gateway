@@ -47,9 +47,9 @@ public class CircuitBreakerEndpointRouteAssemblerTest {
     GatewayMeta gatewayMeta;
 
     @Test
-    void circuitBreakerEndpointRouteProcessor_addsFilterProvidedByCircuitBreakerFactoryToRoute() {
+    void circuitBreakerEndpointRouteAssembler_addsExpectedFilterToRoute() {
         RouteAssemblerConfig routeAssemblerConfig = new RouteAssemblerConfig(gatewayMeta);
-        EndpointRouteAssembler circuitBreakerEndpointRouteProcessor =
+        EndpointRouteAssembler circuitBreakerEndpointRouteAssembler =
                 routeAssemblerConfig.circuitBreakerEndpointRouteAssembler(filterFactory);
         Route.AsyncBuilder routeBuilder = Route.async().id(UUID.randomUUID().toString());
 
@@ -59,13 +59,13 @@ public class CircuitBreakerEndpointRouteAssemblerTest {
         List<GatewayFilter> filters = RouteBuilderUtil.getFilters(routeBuilder);
         assumeThat(filters).isEmpty();
 
-        circuitBreakerEndpointRouteProcessor.process(routeBuilder, endpointMock);
+        circuitBreakerEndpointRouteAssembler.process(routeBuilder, endpointMock);
 
         assertThat(filters.size()).isEqualTo(1);
         GatewayFilter circuitBreakerFilter = filters.get(0);
 
         MockServerWebExchange exchange =
-                MockServerWebExchange.builder(MockServerHttpRequest.get("/").build()).build();
+                MockServerWebExchange.from(MockServerHttpRequest.get("/"));
         long marginOfErrorInMillis = 50;
         GatewayFilterChain slowChain = e ->
                 Mono.delay(TIMEOUT.plusMillis(marginOfErrorInMillis)).then(Mono.empty());

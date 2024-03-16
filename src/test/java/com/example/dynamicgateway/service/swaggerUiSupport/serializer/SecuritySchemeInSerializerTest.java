@@ -17,23 +17,16 @@ public class SecuritySchemeInSerializerTest {
     @SneakyThrows
     void testSerialize() {
         SecurityScheme.In securitySchemeIn = SecurityScheme.In.COOKIE;
-
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
         JsonGenerator jsonGenerator = JsonFactory.builder().build().createGenerator(outputStream);
-
         SecuritySchemeInJsonSerializer securitySchemeInSerializer = new SecuritySchemeInJsonSerializer();
 
         securitySchemeInSerializer.serialize(securitySchemeIn, jsonGenerator, null);
 
         jsonGenerator.close();
-
         String actualString = outputStream.toString();
-
         String expectedString = MessageFormat.format("\"{0}\"", securitySchemeIn.toString());
-
         assertThat(StringUtils.deleteWhitespace(actualString))
                 .isEqualTo(StringUtils.deleteWhitespace(expectedString));
     }
-
 }

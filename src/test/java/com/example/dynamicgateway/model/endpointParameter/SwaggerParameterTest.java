@@ -2,51 +2,59 @@ package com.example.dynamicgateway.model.endpointParameter;
 
 import io.swagger.v3.oas.models.parameters.Parameter;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.util.ReflectionUtils;
+
+import java.lang.reflect.Field;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 class SwaggerParameterTest {
     @Test
-    void ifNullStringPassed_setsWrappedParameterToDefaultInstance() {
+    void ifNullStringPassedToConstructor_setsWrappedParameterToDefaultInstance() {
         SwaggerParameter parameter = new SwaggerParameter((String) null);
         assertThat(parameter).extracting(this::unwrap).isNotNull();
         assertThat(parameter.isRequired()).isFalse();
     }
 
+    @SuppressWarnings("DataFlowIssue")
     private Parameter unwrap(SwaggerParameter swaggerParameter) {
-        return (Parameter) ReflectionTestUtils.getField(swaggerParameter, "nativeParameter");
+        Field nativeParameterField =
+                ReflectionUtils.findField(SwaggerParameter.class, "nativeParameter");
+        assumeThat(nativeParameterField).isNotNull();
+        nativeParameterField.setAccessible(true);
+        return (Parameter) ReflectionUtils.getField(nativeParameterField, swaggerParameter);
     }
 
     @Test
-    void ifNullStringPassed_parameterNameIsEmptyString() {
+    void ifNullStringPassedToConstructor_parameterNameIsEmptyString() {
         SwaggerParameter parameter = new SwaggerParameter((String) null);
         assertThat(parameter.getName()).isEmpty();
     }
 
     @Test
-    void ifNonNullStringPassed_wrappedParameterSetToPassedValue() {
+    void ifNonNullStringPassedToConstructor_wrappedParameterSetToPassedValue() {
         String paramName = "some-param";
         SwaggerParameter parameter = new SwaggerParameter(paramName);
         assertThat(parameter.getName()).isEqualTo(paramName);
     }
 
     @Test
-    void ifNonNullStringPassed_parameterIsConsideredNotRequired() {
+    void ifNonNullStringPassedToConstructor_parameterIsConsideredNotRequired() {
         String paramName = "some-param";
         SwaggerParameter parameter = new SwaggerParameter(paramName);
         assertThat(parameter.isRequired()).isEqualTo(false);
     }
 
     @Test
-    void ifNullNativeParameterPassed_setsWrappedParameterToDefaultInstance() {
+    void ifNullNativeParameterPassedToConstructor_setsWrappedParameterToDefaultInstance() {
         SwaggerParameter parameter = new SwaggerParameter((Parameter) null);
         assertThat(parameter).extracting(this::unwrap).isNotNull();
         assertThat(parameter.isRequired()).isFalse();
     }
 
     @Test
-    void ifNonNullNativeParameterPassed_setsWrappedParameterToPassedValue() {
+    void ifNonNullNativeParameterPassedToConstructor_setsWrappedParameterToPassedValue() {
         SwaggerParameter requiredParam = new SwaggerParameter(new Parameter().required(true));
         assertThat(requiredParam).extracting(this::unwrap).isNotNull();
         assertThat(requiredParam.isRequired()).isTrue();

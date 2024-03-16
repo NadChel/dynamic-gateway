@@ -7,7 +7,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 class SwaggerOpenApiParserTest {
     @Test
-    void testParse() {
+    void parse_delegatesToOpenAPIV3Parser() {
         SwaggerOpenApiParser swaggerOpenApiParser = new SwaggerOpenApiParser();
         OpenAPIV3Parser openAPIV3Parser = new OpenAPIV3Parser();
 

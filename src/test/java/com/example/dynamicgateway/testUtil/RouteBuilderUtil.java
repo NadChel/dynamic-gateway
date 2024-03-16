@@ -8,6 +8,9 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
 
+/**
+ * A test utility for extracting private attributes of {@link Route.AsyncBuilder} instances
+ */
 public class RouteBuilderUtil {
     @SuppressWarnings("unchecked")
     public static List<GatewayFilter> getFilters(Route.AsyncBuilder routeBuilder) {

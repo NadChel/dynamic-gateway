@@ -10,7 +10,7 @@ import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
 import reactor.test.StepVerifier;
 
 import javax.crypto.SecretKey;
@@ -25,15 +25,15 @@ class JwtBearerAuthorizationHeaderAuthenticationExtractorTest {
     private final JwtBearerAuthorizationHeaderAuthenticationExtractor extractor = new JwtBearerAuthorizationHeaderAuthenticationExtractor();
 
     @Test
-    void testTryExtractAuthentication_withValidToken() {
+    void tryExtractAuthentication_withValidToken_returnsExpectedAuthentication() {
         String principal = "mickey_m";
-        List<String> roles = List.of("user", "admin");
+        List<String> roleStrings = List.of("user", "admin");
 
         SecretKey key = Keys.hmacShaKeyFor(JWT.KEY.getBytes());
 
         String validToken = Jwts.builder()
                 .claim(JWT.SUB, principal)
-                .claim(JWT.ROLES, roles)
+                .claim(JWT.ROLES, roleStrings)
                 .setExpiration(Date.valueOf(LocalDate.now().plusYears(1)))
                 .signWith(key)
                 .compact();
@@ -43,7 +43,7 @@ class JwtBearerAuthorizationHeaderAuthenticationExtractorTest {
 
         UsernamePasswordAuthenticationToken expectedAuthentication =
                 UsernamePasswordAuthenticationToken.authenticated(principal, null,
-                        roles.stream().map(SimpleGrantedAuthority::new).toList());
+                        AuthorityUtils.createAuthorityList(roleStrings));
 
         StepVerifier.create(extractor.tryExtractAuthentication(exchange))
                 .expectNext(expectedAuthentication)
@@ -51,7 +51,7 @@ class JwtBearerAuthorizationHeaderAuthenticationExtractorTest {
     }
 
     @Test
-    void testTryExtractAuthentication_withExpiredToken() {
+    void tryExtractAuthentication_withExpiredToken_throwsAuthenticationException() {
         SecretKey key = Keys.hmacShaKeyFor(JWT.KEY.getBytes());
 
         String expiredToken = Jwts.builder()
@@ -59,10 +59,10 @@ class JwtBearerAuthorizationHeaderAuthenticationExtractorTest {
                 .signWith(key)
                 .compact();
 
-        assertTryExtractAuthenticationThrowsWithToken(expiredToken);
+        assertTryExtractAuthenticationThrowsAuthenticationExceptionWithToken(expiredToken);
     }
 
-    private void assertTryExtractAuthenticationThrowsWithToken(String invalidToken) {
+    private void assertTryExtractAuthenticationThrowsAuthenticationExceptionWithToken(String invalidToken) {
         MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/")
                 .header(HttpHeaders.AUTHORIZATION, AuthorizationHeader.BEARER_SPACE + invalidToken)
                 .build());
@@ -73,7 +73,7 @@ class JwtBearerAuthorizationHeaderAuthenticationExtractorTest {
     }
 
     @Test
-    void tryExtractAuthentication_withPhonySigningKey_throws() {
+    void tryExtractAuthentication_withPhonySigningKey_throwsAuthenticationException() {
         SecretKey phonyKey = Keys.hmacShaKeyFor(UUID.randomUUID().toString().getBytes());
 
         String jwtWithPhonyKey = Jwts.builder()
@@ -81,11 +81,11 @@ class JwtBearerAuthorizationHeaderAuthenticationExtractorTest {
                 .signWith(phonyKey)
                 .compact();
 
-        assertTryExtractAuthenticationThrowsWithToken(jwtWithPhonyKey);
+        assertTryExtractAuthenticationThrowsAuthenticationExceptionWithToken(jwtWithPhonyKey);
     }
 
     @Test
-    void tryExtractAuthentication_withMalformedToken_throws() {
+    void tryExtractAuthentication_withMalformedToken_throwsAuthenticationException() {
         SecretKey key = Keys.hmacShaKeyFor(JWT.KEY.getBytes());
 
         String malformedToken = Jwts.builder()
@@ -93,7 +93,7 @@ class JwtBearerAuthorizationHeaderAuthenticationExtractorTest {
                 .signWith(key)
                 .compact() + ".somebs";
 
-        assertTryExtractAuthenticationThrowsWithToken(malformedToken);
+        assertTryExtractAuthenticationThrowsAuthenticationExceptionWithToken(malformedToken);
     }
 
     @Test

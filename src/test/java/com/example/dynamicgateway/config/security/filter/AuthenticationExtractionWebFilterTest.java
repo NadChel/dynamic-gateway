@@ -16,7 +16,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.server.ServerWebExchange;
@@ -46,7 +46,7 @@ class AuthenticationExtractionWebFilterTest {
     private WebFilterChain chainMock;
 
     @Test
-    void testFilter_withNoAuthentication_exchangeFilteredFurther() {
+    void filter_withNoAuthentication_exchangeFilteredFurther() {
         ServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/"));
         given(authenticationExtractorMock.isSupportedSource(exchange)).willReturn(false);
         given(chainMock.filter(exchange)).willReturn(Mono.empty());
@@ -59,9 +59,11 @@ class AuthenticationExtractionWebFilterTest {
     }
 
     @Test
-    void testFilter_withValidToken_exchangeFilteredFurther() {
-        TestingAuthenticationToken token = new TestingAuthenticationToken("jack", "12345",
-                List.of(new SimpleGrantedAuthority("user")));
+    void filter_withValidToken_exchangeFilteredFurther() {
+        TestingAuthenticationToken token = new TestingAuthenticationToken(
+                "jack", "12345",
+                AuthorityUtils.createAuthorityList("user")
+        );
         ServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/"));
 
         given(authenticationExtractorMock.isSupportedSource(exchange)).willReturn(true);
@@ -77,23 +79,18 @@ class AuthenticationExtractionWebFilterTest {
     }
 
     @Test
-    void testFilter_withValidToken_withNoRoles_authenticationHasEmptyCollectionOfRoles() {
-        String sub = "mickey_m";
-        List<String> roles = List.of("user", "admin");
+    void filter_withValidToken_withRoles_authenticationInSecurityContextHolderMatchesExpectedParameters() {
         TestingAuthenticationToken authenticationToken = new TestingAuthenticationToken(
-                sub, null, roles.stream().map(SimpleGrantedAuthority::new).toList()
+                "mickey_m", null,
+                AuthorityUtils.createAuthorityList("user", "admin")
         );
 
-        assertAuthenticationInSecurityContextHolderCorrect(authenticationToken);
-    }
-
-    private void assertAuthenticationInSecurityContextHolderCorrect(Authentication token) {
         MockServerHttpRequest request = MockServerHttpRequest
                 .get("/")
                 .build();
         ServerWebExchange exchange = MockServerWebExchange.from(request);
         given(authenticationExtractorMock.isSupportedSource(exchange)).willReturn(true);
-        given(authenticationExtractorMock.tryExtractAuthentication(exchange)).willReturn(Mono.just(token));
+        given(authenticationExtractorMock.tryExtractAuthentication(exchange)).willReturn(Mono.just(authenticationToken));
 
         WebHandler handlerMock = mock(WebHandler.class);
         given(handlerMock.handle(exchange)).willReturn(Mono.empty());
@@ -101,12 +98,12 @@ class AuthenticationExtractionWebFilterTest {
         WebFilter authenticationAssertingFilter = (e, c) -> ReactiveSecurityContextHolder.getContext()
                 .map(SecurityContext::getAuthentication)
                 .switchIfEmpty(Mono.error(new AssertionError("No authentication")))
-                .filter(a -> isExpectedAuthentication(a, token.getPrincipal(), token.getAuthorities()))
+                .filter(a -> isExpectedAuthentication(a, ((Authentication) authenticationToken).getPrincipal(), ((Authentication) authenticationToken).getAuthorities()))
                 .switchIfEmpty(Mono.error(new AssertionError("Authentication doesn't match expected parameters")))
                 .flatMap(a -> c.filter(e));
 
-        WebFilterChain webFilterChain = new DefaultWebFilterChain(handlerMock, List.of(
-                filter, authenticationAssertingFilter));
+        WebFilterChain webFilterChain = new DefaultWebFilterChain(handlerMock,
+                List.of(filter, authenticationAssertingFilter));
 
         StepVerifier.create(webFilterChain.filter(exchange))
                 .verifyComplete();
@@ -121,24 +118,15 @@ class AuthenticationExtractionWebFilterTest {
     }
 
     @Test
-    void testFilter_withValidToken_withRoles_authenticationInSecurityContextHolderMatchesExpectedParameters() {
-        String sub = "scrooge_m";
-        TestingAuthenticationToken authenticationToken = new TestingAuthenticationToken(
-                sub, null, (List<? extends GrantedAuthority>) null
-        );
-
-        assertAuthenticationInSecurityContextHolderCorrect(authenticationToken);
-    }
-
-    @Test
-    void testFilter_ifBadCredentialsThrown_doesntFilter_returns401responseWithNonBlankBody() {
+    void filter_ifBadCredentialsThrown_doesntFilter_returns401responseWithNonBlankBody() {
         MockServerHttpRequest request = MockServerHttpRequest
                 .get("/")
                 .build();
         ServerWebExchange exchange = MockServerWebExchange.from(request);
 
         given(authenticationExtractorMock.isSupportedSource(exchange)).willReturn(true);
-        given(authenticationExtractorMock.tryExtractAuthentication(exchange)).willThrow(new BadCredentialsException("Invalid token"));
+        given(authenticationExtractorMock.tryExtractAuthentication(exchange))
+                .willThrow(new BadCredentialsException("Invalid token"));
 
         StepVerifier.create(filter.filter(exchange, chainMock))
                 .expectComplete()

@@ -2,6 +2,7 @@ package com.example.dynamicgateway.service.applicationDocClient;
 
 import com.example.dynamicgateway.model.discoverableApplication.DiscoverableApplication;
 import com.example.dynamicgateway.service.swaggerDocParser.OpenApiParser;
+import com.example.dynamicgateway.service.swaggerDocParser.SwaggerOpenApiParser;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
@@ -26,7 +27,7 @@ class SwaggerClientTest {
 
         String serializedParseResult = "{ let's imagine: it's a serialized parse result }";
         SwaggerParseResult parseResult = mock(SwaggerParseResult.class);
-        OpenApiParser parserMock = mock(OpenApiParser.class);
+        OpenApiParser<SwaggerParseResult> parserMock = mock(SwaggerOpenApiParser.class);
         given(parserMock.parse(serializedParseResult)).willReturn(parseResult);
 
         WebClient webClientMock = mock(WebClient.class, RETURNS_DEEP_STUBS);
@@ -54,7 +55,7 @@ class SwaggerClientTest {
     }
 
     @Test
-    void findApplicationDoc_ifDocUnavailable_returnsEmptyMono() {
+    void findApplicationDoc_ifDocNotFound_returnsEmptyMono() {
         String scheme = "test://";
         String appName = "test-application";
         String docPath = "/doc";
@@ -79,8 +80,8 @@ class SwaggerClientTest {
 
         DiscoverableApplication<?> discoverableApplicationMock = mock(DiscoverableApplication.class);
         given(discoverableApplicationMock.getName()).willReturn(appName);
-        Mono<SwaggerParseResult> applicationDoc = swaggerClient.findApplicationDoc(discoverableApplicationMock);
 
+        Mono<SwaggerParseResult> applicationDoc = swaggerClient.findApplicationDoc(discoverableApplicationMock);
         StepVerifier.create(applicationDoc)
                 .verifyComplete();
     }

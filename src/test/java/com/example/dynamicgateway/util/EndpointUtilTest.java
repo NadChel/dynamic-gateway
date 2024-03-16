@@ -20,7 +20,7 @@ class EndpointUtilTest {
     GatewayMeta gatewayMetaMock;
 
     @Test
-    void testWthRemovedPrefix_remainsSame_ifNoIgnoredPrefixesPassed() {
+    void pathWithRemovedPrefix_returnsUnchangedPath_ifNoIgnoredPrefixesProvided() {
         String path = "/auth/test-path";
         DocumentedEndpoint<?> endpoint = SwaggerEndpointStub.builder().path(path).build();
 
@@ -31,7 +31,7 @@ class EndpointUtilTest {
     }
 
     @Test
-    void testWthRemovedPrefix_returnsPathWithoutPrefix_ifStartsWithIgnoredPrefix() {
+    void pathWithRemovedPrefix_returnsPathWithoutPrefix_ifStartsWithIgnoredPrefix() {
         String prefix = "/auth";
         String path = prefix + "/test-path";
         DocumentedEndpoint<?> endpoint = SwaggerEndpointStub.builder().path(path).build();
@@ -45,7 +45,7 @@ class EndpointUtilTest {
     }
 
     @Test
-    void testWthRemovedPrefix_ifMultiplePrefixesMatch_returnsPathWithoutLongestIgnoredPrefix() {
+    void pathWithRemovedPrefix_ifMultiplePrefixesMatch_returnsPathWithoutLongestIgnoredPrefix() {
         String prefix = "/auth";
         String longerPrefix = "/authorized";
         String path = longerPrefix + "/test-path";
@@ -61,7 +61,7 @@ class EndpointUtilTest {
     }
 
     @Test
-    void testWthRemovedPrefix_ifIgnoredPrefixSubstringOfFirstPathFragment_returnsUnchangedPath() {
+    void pathWithRemovedPrefix_ifIgnoredPrefixSubstringOfFirstPathFragment_returnsUnchangedPath() {
         String prefix = "/auth";
         String path = "/authorized/test-path";
 
@@ -74,7 +74,7 @@ class EndpointUtilTest {
     }
 
     @Test
-    void testExtractPrefix_returnsEmptyString_ifNoPrefixesPassed() {
+    void pathPrefix_ifNoPrefixesPassed_returnsEmptyString() {
         String prefix = "/auth";
         String path = prefix + "/test-path";
 
@@ -87,7 +87,7 @@ class EndpointUtilTest {
     }
 
     @Test
-    void testExtractPrefix_returnsPrefix_ifPrefixContainedInPassedCollection() {
+    void pathPrefix_ifPrefixContainedInReturnedCollectionOfIgnoredPrefixes_returnsMatchingPrefix() {
         String prefix = "/auth";
         String path = prefix + "/test-path";
 
@@ -100,7 +100,7 @@ class EndpointUtilTest {
     }
 
     @Test
-    void testExtractPrefix_returnsLongestPrefix_ifMultiplePrefixesMatch() {
+    void pathPrefix_ifMultiplePrefixesMatch_returnsLongestMatchingPrefix() {
         String prefix = "/auth";
         String longerPrefix = "/authorized";
         String path = longerPrefix + "/test-path";
@@ -114,7 +114,7 @@ class EndpointUtilTest {
     }
 
     @Test
-    void testExtractPrefix_ifIgnoredPrefixSubstringOfPathFragment_returnsEmptyString() {
+    void pathPrefix_ifIgnoredPrefixSubstringOfPathFragment_returnsEmptyString() {
         String prefix = "/auth";
         String path = "/authorized/test-path";
 

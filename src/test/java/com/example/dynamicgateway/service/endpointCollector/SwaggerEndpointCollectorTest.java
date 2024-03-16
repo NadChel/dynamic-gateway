@@ -224,14 +224,16 @@ class SwaggerEndpointCollectorTest {
 
         collector = getCollectorWithNullFields();
 
-        Stream.concat(resilientEndpoints.stream(), fragileEndpoints.stream()).forEach(this::addEndpoint);
+        List<SwaggerEndpoint> allEndpoints = Stream.concat(resilientEndpoints.stream(),
+                fragileEndpoints.stream()).toList();
+        allEndpoints.forEach(this::addEndpoint);
+        assumeThat(collector.getCollectedEndpoints()).containsExactlyInAnyOrderElementsOf(allEndpoints);
 
         DiscoverableApplicationLostEvent appLostEvent = new DiscoverableApplicationLostEvent(fragileApp, this);
         collector.onDiscoverableApplicationLostEvent(appLostEvent);
 
         Set<SwaggerEndpoint> retainedEndpoints = collector.getCollectedEndpoints();
         assertThat(retainedEndpoints).containsExactlyInAnyOrderElementsOf(resilientEndpoints);
-        assertThat(retainedEndpoints).doesNotContainAnyElementsOf(fragileEndpoints);
     }
 
     @Test

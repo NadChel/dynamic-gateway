@@ -23,7 +23,7 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.given;
 
 class ReplacingParamInitializerTest {
-    private final List<Integer> testParamValues = List.of(1, 2, 3);
+    private final List<Integer> paramValues = List.of(1, 2, 3);
     private final Route.AsyncBuilder routeBuilder = Route.async();
     private final ParamInitializer paramInitializer = new ReplacingParamInitializer() {
         @Override
@@ -33,7 +33,7 @@ class ReplacingParamInitializerTest {
 
         @Override
         public Flux<?> getParamValues(ServerWebExchange exchange) {
-            return Flux.fromIterable(testParamValues);
+            return Flux.fromIterable(paramValues);
         }
     };
 
@@ -73,8 +73,7 @@ class ReplacingParamInitializerTest {
         given(chainMock.filter(any())).willReturn(Mono.empty());
 
         StepVerifier.create(filter.filter(exchangeMock, chainMock))
-                .expectComplete()
-                .verify();
+                .verifyComplete();
 
         then(chainMock).should().filter(exchangeCaptor.capture());
 
@@ -82,7 +81,7 @@ class ReplacingParamInitializerTest {
                 .getRequest()
                 .getQueryParams()
                 .get(paramInitializer.getParamName());
-        List<String> expectedParamValues = testParamValues.stream()
+        List<String> expectedParamValues = paramValues.stream()
                 .map(String::valueOf)
                 .toList();
         assertThat(actualParamValues)

@@ -21,7 +21,7 @@ class FallbackControllerTest {
     WebTestClient testClient;
 
     @Test
-    void testGetFallback() {
+    void getFallback_returnsExpectedFallback() {
         String appName = "some-app";
         String fallbackMessage = testClient
                 .get()

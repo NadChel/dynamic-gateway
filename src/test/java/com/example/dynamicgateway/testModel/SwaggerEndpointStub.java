@@ -10,6 +10,9 @@ import com.netflix.discovery.shared.Application;
 import lombok.Getter;
 import org.springframework.http.HttpMethod;
 
+/**
+ * A {@link SwaggerEndpoint} extension mainly designed for tests
+ */
 public class SwaggerEndpointStub extends SwaggerEndpoint {
     private SwaggerEndpointStub(Builder builder) {
         super(builder.getDeclaringApp(), builder.getDetailsBuilder().build());
@@ -26,7 +29,8 @@ public class SwaggerEndpointStub extends SwaggerEndpoint {
 
         private Builder() {
             Application eurekaApplication = new Application("test-app");
-            DiscoverableApplication<Application> discoverableApplication = new EurekaDiscoverableApplication(eurekaApplication);
+            DiscoverableApplication<Application> discoverableApplication =
+                    new EurekaDiscoverableApplication(eurekaApplication);
             declaringApp = new SwaggerApplication(discoverableApplication, SwaggerParseResultGenerator.empty());
         }
 

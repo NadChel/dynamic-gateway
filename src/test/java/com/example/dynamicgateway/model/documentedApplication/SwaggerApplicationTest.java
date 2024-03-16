@@ -15,7 +15,7 @@ import org.springframework.http.HttpMethod;
 import java.text.MessageFormat;
 import java.util.List;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -48,7 +48,7 @@ class SwaggerApplicationTest {
         SwaggerApplication swaggerApplication = new SwaggerApplication(discoverableApp, parseResult);
 
         assertThat(swaggerApplication.getDescription()).isEqualTo(description);
-        assertThat(swaggerApplication.getEndpoints()).asList().containsExactlyInAnyOrderElementsOf(endpoints);
+        assertThat(swaggerApplication.getEndpoints()).containsExactlyInAnyOrderElementsOf(endpoints);
     }
 
     @Test
@@ -84,7 +84,7 @@ class SwaggerApplicationTest {
         given(discoverableAppMock.getName()).willReturn(appName);
         SwaggerApplication swaggerApplication = new SwaggerApplication(discoverableAppMock,
                 SwaggerParseResultGenerator.empty());
-        assertThat(swaggerApplication.toString()).isEqualTo(MessageFormat.format("{0} {1}",
-                SwaggerApplication.class.getSimpleName(), appName));
+        assertThat(swaggerApplication.toString()).isEqualTo(MessageFormat.format(
+                "{0} {1}", SwaggerApplication.class.getSimpleName(), appName));
     }
 }

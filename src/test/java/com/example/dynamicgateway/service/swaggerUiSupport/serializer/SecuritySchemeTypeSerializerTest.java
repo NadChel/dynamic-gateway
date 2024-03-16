@@ -17,21 +17,15 @@ public class SecuritySchemeTypeSerializerTest {
     @SneakyThrows
     void testSerialize() {
         SecurityScheme.Type securitySchemeType = SecurityScheme.Type.APIKEY;
-
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-
         JsonGenerator jsonGenerator = JsonFactory.builder().build().createGenerator(outputStream);
-
         SecuritySchemeTypeJsonSerializer securitySchemeTypeSerializer = new SecuritySchemeTypeJsonSerializer();
 
         securitySchemeTypeSerializer.serialize(securitySchemeType, jsonGenerator, null);
 
         jsonGenerator.close();
-
         String actualString = outputStream.toString();
-
         String expectedString = MessageFormat.format("\"{0}\"", securitySchemeType.toString());
-
         assertThat(StringUtils.deleteWhitespace(actualString))
                 .isEqualTo(StringUtils.deleteWhitespace(expectedString));
     }

@@ -7,7 +7,7 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 /**
- * Object that tries to build an {@link Authentication} from a provided {@link ServerWebExchange}.
+ * Object that tries to build an {@link Authentication} from a provided {@link ServerWebExchange}
  * <p>
  * Implementations <b>should not</b> attempt to perform any authentication and are instead expected
  * to return authentication claims as is
@@ -21,9 +21,9 @@ public interface AuthenticationExtractor {
      * Implementations are not expected to override this method since it performs exception translation.
      * Instead, they should override {@link AuthenticationExtractor#doTryExtractAuthentication(ServerWebExchange)}
      *
-     * @param exchange {@code ServerWebExchange} that may contain extractable authentication claims
-     * @return {@code Mono} of an extracted {@code Authentication} or {@code Mono} of {@link AuthenticationException}
-     * if extraction fails
+     * @param exchange a {@code ServerWebExchange} that may contain extractable authentication claims
+     * @return a {@code Mono} of an extracted {@code Authentication} or a {@code Mono} of an
+     * {@link AuthenticationException} if extraction fails
      */
     default Mono<Authentication> tryExtractAuthentication(ServerWebExchange exchange) {
         return doTryExtractAuthentication(exchange)
@@ -45,7 +45,6 @@ public interface AuthenticationExtractor {
     /**
      * Tests if this {@code AuthenticationExtractor} <em>may</em> extract an {@code Authentication} from
      * the provided {@code ServerWebExchange}
-     *
      * <p>
      * <b>If this method returns {@code true}, it does not guarantee that an {@code Authentication} object will be extracted from the exchange.</b>
      * Instead, it only means that the likelihood of a successful extraction is more than 0%.

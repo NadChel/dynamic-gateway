@@ -32,49 +32,49 @@ class UriValidatorTest {
 
     @ParameterizedTest
     @MethodSource("validPaths")
-    void testIsValidPath_withValidPath(String validPath) {
+    void isValidPath_withValidPath_returnsTrue(String validPath) {
         assertThat(UriValidator.isValidPath(validPath)).isTrue();
     }
 
     @ParameterizedTest
     @MethodSource("invalidPaths")
-    void testIsValidPath_withInvalidPath(String invalidPath) {
+    void isValidPath_withInvalidPath_returnsFalse(String invalidPath) {
         assertThat(UriValidator.isValidPath(invalidPath)).isFalse();
     }
 
     @ParameterizedTest
     @MethodSource("validPaths")
-    void requireValidPath_withValidPath(String validPath) {
+    void requireValidPath_withValidPath_doesnThrow(String validPath) {
         assertThatCode(() -> UriValidator.requireValidPath(validPath)).doesNotThrowAnyException();
     }
 
     @ParameterizedTest
     @MethodSource("invalidPaths")
-    void requireValidPath_withInvalidPath(String invalidPath) {
+    void requireValidPath_withInvalidPath_throwsRuntimeException(String invalidPath) {
         assertThatThrownBy(() -> UriValidator.requireValidPath(invalidPath)).isInstanceOf(RuntimeException.class);
     }
 
     @ParameterizedTest
     @MethodSource("validSchemes")
-    void isValidScheme_withValidScheme(String validScheme) {
+    void isValidScheme_withValidScheme_returnsTrue(String validScheme) {
         assertThat(UriValidator.isValidScheme(validScheme)).isTrue();
     }
 
     @ParameterizedTest
     @MethodSource("invalidSchemes")
-    void isValidScheme_withInvalidScheme(String invalidScheme) {
+    void isValidScheme_withInvalidScheme_returnsFalse(String invalidScheme) {
         assertThat(UriValidator.isValidScheme(invalidScheme)).isFalse();
     }
 
     @ParameterizedTest
     @MethodSource("validSchemes")
-    void requireValidScheme_withValidScheme(String validScheme) {
+    void requireValidScheme_withValidScheme_doesntThrow(String validScheme) {
         assertThatCode(() -> UriValidator.requireValidScheme(validScheme)).doesNotThrowAnyException();
     }
 
     @ParameterizedTest
     @MethodSource("invalidSchemes")
-    void requireValidScheme_withInvalidScheme(String invalidScheme) {
+    void requireValidScheme_withInvalidScheme_throwsRuntimeException(String invalidScheme) {
         assertThatThrownBy(() -> UriValidator.requireValidScheme(invalidScheme)).isInstanceOf(RuntimeException.class);
     }
 }

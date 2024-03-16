@@ -51,7 +51,7 @@ class EurekaApplicationCollectorTest {
     private ApplicationEventPublisher eventPublisherMock;
 
     @Test
-    void whenCreated_hasNoApps() {
+    void whenCreated_collectorHasNoApps() {
         EurekaApplicationCollector collector =
                 new EurekaApplicationCollector(eurekaClientMock, Collections.emptyList(), eventPublisherMock);
 
@@ -65,7 +65,8 @@ class EurekaApplicationCollectorTest {
 
     @Test
     void onEurekaEventsThatAreNotCacheRefreshedEvents_passedInListenerDoesntRethrowThemViaSpringEventPublisher() {
-        StatusChangeEvent notCacheRefreshedEvent = new StatusChangeEvent(InstanceInfo.InstanceStatus.UP,
+        StatusChangeEvent notCacheRefreshedEvent = new StatusChangeEvent(
+                InstanceInfo.InstanceStatus.UP,
                 InstanceInfo.InstanceStatus.DOWN);
         assertEventPublished(notCacheRefreshedEvent, never());
     }
@@ -135,16 +136,16 @@ class EurekaApplicationCollectorTest {
     }
 
     @Test
-    void onApplicationReadyEvent_ignoresAlreadyCachedAps() {
-        assertKnownAppsIgnoredOn(EurekaApplicationCollector::onApplicationReadyEvent);
+    void onApplicationReadyEvent_ignoresAlreadyCollectedAps() {
+        assertAlreadyCollectedAppsAreNotDuplicatedOn(EurekaApplicationCollector::onApplicationReadyEvent);
     }
 
     @Test
-    void onCacheRefreshedEvent_ignoresAlreadyCachedAps() {
-        assertKnownAppsIgnoredOn(EurekaApplicationCollector::onCacheRefreshedEvent);
+    void onCacheRefreshedEvent_ignoresAlreadyCollectedAps() {
+        assertAlreadyCollectedAppsAreNotDuplicatedOn(EurekaApplicationCollector::onCacheRefreshedEvent);
     }
 
-    private void assertKnownAppsIgnoredOn(Consumer<EurekaApplicationCollector> refreshingMethod) {
+    private void assertAlreadyCollectedAppsAreNotDuplicatedOn(Consumer<EurekaApplicationCollector> refreshingMethod) {
         String appName = "some-app";
         Application someApp = new Application(appName);
         EurekaDiscoverableApplication discoverableSomeApp = new EurekaDiscoverableApplication(someApp);
@@ -164,6 +165,24 @@ class EurekaApplicationCollectorTest {
         assertThat(collector.getCollectedApplications()).hasSize(1);
         assertThat(collector.getCollectedApplications()).allMatch(app -> app.getName().equals(appName));
         then(eventPublisherMock).shouldHaveNoInteractions();
+    }
+
+    @SuppressWarnings("unchecked")
+    @SneakyThrows
+    private static void addApp(EurekaApplicationCollector collector, EurekaDiscoverableApplication app) {
+        String applicationFieldName = "discoveredApplications";
+        Field applicationsField = EurekaApplicationCollector.class
+                .getDeclaredField(applicationFieldName);
+        assumeThat(applicationsField)
+                .withFailMessage(MessageFormat.format(
+                        "No such field in {0}: {1}",
+                        EurekaApplicationCollector.class.getSimpleName(),
+                        applicationFieldName))
+                .isNotNull();
+        applicationsField.setAccessible(true);
+        Set<EurekaDiscoverableApplication> applications =
+                (Set<EurekaDiscoverableApplication>) applicationsField.get(collector);
+        applications.add(app);
     }
 
     @Test
@@ -198,23 +217,5 @@ class EurekaApplicationCollectorTest {
                 .extracting(DiscoverableApplicationLostEvent::getLostApp)
                 .extracting(DiscoverableApplication::getName)
                 .isEqualTo(appName);
-    }
-
-    @SuppressWarnings("unchecked")
-    @SneakyThrows
-    private static void addApp(EurekaApplicationCollector collector, EurekaDiscoverableApplication app) {
-        String applicationFieldName = "discoveredApplications";
-        Field applicationsField = EurekaApplicationCollector.class
-                .getDeclaredField(applicationFieldName);
-        assumeThat(applicationsField)
-                .withFailMessage(MessageFormat.format(
-                        "No such field in {0}: {1}",
-                        EurekaApplicationCollector.class.getSimpleName(),
-                        applicationFieldName))
-                .isNotNull();
-        applicationsField.setAccessible(true);
-        Set<EurekaDiscoverableApplication> applications =
-                (Set<EurekaDiscoverableApplication>) applicationsField.get(collector);
-        applications.add(app);
     }
 }

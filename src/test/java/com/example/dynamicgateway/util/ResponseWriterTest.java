@@ -13,15 +13,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ResponseWriterTest {
     @Test
-    void testWriteUnauthorizedResponse() {
-        MockServerWebExchange exchange = MockServerWebExchange.builder(MockServerHttpRequest.get("/")).build();
-        Throwable exception = new AuthenticationException("Bad authentication request!");
-        StepVerifier.create(ResponseWriter.writeUnauthorizedResponse(exchange, exception))
+    void writeUnauthorizedResponse_sets401status_writesDetailMessageToBody_andReturnsEmptyMono() {
+        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/"));
+        Throwable throwable = new AuthenticationException("Bad authentication request!");
+        StepVerifier.create(ResponseWriter.writeUnauthorizedResponse(exchange, throwable))
                 .verifyComplete();
         MockServerHttpResponse response = exchange.getResponse();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         StepVerifier.create(response.getBodyAsString())
-                .expectNext(exception.getMessage())
+                .expectNext(throwable.getMessage())
                 .verifyComplete();
     }
 }

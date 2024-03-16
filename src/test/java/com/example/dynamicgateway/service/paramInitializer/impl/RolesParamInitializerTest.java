@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -23,11 +23,8 @@ class RolesParamInitializerTest {
     private final RolesParamInitializer initializer = new RolesParamInitializer();
 
     @Test
-    void testExtractValuesFromAuthentication() {
-        List<GrantedAuthority> roles = List.of(
-                new SimpleGrantedAuthority("user"),
-                new SimpleGrantedAuthority("admin")
-        );
+    void extractValuesFromAuthentication_returnsExpectedRoles() {
+        List<GrantedAuthority> roles = AuthorityUtils.createAuthorityList("user", "admin");
         Authentication authenticationMock = mock(Authentication.class);
         willReturn(roles).given(authenticationMock).getAuthorities();
 
@@ -38,12 +35,8 @@ class RolesParamInitializerTest {
     }
 
     @Test
-    void testGetParamValues() {
-        String userString = "user", admingString = "admin";
-        List<GrantedAuthority> roles = List.of(
-                new SimpleGrantedAuthority(userString),
-                new SimpleGrantedAuthority(admingString)
-        );
+    void getParamValues_returnsFluxOfExpectedRoles() {
+        List<GrantedAuthority> roles = AuthorityUtils.createAuthorityList("user", "admin");
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                 null, null, roles
         );

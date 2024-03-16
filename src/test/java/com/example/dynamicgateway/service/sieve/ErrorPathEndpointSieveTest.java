@@ -35,7 +35,8 @@ class ErrorPathEndpointSieveTest {
         given(gatewayMetaMock.getIgnoredPatterns()).willReturn(Collections.emptyList());
 
         errorPathEndpointSieve = endpointSieveConfig.errorPathEndpointSieve(gatewayMetaMock, antPathMatcherMock);
-        for (int i = 0; i < 20; i++) {
+        int reasonableNumberOfRandomEndpoints = 20;
+        for (int i = 0; i < reasonableNumberOfRandomEndpoints; i++) {
             UUID uuid = UUID.randomUUID();
             SwaggerEndpoint endpointToKeep = SwaggerEndpointStub.builder().path("/" + uuid).build();
             assertThat(errorPathEndpointSieve.isAllowed(endpointToKeep)).isTrue();

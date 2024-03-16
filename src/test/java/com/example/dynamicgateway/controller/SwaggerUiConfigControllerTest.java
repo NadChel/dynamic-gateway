@@ -30,7 +30,7 @@ class SwaggerUiConfigControllerTest {
     String configUrl;
 
     @Test
-    void testGetConfig() {
+    void getConfig_returnsExpectedSwaggerUiConfig() {
         SwaggerApplication application1 = mock(SwaggerApplication.class);
         SwaggerApplication application2 = mock(SwaggerApplication.class);
         given(application1.getName()).willReturn("app-one");

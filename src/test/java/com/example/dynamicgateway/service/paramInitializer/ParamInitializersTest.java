@@ -12,7 +12,7 @@ import static org.mockito.BDDMockito.given;
 
 class ParamInitializersTest {
     @Test
-    void findInitializerForParam_withSupportedParam() {
+    void findInitializerForParam_withSupportedParam_findsInitializer() {
         ParamInitializer paramOneInitializerMock = mock(ParamInitializer.class);
         given(paramOneInitializerMock.getParamName()).willReturn("paramOne");
 
@@ -33,22 +33,23 @@ class ParamInitializersTest {
     }
 
     @Test
-    void findInitializerForParam_withNonSupportedParam() {
+    void findInitializerForParam_withNonSupportedParam_returnsEmptyOptional() {
         ParamInitializer paramOneInitializerMock = mock(ParamInitializer.class);
         given(paramOneInitializerMock.getParamName()).willReturn("paramOne");
 
         ParamInitializer paramTwoInitializerMock = mock(ParamInitializer.class);
         given(paramTwoInitializerMock.getParamName()).willReturn("paramTwo");
 
-        List<ParamInitializer> testParamInitializers = List.of(
+        List<ParamInitializer> paramInitializers = List.of(
                 paramOneInitializerMock, paramTwoInitializerMock
         );
 
-        EndpointParameter paramOneMock = mock(EndpointParameter.class);
-        given(paramOneMock.getName()).willReturn("paramThree");
+        EndpointParameter nonSupportedParamMock = mock(EndpointParameter.class);
+        given(nonSupportedParamMock.getName()).willReturn("paramThree");
 
-        ParamInitializers paramInitializers = new ParamInitializers(testParamInitializers);
-        Optional<ParamInitializer> initializerForParam = paramInitializers.findInitializerForParam(paramOneMock);
+        ParamInitializers paramInitializersComposite = new ParamInitializers(paramInitializers);
+        Optional<ParamInitializer> initializerForParam =
+                paramInitializersComposite.findInitializerForParam(nonSupportedParamMock);
         assertThat(initializerForParam).isNotPresent();
     }
 }

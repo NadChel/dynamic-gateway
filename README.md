@@ -32,7 +32,7 @@ Here is an overview of properties specific to this application
 * `gateway.ignoredPatterns` – a list of Ant path patterns which specifies endpoints that shouldn't be mapped to this Gateway's routes. For example, if a service exposes endpoints `GET /example` and `GET /error`, and the list of ignored patterns includes `/error/**`, only one Route will be built, the one that routes to `GET /example`. *Defaults to an empty unmodifiable list*
 
 
-* `gateway.ignoredPrefixes` – a list of endpoint prefixes that should be ignored when building routes. For example, if the list includes `/auth`, and the endpoint `GET /auth/example` was discovered, the route `GET <versionPrefix>/example` will be built (not `GET <versionPrefix>/auth/example`). *Defaults to an empty unmodifiable list*
+* `gateway.ignoredPrefixes` – a list of endpoint prefixes that should be ignored when building routes. For example, if the list includes `/auth`, and the endpoint `GET /auth/example` was discovered, the route `GET <versionPrefix>/example` will be built (not `GET <versionPrefix>/auth/example`). Each item on the list **must be** a single path segment prepended by a forward slash. Prefixes that include more than one segment, for example `/segment-one/segment-two`, are not guaranteed to be taken into account at all. *Defaults to an empty unmodifiable list*
 
 
 * `gateway.servers` – a list of this Gateway's servers. This property is mainly for Swagger UI's dropdown menu.  *Defaults to a list of `http://localhost:{server-port}`*

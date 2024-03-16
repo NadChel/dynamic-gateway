@@ -3,9 +3,12 @@ package com.example.dynamicgateway.model.endpointDetails;
 import com.example.dynamicgateway.model.endpointRequestBody.SwaggerRequestBody;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.util.ReflectionUtils;
+
+import java.lang.reflect.Field;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 class SwaggerEndpointDetailsTest {
     @Test
@@ -46,7 +49,12 @@ class SwaggerEndpointDetailsTest {
                 .isSameAs(requestBody);
     }
 
+    @SuppressWarnings("DataFlowIssue")
     private RequestBody unwrap(SwaggerRequestBody requestBody) {
-        return (RequestBody) ReflectionTestUtils.getField(requestBody, "nativeRequestBody");
+        Field nativeRequestBodyField =
+                ReflectionUtils.findField(SwaggerRequestBody.class, "nativeRequestBody");
+        assumeThat(nativeRequestBodyField).isNotNull();
+        nativeRequestBodyField.setAccessible(true);
+        return (RequestBody) ReflectionUtils.getField(nativeRequestBodyField, requestBody);
     }
 }

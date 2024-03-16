@@ -26,7 +26,7 @@ class ClonerTest {
     }
 
     @Test
-    void returnsDeepCopy_throwsJsonProcessingException_onInvalidObject() {
+    void deepCopy_throwsJsonProcessingException_onInvalidObject() {
         SomeClassWithNoExposedCreationMechanism invalidObject = new SomeClassWithNoExposedCreationMechanism();
         assertThatThrownBy(() -> Cloner.deepCopy(invalidObject, SomeClassWithNoExposedCreationMechanism.class))
                 .isInstanceOf(JsonProcessingException.class);

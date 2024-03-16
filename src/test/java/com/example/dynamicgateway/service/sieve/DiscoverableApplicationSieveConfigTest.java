@@ -12,7 +12,7 @@ import static org.mockito.Mockito.mock;
 
 class DiscoverableApplicationSieveConfigTest {
     @Test
-    void selfExclusionDiscoverableApplicationSieve() {
+    void selfExclusionDiscoverableApplicationSieve_excludesThisApp() {
         String thisAppName = "gateway-app";
         EurekaClient eurekaClientMock = mock(EurekaClient.class, RETURNS_DEEP_STUBS);
         given(eurekaClientMock.getApplicationInfoManager().getInfo().getAppName()).willReturn(thisAppName);

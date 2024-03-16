@@ -19,7 +19,7 @@ class PrincipalParamInitializerTest {
     private final String principalName = "mickey";
 
     @Test
-    void testExtractValuesFromAuthentication() {
+    void extractValuesFromAuthentication_returnsExpectedPrincipal() {
         Authentication authenticationMock = mock(Authentication.class);
         given(authenticationMock.getName()).willReturn(principalName);
 
@@ -30,8 +30,9 @@ class PrincipalParamInitializerTest {
     }
 
     @Test
-    void testGetParamValues() {
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(principalName, null);
+    void getParamValues_returnsFluxOfExpectedPrincipal() {
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(principalName, null);
         ServerWebExchange exchangeMock = mock(ServerWebExchange.class);
         given(exchangeMock.getPrincipal()).willReturn(Mono.just(authentication));
 
@@ -43,7 +44,6 @@ class PrincipalParamInitializerTest {
 
         StepVerifier.create(initializer.getParamValues(exchangeMock).map(String::valueOf))
                 .expectNext(principalName)
-                .expectComplete()
-                .verify();
+                .verifyComplete();
     }
 }

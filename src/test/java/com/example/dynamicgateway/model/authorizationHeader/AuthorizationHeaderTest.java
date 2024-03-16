@@ -27,7 +27,8 @@ class AuthorizationHeaderTest {
     void fromString_forNonNullInput_splitsStringIntoSchemeAndCredentials() {
         String scheme = "basic";
         String credentials = "12345";
-        AuthorizationHeader header = AuthorizationHeader.fromString(MessageFormat.format("{0} {1}", scheme, credentials));
+        AuthorizationHeader header = AuthorizationHeader.fromString(
+                MessageFormat.format("{0} {1}", scheme, credentials));
         assertSoftly(soft -> {
             soft.assertThat(header.getScheme()).isEqualTo(scheme);
             soft.assertThat(header.getCredentials()).isEqualTo(credentials);
@@ -62,7 +63,7 @@ class AuthorizationHeaderTest {
     }
 
     @Test
-    void toString_eventIfStringPassedIntoConstructorContainedExtraSpaces_returnsSchemeOneSpaceCredentials() {
+    void toString_evenIfStringPassedIntoConstructorContainedExtraSpaces_returnsSchemePlusOneSpacePlusCredentials() {
         String credentials = "12345";
         String spaces = "            ";
         AuthorizationHeader authorizationHeader = AuthorizationHeader.fromString(

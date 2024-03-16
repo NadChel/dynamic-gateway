@@ -7,25 +7,25 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class SwaggerRequestBodyTest {
     @Test
-    void ifNullRequestBodyPassed_isRequiredReturnsFalse() {
+    void ifNullRequestBodyPassedToConstructor_isRequiredReturnsFalse() {
         SwaggerRequestBody requestBody = new SwaggerRequestBody(null);
         assertThat(requestBody.isRequired()).isFalse();
     }
 
     @Test
-    void ifDefaultRequestBodyPassed_isRequiredReturnsFalse() {
+    void ifDefaultRequestBodyPassedToConstructor_isRequiredReturnsFalse() {
         SwaggerRequestBody requestBody = new SwaggerRequestBody(new RequestBody());
         assertThat(requestBody.isRequired()).isFalse();
     }
 
     @Test
-    void ifNonRequiredRequestBodyPassed_isRequiredReturnsFalse() {
+    void ifNonRequiredRequestBodyPassedToConstructor_isRequiredReturnsFalse() {
         SwaggerRequestBody requestBody = new SwaggerRequestBody(new RequestBody().required(false));
         assertThat(requestBody.isRequired()).isFalse();
     }
 
     @Test
-    void ifRequiredRequestBodyPassed_isRequiredReturnsTrue() {
+    void ifRequiredRequestBodyPassedToConstructor_isRequiredReturnsTrue() {
         SwaggerRequestBody requestBody = new SwaggerRequestBody(new RequestBody().required(true));
         assertThat(requestBody.isRequired()).isTrue();
     }

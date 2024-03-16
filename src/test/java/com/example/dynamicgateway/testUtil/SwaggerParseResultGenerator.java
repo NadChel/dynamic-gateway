@@ -19,7 +19,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * A test utility for generating {@link SwaggerParseResult} objects
+ */
 public class SwaggerParseResultGenerator {
+    private SwaggerParseResultGenerator() {
+    }
+
     public static SwaggerParseResult empty() {
         return createForEndpoints(Collections.emptyList());
     }
